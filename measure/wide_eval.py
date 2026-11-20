@@ -12,7 +12,7 @@
 #   fp8all  : body + output layer in FP8 (starting point)
 #
 # Recorded per item (clip, t0):
-#  S. Official sampling (temperature 0.6, top_p 0.98, 1 candidate, 10 diffusion steps), over --sample-variants × seeds.
+#  S. Official sampling (temperature 0.6, top_p 0.98, 1 candidate, 10 diffusion steps), over --variants × seeds.
 #     CoT (text and tokens), trajectory (64 points), time (single-run measurement: the ViT cache is cleared every time), decode time and token count.
 #     The diffusion RNG uses the same value as the seed (same as official inference). The seed-to-seed width within BF16 is also measured with the different seeds of this base.
 #  T. teacher forcing: with base's seed[0] CoT as fixed input, compares each variant's token-by-token distribution with base
