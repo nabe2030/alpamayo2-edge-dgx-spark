@@ -30,7 +30,7 @@
 | + Load the processor once | 932 ms | 2.1× |
 | + All four optimizations (the three that apply to a single inference) | 790 ms | 2.4× |
 | **+ FP8 body only (recommended)** | **695 ms** | **2.8×** |
-| + FP8 body and output layer (reference) | 678 ms | 2.8× |
+| + FP8 body + output layer (reference) | 678 ms | 2.8× |
 
 *Each value is the median of 20 runs of a single inference on the same scene (18 reasoning tokens).*
 
@@ -120,7 +120,7 @@ This is a standalone benchmark that uses neither the dataset nor the model. It w
 |---|---|---|
 | BF16 | 15.4 ms | 37 tokens |
 | **FP8 body only** | **10.0 ms** | **58 tokens** |
-| FP8 body and output layer | 9.2 ms | 63 tokens |
+| FP8 body + output layer | 9.2 ms | 63 tokens |
 
 *Fit to 12 logs run continuously with input every 1 s (time ≈ about 418 ms + time per token × number of tokens).*
 
@@ -157,11 +157,11 @@ So I re-rendered the AV2 images into "virtual cameras" with the fields of view t
 
 ![A left-turn scene](figs_av2/fig06_left_turn.jpg)
 
-*Figure 6: A left-turn scene (Pittsburgh). Left: re-rendered input (front 120°). Right: AV2 cameras fed in as they are (front about 47°). Green is the recorded drive; red and blue are predictions for 5 seeds. With the re-rendered input the prediction turns along the recorded path (error 3.16 m, mean of 5 seeds); with the as-is input it makes a tight turn too early (10.53 m). For seed 43 the reasoning text is the same in both: "Turn left at the intersection to follow our route, as the traffic light is green." (the other seeds say the same thing in different words).*
+*Figure 6: A left-turn scene (Pittsburgh). Left: re-rendered input (front 120°). Right: AV2 cameras as is (front about 47°). Green is the recorded drive; red and blue are predictions for 5 seeds. With the re-rendered input the prediction turns along the recorded path (error 3.16 m, mean of 5 seeds); with the as-is input it makes a tight turn too early (10.53 m). For seed 43 the reasoning text is the same in both: "Turn left at the intersection to follow our route, as the traffic light is green." (the other seeds say the same thing in different words).*
 
 ![Three ways of assembling the input](figs_av2/fig07_input_layouts.jpg)
 
-*Figure 7: Inputs built from the same scene in three ways. From the top: ① AV2 cameras as they are, ② adjacent cameras stitched to 120° (pinhole), ③ also 120° (equidistant projection; the layout used in this article). Each row shows the left, front and right slots. The bottom row shows the remaining three slots of ③ (rear left, rear right, telephoto). Black areas are parts the AV2 cameras cannot cover.*
+*Figure 7: Inputs built from the same scene in three ways. From the top: ① AV2 cameras as they are, ② adjacent cameras stitched to 120° (pinhole), ③ also 120° (equidistant projection; the layout used in this article). Each row shows the left, front and right slots. The bottom row shows the remaining three slots of ③ (left rear, right rear, front telephoto). Black areas are parts the AV2 cameras cannot cover.*
 
 *Figures 6 and 7 are derived from images in the Argoverse 2 Sensor Dataset (© 2021 Argo AI, LLC) and are provided under CC BY-NC-SA 4.0.*
 
@@ -189,7 +189,7 @@ A single-inference measurement might just have picked a fast scene. So I ran 12 
 
 *Figure 8: Times when 12 logs are run continuously. The rightmost group includes JPEG decoding and re-rendering.*
 
-| Condition | BF16 (four optimizations) | **FP8 body only (recommended)** | FP8 body and output layer (reference) |
+| Condition | BF16 (four optimizations) | **FP8 body only (recommended)** | FP8 body + output layer (reference) |
 |---|---|---|---|
 | Inference only, every 0.1 s | 641 / 867 ms | **528 / 685 ms** | 512 / 644 ms |
 | Inference only, every 1 s | 757 / 977 ms | **638 / 780 ms** | 620 / 752 ms |
@@ -201,7 +201,7 @@ A single-inference measurement might just have picked a fast scene. So I ran 12 
 - Including input conversion, only the configurations with FP8 stayed within 1 s (with FP8 body only, the maximum is 878 ms, a margin of 122 ms).
 - Nearly all of the slow runs were ones with long reasoning texts (31–37 tokens).
 
-The difference between the recommended "FP8 body only" and the reference "FP8 body and output layer" is 16–21 ms at the median. It comes from being about 0.8 ms slower per token (10.0 ms vs. 9.2 ms), so the gap widens for longer reasoning texts (26–41 ms in the slowest runs).
+The difference between the recommended "FP8 body only" and the reference "FP8 body + output layer" is 16–21 ms at the median. It comes from being about 0.8 ms slower per token (10.0 ms vs. 9.2 ms), so the gap widens for longer reasoning texts (26–41 ms in the slowest runs).
 
 ## 7. Does FP8 change the output?
 
@@ -213,7 +213,7 @@ This model outputs different trajectories for the same scene when the seed chang
 
 *Figure 9: Left: trajectory difference (log scale). Right: share of runs where the reasoning text was exactly the same.*
 
-| | BF16 vs. BF16 (different seed) | FP8 body only | FP8 body and output layer |
+| | BF16 vs. BF16 (different seed) | FP8 body only | FP8 body + output layer |
 |---|---|---|---|
 | Trajectory difference | 2.30 m | 0.041 m (1.8%) | 0.045 m (2.0%) |
 | Change in error against the recorded drive (BF16: 3.25 m) | — | −0.003 m | +0.004 m |
@@ -226,7 +226,7 @@ This model outputs different trajectories for the same scene when the seed chang
 
 ### 7.1 Checking stopped scenes with more seeds
 
-One run in the 400-scene comparison caught my attention. In a scene with pedestrians crossing, the FP8 body and output layer configuration produced a reasoning text saying "the pedestrians have cleared, so proceed" (the trajectory moved forward only about 2.3 m in 6.4 s; the 5 BF16 seeds range from −0.5 to +1.4 m, so this is slightly further forward).
+One run in the 400-scene comparison caught my attention. In a scene with pedestrians crossing, the FP8 body + output layer configuration produced a reasoning text saying "the pedestrians have cleared, so proceed" (the trajectory moved forward only about 2.3 m in 6.4 s; the 5 BF16 seeds range from −0.5 to +1.4 m, so this is slightly further forward).
 
 To check whether that was a coincidence, I ran 22 scenes in which the recorded car is stopped, each with 64 seeds.
 
@@ -237,11 +237,11 @@ To check whether that was a coincidence, I ran 22 scenes in which the recorded c
 - **The share of runs where the trajectory starts moving is 26% for both BF16 and FP8** (difference −0.1 pt, 95% interval −0.5 to +0.4 pt). That 26% exists because in some scenes, even though the recorded car is stopped, the model reads the situation as "the light is about to change" or "the car ahead is moving" and starts off.
 - **The probability that the first reasoning token is a "go"-type word rises by about 1.5 pt when the output layer is also FP8.** The direction is the same in all 22 scenes.
 - Quantizing only the output layer to FP8 gives a shift in the same direction (+0.85 pt), so **the source is mainly the FP8 output layer**. With FP8 body only it stays at +0.4 pt.
-- The same tendency appears in another 117 scenes where a "stop" reasoning text was produced (output layer only +0.88 pt, body and output layer +0.81 pt, body only −0.05 pt).
+- The same tendency appears in another 117 scenes where a "stop" reasoning text was produced (output layer only +0.88 pt, body + output layer +0.81 pt, body only −0.05 pt).
 
 ![A scene with pedestrians crossing](figs_av2/fig11_pedestrian_stop.jpg)
 
-*Figure 11: A scene with pedestrians crossing (Detroit; the recorded car stays stopped). BF16, FP8 body only, and FP8 body and output layer were run with the same 5 seeds. FP8 body only gives the same reasoning text as BF16 for all 5 seeds. FP8 body and output layer produced "Proceed forward into the intersection …, as the crossing pedestrians have cleared our path." for seed 43.*
+*Figure 11: A scene with pedestrians crossing (Detroit; the recorded car stays stopped). BF16, FP8 body only, and FP8 body + output layer were run with the same 5 seeds. FP8 body only gives the same reasoning text as BF16 for all 5 seeds. FP8 body + output layer produced "Proceed forward into the intersection …, as the crossing pedestrians have cleared our path." for seed 43.*
 
 *Figure 11 is derived from images in the Argoverse 2 Sensor Dataset (© 2021 Argo AI, LLC) and is provided under CC BY-NC-SA 4.0.*
 
@@ -252,7 +252,7 @@ I recommend **FP8 for the body only, keeping the output layer in BF16**.
 - The speed difference is about 17 ms per inference (695 ms vs. 678 ms). Over the 12 continuous logs the median difference was 16–21 ms.
 - The trajectory is the same either way, but if people read the reasoning text to check the model, it is safer not to have the bias.
 
-One more finding: **the reasoning text and the trajectory can disagree**. In the 22 scenes where the recorded car is stopped, of the runs where the text said "go", the trajectory actually moved forward in only about 60% (BF16 58%, FP8 body only 56%, FP8 body and output layer 55%). Safety cannot be judged from the reasoning text alone.
+One more finding: **the reasoning text and the trajectory can disagree**. In the 22 scenes where the recorded car is stopped, of the runs where the text said "go", the trajectory actually moved forward in only about 60% (BF16 58%, FP8 body only 56%, FP8 body + output layer 55%). Safety cannot be judged from the reasoning text alone.
 
 ## 8. How this relates to other published numbers
 
