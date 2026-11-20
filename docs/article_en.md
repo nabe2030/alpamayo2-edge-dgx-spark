@@ -5,6 +5,10 @@
 >
 > All numbers are as measured on the software versions listed in section 2.
 
+![Official (tuned) vs. the four optimizations + FP8 body only, real time on one DGX Spark](figs_av2/demo_realtime.gif)
+
+*One Argoverse 2 drive played in real time. Left: official tuned (about 1.9 s per inference). Right: the four optimizations + FP8 body only (about 0.7 s). Each prediction appears when its inference finishes; times and predictions were measured on this log. Images: Argoverse 2 Sensor Dataset (© 2021 Argo AI, LLC), CC BY-NC-SA 4.0.*
+
 ## TL;DR
 
 - I tuned the autonomous-driving model Alpamayo 2 Edge on an NVIDIA DGX Spark (GB10) by **reading the source code and profiling the model stage by stage**.
@@ -241,7 +245,17 @@ To check whether that was a coincidence, I ran 22 scenes in which the recorded c
 
 ![A scene with pedestrians crossing](figs_av2/fig11_pedestrian_stop.jpg)
 
-*Figure 11: A scene with pedestrians crossing (Detroit; the recorded car stays stopped). BF16, FP8 body only, and FP8 body + output layer were run with the same 5 seeds. FP8 body only gives the same reasoning text as BF16 for all 5 seeds. FP8 body + output layer produced "Proceed forward into the intersection …, as the crossing pedestrians have cleared our path." for seed 43.*
+*Figure 11: A scene with pedestrians crossing (Detroit; the recorded car stays stopped). BF16, FP8 body only, and FP8 body + output layer were run with the same 5 seeds. Right: predicted trajectories seen from above. The longitudinal position after 6.4 s is between −0.5 and +2.3 m in every configuration, only a slight movement back and forth.*
+
+The reasoning text for seed 43 in this scene (as output by the model):
+
+| Configuration | Reasoning (seed 43) |
+|---|---|
+| BF16 | Remain stopped before the crosswalk to yield to pedestrians crossing our path. |
+| FP8 body only | Same as BF16 |
+| FP8 body + output layer | Proceed forward into the intersection to follow our route, as the crossing pedestrians have cleared our path. |
+
+For the other four seeds (44–47), all three configurations produced a reasoning text that stops and yields to the pedestrians. FP8 body only matches BF16 word for word on all 5 seeds.
 
 *Figure 11 is derived from images in the Argoverse 2 Sensor Dataset (© 2021 Argo AI, LLC) and is provided under CC BY-NC-SA 4.0.*
 
