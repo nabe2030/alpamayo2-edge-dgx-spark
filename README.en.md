@@ -21,7 +21,7 @@ It does not contain the model weights, the upstream code or any AV2 data. Get ea
 | `measure/` | Speed measurements (single input / continuous 10 Hz and 1 Hz / including re-rendering), BF16 vs FP8 output comparisons, the stop-scene study, summaries and plots |
 | `results/` | Result tables and plots on AV2 (no AV2 images) |
 | `results_av2_images/` | Figures that contain AV2 images (with attribution; CC BY-NC-SA 4.0; see `results_av2_images/LIST.md`) |
-| `docs/` | The English article (`article_en.md`) and its figures. `docs/figs_av2/` holds article figures 6, 7 and 11 (they contain AV2 images; English labels, plus Japanese-label versions with `_ja`; CC BY-NC-SA 4.0; source, modifications and license in `docs/figs_av2/README.md`) |
+| `docs/` | The English article (`article_en.md`) and its figures. `docs/figs_av2/` holds article figures 6, 7 and 11 (they contain AV2 images; English labels, plus Japanese-label versions with `_ja`; CC BY-NC-SA 4.0; source, modifications and license in `docs/figs_av2/README.md`). They are drawn by `measure/article_figs.py` (English labels with `A2E_FIG_LANG=en`; Japanese labels by default) |
 | `LICENSES/` | Apache-2.0 (this code and the upstream code) and CC BY-NC-SA 4.0 (AV2) |
 
 Comments in the code and most result tables are in Japanese.

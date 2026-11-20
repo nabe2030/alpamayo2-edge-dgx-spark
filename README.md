@@ -21,7 +21,7 @@ NVIDIA の運転用 VLA モデル [Alpamayo 2 Edge](https://huggingface.co/nvidi
 | `measure/` | 速さの測定(1 回だけ / 連続 10Hz・1Hz / 描き直し込み)、BF16 と FP8 の出力の比較、止まる場面での比較、集計と図のスクリプト |
 | `results/` | AV2 で測った結果の表と図(AV2 の画像を含まないもの) |
 | `results_av2_images/` | AV2 の画像を含む図(帰属表示つき。CC BY-NC-SA 4.0。一覧は `results_av2_images/LIST.md`) |
-| `docs/` | 英語版の記事(`article_en.md`)と、その図。`docs/figs_av2/` は記事の図 6・7・11(AV2 の画像を含む。英語ラベルの版と、`_ja` を付けた日本語ラベルの版。CC BY-NC-SA 4.0。出典・加工・ライセンスは `docs/figs_av2/README.md`) |
+| `docs/` | 英語版の記事(`article_en.md`)と、その図。`docs/figs_av2/` は記事の図 6・7・11(AV2 の画像を含む。英語ラベルの版と、`_ja` を付けた日本語ラベルの版。CC BY-NC-SA 4.0。出典・加工・ライセンスは `docs/figs_av2/README.md`)。描くスクリプトは `measure/article_figs.py`(`A2E_FIG_LANG=en` で英語ラベル、既定は日本語ラベル) |
 | `LICENSES/` | Apache-2.0(このリポジトリのコードと、上流のコード)と CC BY-NC-SA 4.0(AV2)のライセンスの本文 |
 
 ## 加速の 4 つの手と FP8

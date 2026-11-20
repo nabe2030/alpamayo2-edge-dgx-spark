@@ -14,11 +14,26 @@
 - ライセンス: AV2 の画像の翻案物なので **CC BY-NC-SA 4.0**(https://creativecommons.org/licenses/by-nc-sa/4.0/ 、本文は `../../LICENSES/CC-BY-NC-SA-4.0.txt`)で提供する。このリポジトリのコードの Apache-2.0 とは別。
 - 帰属と加工した旨は、それぞれの図の下にも入れている。
 
-## Files / ファイル
-
 `<name>.jpg` has English labels (used by `../article_en.md`); `<name>_ja.jpg` has Japanese labels (used by the Japanese article). The two versions differ only in the text; the scenes, seeds, numbers and colors are the same.
 
 `<名前>.jpg` は英語ラベルの版(`../article_en.md` が参照)、`<名前>_ja.jpg` は日本語ラベルの版(日本語の記事に載せたもの)。違うのは文字だけで、場面・seed・数字・色は同じ。
+
+## How to redraw / 描き直し方
+
+`../../measure/article_figs.py` draws these figures from the recorded runs and the AV2 logs (after `source env.sh`; the inputs it reads are listed at the top of the script). The labels are Japanese by default and English with `A2E_FIG_LANG=en`:
+
+`../../measure/article_figs.py` が、記録と AV2 のログからこの図を描く(`source env.sh` のあと。読む記録はスクリプトの頭に書いた)。ラベルは既定で日本語、`A2E_FIG_LANG=en` で英語:
+
+```bash
+$PY $A2E_REPO/measure/article_figs.py out_ja                    # fig06_left_turn_ja.jpg, ...
+A2E_FIG_LANG=en $PY $A2E_REPO/measure/article_figs.py out_en    # fig06_left_turn.jpg, ...
+```
+
+Redrawn from our records with this script, all six JPEG files match the ones here byte for byte. Fonts: Noto Sans CJK (`fonts-noto-cjk` on Ubuntu).
+
+このスクリプトで記録から描き直すと、6 枚とも、ここにある JPEG とバイト単位で同じになる(確かめた)。フォント: Noto Sans CJK(Ubuntu なら `fonts-noto-cjk`)。
+
+## Files / ファイル
 
 | File | Content | 中身 |
 |---|---|---|
