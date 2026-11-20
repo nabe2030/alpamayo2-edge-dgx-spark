@@ -1,0 +1,3050 @@
+{
+ "n_records": 3280,
+ "sets": {
+  "A": {
+   "n": 1408,
+   "n_scenes": 22,
+   "rates": {
+    "base": {
+     "traj_go": [
+      0.2627840909090909,
+      [
+       0.14272017045454546,
+       0.403426846590909
+      ]
+     ],
+     "cot_go": [
+      0.11860795454545454,
+      [
+       0.061079545454545456,
+       0.18821022727272727
+      ]
+     ],
+     "both_go": [
+      0.06889204545454546,
+      [
+       0.028409090909090908,
+       0.11791548295454536
+      ]
+     ]
+    },
+    "fp8body": {
+     "traj_go": [
+      0.2634943181818182,
+      [
+       0.1434659090909091,
+       0.4041370738636363
+      ]
+     ],
+     "cot_go": [
+      0.12357954545454546,
+      [
+       0.06321022727272728,
+       0.19602272727272727
+      ]
+     ],
+     "both_go": [
+      0.0703125,
+      [
+       0.03052201704545455,
+       0.12004616477272717
+      ]
+     ]
+    },
+    "fp8all": {
+     "traj_go": [
+      0.26207386363636365,
+      [
+       0.14273792613636363,
+       0.40200639204545446
+      ]
+     ],
+     "cot_go": [
+      0.1328125,
+      [
+       0.06960227272727272,
+       0.20667613636363635
+      ]
+     ],
+     "both_go": [
+      0.07315340909090909,
+      [
+       0.03196022727272727,
+       0.12571022727272727
+      ]
+     ]
+    }
+   },
+   "paired": {
+    "fp8body": {
+     "tc": {
+      "diff": 0.0007102272727272727,
+      "ci": [
+       -0.0035511363636363635,
+       0.004261363636363636
+      ],
+      "stop_to_go": 6,
+      "go_to_stop": 5
+     },
+     "cc": {
+      "diff": 0.004971590909090909,
+      "ci": [
+       0.0,
+       0.01065340909090909
+      ],
+      "stop_to_go": 9,
+      "go_to_stop": 3
+     }
+    },
+    "fp8all": {
+     "tc": {
+      "diff": -0.0007102272727272727,
+      "ci": [
+       -0.004971590909090909,
+       0.0035511363636363635
+      ],
+      "stop_to_go": 7,
+      "go_to_stop": 8
+     },
+     "cc": {
+      "diff": 0.014204545454545454,
+      "ci": [
+       0.007102272727272727,
+       0.022017045454545456
+      ],
+      "stop_to_go": 20,
+      "go_to_stop": 2
+     }
+    }
+   },
+   "cot_dist": {
+    "base": {
+     "go": 167,
+     "stop": 1147,
+     "slow": 60,
+     "creep": 7,
+     "other": 24,
+     "nominal": 3
+    },
+    "fp8body": {
+     "go": 174,
+     "stop": 1140,
+     "slow": 58,
+     "creep": 8,
+     "other": 24,
+     "nominal": 4
+    },
+    "fp8all": {
+     "go": 187,
+     "stop": 1121,
+     "slow": 62,
+     "creep": 10,
+     "other": 25,
+     "nominal": 3
+    }
+   }
+  },
+  "B": {
+   "n": 1872,
+   "n_scenes": 117,
+   "rates": {
+    "base": {
+     "traj_go": [
+      0.9284188034188035,
+      [
+       0.8931490384615385,
+       0.9572783119658119
+      ]
+     ],
+     "cot_go": [
+      0.09508547008547008,
+      [
+       0.07211538461538461,
+       0.12126068376068376
+      ]
+     ],
+     "both_go": [
+      0.09134615384615384,
+      [
+       0.06943108974358975,
+       0.11645299145299146
+      ]
+     ]
+    },
+    "fp8body": {
+     "traj_go": [
+      0.9300213675213675,
+      [
+       0.8952857905982906,
+       0.9588675213675214
+      ]
+     ],
+     "cot_go": [
+      0.09188034188034189,
+      [
+       0.06944444444444445,
+       0.11753472222222215
+      ]
+     ],
+     "both_go": [
+      0.08814102564102565,
+      [
+       0.06677350427350427,
+       0.11272702991452985
+      ]
+     ]
+    },
+    "fp8all": {
+     "traj_go": [
+      0.9284188034188035,
+      [
+       0.8936832264957265,
+       0.9577991452991453
+      ]
+     ],
+     "cot_go": [
+      0.10256410256410256,
+      [
+       0.07852564102564102,
+       0.12980769230769232
+      ]
+     ],
+     "both_go": [
+      0.09882478632478632,
+      [
+       0.07585470085470085,
+       0.12446581196581197
+      ]
+     ]
+    }
+   },
+   "paired": {
+    "fp8body": {
+     "tc": {
+      "diff": 0.0016025641025641025,
+      "ci": [
+       0.0,
+       0.003205128205128205
+      ],
+      "stop_to_go": 3,
+      "go_to_stop": 0
+     },
+     "cc": {
+      "diff": -0.003205128205128205,
+      "ci": [
+       -0.006957799145299144,
+       0.0005341880341880342
+      ],
+      "stop_to_go": 3,
+      "go_to_stop": 4
+     }
+    },
+    "fp8all": {
+     "tc": {
+      "diff": 0.0,
+      "ci": [
+       -0.002136752136752137,
+       0.002136752136752137
+      ],
+      "stop_to_go": 2,
+      "go_to_stop": 2
+     },
+     "cc": {
+      "diff": 0.007478632478632479,
+      "ci": [
+       0.003205128205128205,
+       0.012286324786324786
+      ],
+      "stop_to_go": 14,
+      "go_to_stop": 0
+     }
+    }
+   },
+   "cot_dist": {
+    "base": {
+     "stop": 1037,
+     "slow": 411,
+     "go": 178,
+     "nominal": 235,
+     "other": 3,
+     "creep": 8
+    },
+    "fp8body": {
+     "stop": 1033,
+     "nominal": 259,
+     "slow": 397,
+     "go": 172,
+     "other": 3,
+     "creep": 8
+    },
+    "fp8all": {
+     "stop": 1015,
+     "slow": 403,
+     "go": 192,
+     "nominal": 252,
+     "other": 3,
+     "creep": 7
+    }
+   }
+  },
+  "A+B": {
+   "n": 3280,
+   "n_scenes": 139,
+   "rates": {
+    "base": {
+     "traj_go": [
+      0.6426829268292683,
+      [
+       0.5480051297637951,
+       0.7373157591827836
+      ]
+     ],
+     "cot_go": [
+      0.10518292682926829,
+      [
+       0.07623049407051623,
+       0.13920766352549888
+      ]
+     ],
+     "both_go": [
+      0.08170731707317073,
+      [
+       0.060333342143887754,
+       0.10658194605990112
+      ]
+     ]
+    },
+    "fp8body": {
+     "traj_go": [
+      0.6439024390243903,
+      [
+       0.5488587462742176,
+       0.7379747809339756
+      ]
+     ],
+     "cot_go": [
+      0.10548780487804878,
+      [
+       0.07525510204081633,
+       0.1404816766231911
+      ]
+     ],
+     "both_go": [
+      0.08048780487804878,
+      [
+       0.059285112879348636,
+       0.10597857393307954
+      ]
+     ]
+    },
+    "fp8all": {
+     "traj_go": [
+      0.6423780487804878,
+      [
+       0.5476384361028316,
+       0.7369662333880447
+      ]
+     ],
+     "cot_go": [
+      0.11554878048780488,
+      [
+       0.08475558454502814,
+       0.15171080622576472
+      ]
+     ],
+     "both_go": [
+      0.08780487804878048,
+      [
+       0.06532663316582915,
+       0.11463986775722362
+      ]
+     ]
+    }
+   },
+   "paired": {
+    "fp8body": {
+     "tc": {
+      "diff": 0.0012195121951219512,
+      "ci": [
+       -0.0009014423076923077,
+       0.003189371543009724
+      ],
+      "stop_to_go": 9,
+      "go_to_stop": 5
+     },
+     "cc": {
+      "diff": 0.0003048780487804878,
+      "ci": [
+       -0.00314070351758794,
+       0.003606085526315788
+      ],
+      "stop_to_go": 12,
+      "go_to_stop": 7
+     }
+    },
+    "fp8all": {
+     "tc": {
+      "diff": -0.0003048780487804878,
+      "ci": [
+       -0.0024390243902439024,
+       0.0017772511848341231
+      ],
+      "stop_to_go": 9,
+      "go_to_stop": 10
+     },
+     "cc": {
+      "diff": 0.010365853658536586,
+      "ci": [
+       0.006475481125092524,
+       0.014489275904782417
+      ],
+      "stop_to_go": 34,
+      "go_to_stop": 2
+     }
+    }
+   },
+   "cot_dist": {
+    "base": {
+     "go": 345,
+     "stop": 2184,
+     "slow": 471,
+     "creep": 15,
+     "other": 27,
+     "nominal": 238
+    },
+    "fp8body": {
+     "go": 346,
+     "stop": 2173,
+     "slow": 455,
+     "creep": 16,
+     "other": 27,
+     "nominal": 263
+    },
+    "fp8all": {
+     "go": 379,
+     "stop": 2136,
+     "slow": 465,
+     "creep": 17,
+     "other": 28,
+     "nominal": 255
+    }
+   }
+  }
+ },
+ "splits": {
+  "fp8body": [
+   {
+    "scene": "v_20bcd747_3.0",
+    "seed": 82,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to stop at the stop line for the all-way stop sign before turning right to follow our route.",
+    "fp8": "Proceed into the intersection and turn right to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_20bcd747_3.0",
+    "seed": 86,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to stop at the stop line for the all-way stop sign at the intersection, preparing to turn right to follow our route.",
+    "fp8": "Proceed into the intersection and turn right to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_22052525_7.0",
+    "seed": 50,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Yield",
+    "fp8_word": "Proceed",
+    "base": "Yield to oncoming traffic before turning left to follow our route, as the oncoming vehicle has right of way.",
+    "fp8": "Proceed with the left turn to follow our route, as oncoming traffic has cleared our path under the green light.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_7e4d67b3_3.5",
+    "seed": 64,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "Pull",
+    "base": "Remain stopped behind the parked police car as traffic ahead is stationary in our lane.",
+    "fp8": "Pull out from the curb into the travel lane to follow our route, as the passing traffic has cleared.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_7e4d67b3_3.5",
+    "seed": 84,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Hold",
+    "fp8_word": "Proceed",
+    "base": "Hold position and creep forward to yield to passing traffic in the adjacent lane before pulling out around the parked vehicle ahead.",
+    "fp8": "Proceed forward and steer left to pass the parked police vehicle, as the adjacent lane has cleared.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_d1395998_9.0",
+    "seed": 84,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "The",
+    "base": "Remain stopped behind the lead bus as it remains stationary ahead in our lane.",
+    "fp8": "The traffic light has turned green, so proceed straight through the intersection to follow our route, but stop and wait as the lead bus remains stationary ahead.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_d1395998_9.0",
+    "seed": 88,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "Proceed",
+    "base": "Remain stopped behind the stationary bus in our lane, waiting for the traffic queue ahead to move.",
+    "fp8": "Proceed straight through the intersection to follow our route, as the traffic light is green and the lead bus ahead departs.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_d46ff5df_8.5",
+    "seed": 85,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "Proceed",
+    "base": "Remain stopped at the intersection to yield to pedestrians crossing the roadway ahead.",
+    "fp8": "Proceed and turn right into the cross street to follow our route, as the crossing pedestrians have cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "t_ef4a46c4_5.5",
+    "seed": 67,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Yield",
+    "fp8_word": "Turn",
+    "base": "Yield to cross traffic on the priority road as we turn right at the intersection.",
+    "fp8": "Turn right onto the roadway to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_f3cd0d0d_6.5",
+    "seed": 43,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to a stop behind the queued lead vehicle for the red traffic light ahead.",
+    "fp8": "Proceed straight through the intersection to follow our route, as permitted by the green traffic light.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_d3ca0450_7.0",
+    "seed": 43,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Steer",
+    "base": "Decelerate to stop before the upcoming intersection as required by the stop sign.",
+    "fp8": "Steer left into the open lane to bypass the traffic cones and construction debris obstructing the right side of the roadway.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_0aa4e8f5_6.0",
+    "seed": 54,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Turn",
+    "base": "Decelerate and stop at the stop line to comply with the stop sign and yield to cross traffic before turning right to follow our route.",
+    "fp8": "Turn right at the intersection to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   }
+  ],
+  "fp8all": [
+   {
+    "scene": "v_1f434d15_2.5",
+    "seed": 67,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Wait",
+    "fp8_word": "Proceed",
+    "base": "Wait behind the stationary lead vehicle at the red traffic light to follow our route.",
+    "fp8": "Proceed forward in the right lane toward the intersection to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_1f434d15_2.5",
+    "seed": 90,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Wait",
+    "fp8_word": "Proceed",
+    "base": "Wait in queue behind the stopped lead vehicle at the intersection for the red traffic light to turn green before turning right to follow our route.",
+    "fp8": "Proceed forward and turn right at the intersection to follow our route, as the lead vehicle departs under the green traffic signal.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_1f434d15_2.5",
+    "seed": 106,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Wait",
+    "fp8_word": "Proceed",
+    "base": "Wait in the queue behind the stopped lead vehicle for the red traffic light to turn green to follow our route.",
+    "fp8": "Proceed forward and turn right to follow our route, as the lead vehicle departs and the intersection is clear.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_20bcd747_3.0",
+    "seed": 82,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to stop at the stop line for the all-way stop sign before turning right to follow our route.",
+    "fp8": "Proceed into the intersection and turn right to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_20bcd747_3.0",
+    "seed": 86,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to stop at the stop line for the all-way stop sign at the intersection, preparing to turn right to follow our route.",
+    "fp8": "Proceed forward toward the intersection to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_22052525_7.0",
+    "seed": 50,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Yield",
+    "fp8_word": "Proceed",
+    "base": "Yield to oncoming traffic before turning left to follow our route, as the oncoming vehicle has right of way.",
+    "fp8": "Proceed with the left turn to follow our route, as oncoming traffic has cleared our path under the green light.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_22052525_7.0",
+    "seed": 56,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Yield",
+    "fp8_word": "Proceed",
+    "base": "Yield and creep forward at the intersection as oncoming traffic turns left across our path, waiting for a safe gap to turn left to follow our route.",
+    "fp8": "Proceed straight through the intersection to follow our route under the green traffic light, as the oncoming vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_7e4d67b3_3.5",
+    "seed": 64,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "Pull",
+    "base": "Remain stopped behind the parked police car as traffic ahead is stationary in our lane.",
+    "fp8": "Pull out from the curb into the travel lane to follow our route, as the passing traffic has cleared.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_7e4d67b3_3.5",
+    "seed": 65,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "Proceed",
+    "base": "Remain stopped behind the parked vehicle on the right, as passing traffic in the adjacent lane prevents us from pulling out.",
+    "fp8": "Proceed forward and steer left to pass the stationary police vehicle obstructing our lane, as the overtaking vehicle on our left clears our path.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_7e4d67b3_3.5",
+    "seed": 84,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Hold",
+    "fp8_word": "Proceed",
+    "base": "Hold position and creep forward to yield to passing traffic in the adjacent lane before pulling out around the parked vehicle ahead.",
+    "fp8": "Proceed forward and steer left to pass the parked police vehicle, as the adjacent lane has cleared.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_b5a7ff7e_9.0",
+    "seed": 102,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to a stop and yield to the pedestrian crossing in the crosswalk before completing our right turn to follow our route.",
+    "fp8": "Proceed with the right turn at the intersection to follow our route, as the pedestrian has cleared the crosswalk.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_b5a7ff7e_9.0",
+    "seed": 106,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Wait",
+    "fp8_word": "Proceed",
+    "base": "Wait at the intersection for the red traffic light to turn green before turning right to follow our route.",
+    "fp8": "Proceed with the right turn to follow our route, as the pedestrian has cleared the crosswalk and the intersection is open.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_d1395998_9.0",
+    "seed": 84,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "The",
+    "base": "Remain stopped behind the lead bus as it remains stationary ahead in our lane.",
+    "fp8": "The traffic light has turned green, so proceed straight through the intersection to follow our route, but stop and wait as the lead bus remains stationary ahead.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_d1395998_9.0",
+    "seed": 88,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "Proceed",
+    "base": "Remain stopped behind the stationary bus in our lane, waiting for the traffic queue ahead to move.",
+    "fp8": "Proceed straight through the intersection to follow our route, as the traffic light is green and the lead bus ahead departs.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_d46ff5df_8.5",
+    "seed": 43,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "Proceed",
+    "base": "Remain stopped before the crosswalk to yield to pedestrians crossing our path.",
+    "fp8": "Proceed forward into the intersection to follow our route, as the crossing pedestrians have cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_d46ff5df_8.5",
+    "seed": 85,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Remain",
+    "fp8_word": "Proceed",
+    "base": "Remain stopped at the intersection to yield to pedestrians crossing the roadway ahead.",
+    "fp8": "Proceed and turn right into the cross street to follow our route, as the crossing pedestrians have cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_e72ef05c_8.0",
+    "seed": 74,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Wait",
+    "fp8_word": "Proceed",
+    "base": "Wait at the stop line for the red traffic light to turn green to proceed straight through the intersection along our route.",
+    "fp8": "Proceed straight through the intersection to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "v_e72ef05c_8.0",
+    "seed": 92,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Stop",
+    "fp8_word": "Proceed",
+    "base": "Stop and wait at the stop line for the red traffic light to turn green.",
+    "fp8": "Proceed straight through the intersection to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "stop"
+   },
+   {
+    "scene": "t_ef4a46c4_5.5",
+    "seed": 67,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Yield",
+    "fp8_word": "Turn",
+    "base": "Yield to cross traffic on the priority road as we turn right at the intersection.",
+    "fp8": "Turn right onto the roadway to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "t_ef4a46c4_5.5",
+    "seed": 88,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Wait",
+    "fp8_word": "Proceed",
+    "base": "Wait at the intersection to yield to cross traffic before turning right to follow our route.",
+    "fp8": "Proceed with the right turn onto the roadway to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_87ca3d9f_6.0",
+    "seed": 52,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Accelerate",
+    "base": "Decelerate to a stop behind the lead vehicle in our lane as it brakes for queued traffic ahead.",
+    "fp8": "Accelerate forward along our lane to follow our route, as the crossing moped has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "t_f3f8f680_9.0",
+    "seed": 47,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Yield",
+    "fp8_word": "Proceed",
+    "base": "Yield to the pedestrian crossing in the crosswalk while turning right to follow our route.",
+    "fp8": "Proceed with the right turn at the intersection to follow our route, as the crossing pedestrian has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "t_f5a3ee79_9.0",
+    "seed": 43,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate and yield before turning left at the intersection to follow our route, as the traffic light is green but an oncoming vehicle is turning across our path.",
+    "fp8": "Proceed into the intersection and turn left to follow our route, as the traffic light has turned green.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_f3cd0d0d_6.5",
+    "seed": 43,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to a stop behind the queued lead vehicle for the red traffic light ahead.",
+    "fp8": "Proceed straight through the intersection to follow our route, as permitted by the green traffic light.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_d3ca0450_7.0",
+    "seed": 43,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Steer",
+    "base": "Decelerate to stop before the upcoming intersection as required by the stop sign.",
+    "fp8": "Steer left into the open lane to bypass the traffic cones and construction debris obstructing the right side of the roadway.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "t_d33f667d_9.0",
+    "seed": 52,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Yield",
+    "fp8_word": "Accelerate",
+    "base": "Yield and decelerate for the cyclist crossing the intersection across our path before turning left to follow our route.",
+    "fp8": "Accelerate into the intersection and turn left to follow our route, as the crossing cyclist has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_3b3570b4_3.0",
+    "seed": 43,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate and yield to oncoming traffic before turning left to follow our route.",
+    "fp8": "Proceed with the left turn through the intersection to follow our route, as the oncoming vehicle has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_544a8102_5.5",
+    "seed": 45,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to a stop for the stationary truck blocking our lane ahead.",
+    "fp8": "Proceed straight through the intersection to follow our route, while slowing down to yield to the crossing truck ahead.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_ba67827f_8.0",
+    "seed": 47,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate to yield to the silver sedan cutting into our lane from the right, while continuing straight through the intersection to follow our route.",
+    "fp8": "Proceed straight through the intersection to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "t_cd822baf_2.5",
+    "seed": 46,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Turn",
+    "base": "Decelerate and yield at the intersection for the crossing vehicle to clear our path before turning right to follow our route.",
+    "fp8": "Turn right at the intersection to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "t_4619e709_9.0",
+    "seed": 48,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Proceed",
+    "base": "Decelerate and yield while turning left at the intersection to follow our route, as a crossing vehicle traverses our path.",
+    "fp8": "Proceed into the intersection and turn left to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_0aa4e8f5_6.0",
+    "seed": 47,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Wait",
+    "fp8_word": "Proceed",
+    "base": "Wait at the stop line to yield to the crossing vehicle before turning right to follow our route.",
+    "fp8": "Proceed into the intersection and turn right to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_0aa4e8f5_6.0",
+    "seed": 54,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Turn",
+    "base": "Decelerate and stop at the stop line to comply with the stop sign and yield to cross traffic before turning right to follow our route.",
+    "fp8": "Turn right at the intersection to follow our route, as the crossing vehicle has cleared our path.",
+    "traj_base": "stop",
+    "traj_fp8": "go"
+   },
+   {
+    "scene": "v_fbd62533_4.5",
+    "seed": 48,
+    "token_pos": 0,
+    "word_pos": 0,
+    "base_word": "Decelerate",
+    "fp8_word": "Continue",
+    "base": "Decelerate to a stop behind the lead bus as it brakes for the red traffic light ahead.",
+    "fp8": "Continue straight past the right-hand street to follow our route, while slowing behind the bus ahead.",
+    "traj_base": "go",
+    "traj_fp8": "go"
+   }
+  ]
+ },
+ "scenes": {
+  "v_1f434d15_2.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 50,
+    "fp8body": 50,
+    "fp8all": 50
+   },
+   "cot_go": {
+    "base": 12,
+    "fp8body": 12,
+    "fp8all": 15
+   }
+  },
+  "v_20bcd747_3.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 35,
+    "fp8body": 35,
+    "fp8all": 35
+   },
+   "cot_go": {
+    "base": 38,
+    "fp8body": 40,
+    "fp8all": 41
+   }
+  },
+  "v_22052525_7.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 26,
+    "fp8body": 26,
+    "fp8all": 25
+   },
+   "cot_go": {
+    "base": 30,
+    "fp8body": 31,
+    "fp8all": 32
+   }
+  },
+  "v_25e5c600_9.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 0,
+    "fp8all": 1
+   }
+  },
+  "v_36aec72e_3.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 6,
+    "fp8body": 6,
+    "fp8all": 6
+   },
+   "cot_go": {
+    "base": 9,
+    "fp8body": 9,
+    "fp8all": 9
+   }
+  },
+  "v_44adf4c4_9.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 50,
+    "fp8body": 48,
+    "fp8all": 48
+   },
+   "cot_go": {
+    "base": 6,
+    "fp8body": 6,
+    "fp8all": 6
+   }
+  },
+  "v_5589de60_9.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_77574006_4.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 3
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_7e4d67b3_3.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 5,
+    "fp8body": 5,
+    "fp8all": 5
+   },
+   "cot_go": {
+    "base": 19,
+    "fp8body": 21,
+    "fp8all": 22
+   }
+  },
+  "v_88f47a10_7.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 5,
+    "fp8body": 6,
+    "fp8all": 5
+   },
+   "cot_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 3
+   }
+  },
+  "v_96dd6923_9.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 24,
+    "fp8body": 23,
+    "fp8all": 23
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_9f871fb4_4.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_adf9a841_9.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 49,
+    "fp8body": 49,
+    "fp8all": 49
+   },
+   "cot_go": {
+    "base": 6,
+    "fp8body": 7,
+    "fp8all": 7
+   }
+  },
+  "v_b5a7ff7e_9.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 8,
+    "fp8body": 8,
+    "fp8all": 9
+   },
+   "cot_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 18
+   }
+  },
+  "v_d1395998_4.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_d1395998_9.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 1,
+    "fp8body": 2,
+    "fp8all": 2
+   },
+   "cot_go": {
+    "base": 7,
+    "fp8body": 9,
+    "fp8all": 9
+   }
+  },
+  "v_d46ff5df_8.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 1,
+    "fp8all": 2
+   }
+  },
+  "v_e72ef05c_8.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 5,
+    "fp8body": 5,
+    "fp8all": 5
+   },
+   "cot_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 5
+   }
+  },
+  "v_e72ef05c_4.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_fbd62533_8.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 5,
+    "fp8body": 5,
+    "fp8all": 5
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_ef4a46c4_5.5": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 61,
+    "fp8body": 62,
+    "fp8all": 62
+   },
+   "cot_go": {
+    "base": 15,
+    "fp8body": 14,
+    "fp8all": 15
+   }
+  },
+  "t_06852209_9.0": {
+   "tier": "A",
+   "n": 64,
+   "traj_go": {
+    "base": 34,
+    "fp8body": 35,
+    "fp8all": 34
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_5589de60_2.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_87ca3d9f_6.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 1
+   }
+  },
+  "v_78683234_3.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_858d739b_5.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_87ca3d9f_3.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_0bae3b5e_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_0bae3b5e_6.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_e13c06cb_7.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_8f317f00_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 10,
+    "fp8body": 10,
+    "fp8all": 10
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_f292cc5c_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 13,
+    "fp8body": 13,
+    "fp8all": 13
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_c69e348a_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_46d917cd_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_ded5ef6e_5.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_dfc32963_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 7,
+    "fp8body": 7,
+    "fp8all": 7
+   }
+  },
+  "t_3576c0f5_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "t_0b324587_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_ff0dbfc5_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 6,
+    "fp8body": 6,
+    "fp8all": 6
+   }
+  },
+  "t_f3f8f680_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 15,
+    "fp8body": 15,
+    "fp8all": 15
+   },
+   "cot_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 4
+   }
+  },
+  "t_66a40dcc_2.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_23808d42_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "t_57356998_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_185d3943_7.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_4c33fc38_4.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_52071780_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_58e82365_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_6f128f23_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 12,
+    "fp8body": 12,
+    "fp8all": 12
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_72cf3ca1_6.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_7606de8d_7.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_78da7b7e_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_9bb1f857_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_b6500255_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_f668074d_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_271f4204_6.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_5f8f4a26_6.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_02678d04_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_0fb7276f_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_24642607_7.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 1,
+    "fp8all": 2
+   }
+  },
+  "v_25e5c600_3.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 7,
+    "fp8body": 8,
+    "fp8all": 8
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_44adf4c4_5.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_7606de8d_2.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_78f7cb5c_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 10,
+    "fp8body": 10,
+    "fp8all": 10
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_9a448a80_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_b19f3c1a_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 13,
+    "fp8body": 13,
+    "fp8all": 13
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_b19f3c1a_4.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_d89f80be_5.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_de9cf513_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_e1d68dde_6.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_f5a3ee79_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 2
+   }
+  },
+  "v_19f53e16_5.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 7,
+    "fp8body": 7,
+    "fp8all": 7
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_280269f9_6.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_58fed0d4_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_91aab547_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 0,
+    "fp8all": 1
+   }
+  },
+  "v_96dd6923_3.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_bd90cd1a_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 15,
+    "fp8body": 15,
+    "fp8all": 15
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_dfc32963_4.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "t_a3876690_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 11,
+    "fp8body": 11,
+    "fp8all": 11
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_0c61aea3_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 14,
+    "fp8body": 14,
+    "fp8all": 14
+   },
+   "cot_go": {
+    "base": 7,
+    "fp8body": 7,
+    "fp8all": 7
+   }
+  },
+  "t_c08279c0_4.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 10,
+    "fp8body": 10,
+    "fp8all": 10
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_a4f72852_7.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 15,
+    "fp8body": 15,
+    "fp8all": 14
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_bb110668_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_b8489c02_7.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_f3cd0d0d_6.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_d3ca0450_7.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_27c03d98_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 5,
+    "fp8body": 5,
+    "fp8all": 5
+   }
+  },
+  "v_3b3570b4_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 10,
+    "fp8body": 10,
+    "fp8all": 10
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_58e82365_6.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_58fed0d4_4.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_5c0584a3_3.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_6c932547_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_76916359_5.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 4,
+    "fp8body": 4,
+    "fp8all": 4
+   }
+  },
+  "v_78683234_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_78da7b7e_2.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_7fab2350_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 4,
+    "fp8body": 4,
+    "fp8all": 4
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_88f47a10_4.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 15,
+    "fp8body": 15,
+    "fp8all": 15
+   },
+   "cot_go": {
+    "base": 5,
+    "fp8body": 5,
+    "fp8all": 5
+   }
+  },
+  "v_91aab547_3.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_b50c4763_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 6,
+    "fp8body": 6,
+    "fp8all": 6
+   }
+  },
+  "v_b6500255_4.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_b87683ae_4.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 5,
+    "fp8body": 5,
+    "fp8all": 5
+   }
+  },
+  "v_dafe14f5_7.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_de56b100_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_e1d68dde_3.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "t_d33f667d_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 13,
+    "fp8body": 13,
+    "fp8all": 13
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 3
+   }
+  },
+  "t_087fec73_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "t_c2f301b6_2.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 7,
+    "fp8body": 7,
+    "fp8all": 7
+   },
+   "cot_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 3
+   }
+  },
+  "v_214e388e_7.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_3b3570b4_3.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 14,
+    "fp8body": 14,
+    "fp8all": 14
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 1
+   }
+  },
+  "v_544a8102_5.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 1
+   }
+  },
+  "v_7fab2350_3.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_ba67827f_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 3
+   }
+  },
+  "t_cd822baf_2.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 13,
+    "fp8body": 13,
+    "fp8all": 12
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 2
+   }
+  },
+  "v_7039e410_7.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 3
+   }
+  },
+  "v_02678d04_4.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_24642607_3.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_2c652f9e_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 7,
+    "fp8body": 6,
+    "fp8all": 7
+   }
+  },
+  "v_472a240a_7.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_52971a8a_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 5,
+    "fp8body": 5,
+    "fp8all": 5
+   }
+  },
+  "v_544a8102_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_5c0584a3_6.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 3
+   }
+  },
+  "v_6803104a_2.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_6aaf5b08_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_72cf3ca1_3.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 5,
+    "fp8body": 4,
+    "fp8all": 5
+   }
+  },
+  "v_76916359_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 3
+   }
+  },
+  "v_7a2c222d_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 2,
+    "fp8all": 2
+   }
+  },
+  "v_b87683ae_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 11,
+    "fp8body": 11,
+    "fp8all": 11
+   },
+   "cot_go": {
+    "base": 6,
+    "fp8body": 5,
+    "fp8all": 6
+   }
+  },
+  "v_c8ec7be0_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_cf5aaa11_8.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 9,
+    "fp8body": 9,
+    "fp8all": 9
+   }
+  },
+  "v_da036982_3.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_e0ea281b_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 0,
+    "fp8body": 0,
+    "fp8all": 0
+   }
+  },
+  "v_f3cd0d0d_2.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_f668074d_4.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 2,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "t_4619e709_9.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 12,
+    "fp8body": 13,
+    "fp8all": 12
+   },
+   "cot_go": {
+    "base": 4,
+    "fp8body": 4,
+    "fp8all": 5
+   }
+  },
+  "t_fdb0578d_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 3,
+    "fp8body": 3,
+    "fp8all": 3
+   }
+  },
+  "v_0aa4e8f5_6.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 11,
+    "fp8body": 12,
+    "fp8all": 12
+   },
+   "cot_go": {
+    "base": 10,
+    "fp8body": 11,
+    "fp8all": 12
+   }
+  },
+  "v_dc9077b9_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 1,
+    "fp8body": 1,
+    "fp8all": 1
+   }
+  },
+  "v_b50c4763_4.0": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 6,
+    "fp8body": 4,
+    "fp8all": 6
+   }
+  },
+  "v_fbd62533_4.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 6,
+    "fp8body": 6,
+    "fp8all": 7
+   }
+  },
+  "t_4d9e3bdf_8.5": {
+   "tier": "B",
+   "n": 16,
+   "traj_go": {
+    "base": 16,
+    "fp8body": 16,
+    "fp8all": 16
+   },
+   "cot_go": {
+    "base": 4,
+    "fp8body": 3,
+    "fp8all": 4
+   }
+  }
+ },
+ "first_token": {
+  "A": {
+   "base": {
+    "go": 0.1446339090909091,
+    "stop": 0.617182909090909,
+    "decel": 0.18181309090909092,
+    "diff_go": null
+   },
+   "fp8body": {
+    "go": 0.1482929090909091,
+    "stop": 0.6151699545454545,
+    "decel": 0.1790187727272727,
+    "diff_go": {
+     "diff": 0.003659000000000003,
+     "ci": [
+      0.00030017272727272655,
+      0.007237867045454556
+     ],
+     "n_up": 15,
+     "n_down": 7
+    }
+   },
+   "fp8all": {
+    "go": 0.1591778181818182,
+    "stop": 0.6063656363636363,
+    "decel": 0.1741669090909091,
+    "diff_go": {
+     "diff": 0.01454390909090909,
+     "ci": [
+      0.008970838636363635,
+      0.02066785454545455
+     ],
+     "n_up": 22,
+     "n_down": 0
+    }
+   }
+  },
+  "B": {
+   "base": {
+    "go": 0.10972913675213675,
+    "stop": 0.06995719658119659,
+    "decel": 0.6158861880341882,
+    "diff_go": null
+   },
+   "fp8body": {
+    "go": 0.1092655641025641,
+    "stop": 0.069101,
+    "decel": 0.6025775641025641,
+    "diff_go": {
+     "diff": -0.0004635726495726469,
+     "ci": [
+      -0.0022328982905982903,
+      0.0011534279914529916
+     ],
+     "n_up": 62,
+     "n_down": 55
+    }
+   },
+   "fp8all": {
+    "go": 0.11766395726495726,
+    "stop": 0.06856745299145299,
+    "decel": 0.5934265726495727,
+    "diff_go": {
+     "diff": 0.007934820512820517,
+     "ci": [
+      0.005897194230769235,
+      0.010047882478632484
+     ],
+     "n_up": 101,
+     "n_down": 16
+    }
+   }
+  },
+  "A+B": {
+   "base": {
+    "go": 0.11525363309352517,
+    "stop": 0.15656846043165468,
+    "decel": 0.5471839712230215,
+    "diff_go": null
+   },
+   "fp8body": {
+    "go": 0.11544255395683453,
+    "stop": 0.15552917985611509,
+    "decel": 0.5355394820143885,
+    "diff_go": {
+     "diff": 0.00018892086330935486,
+     "ci": [
+      -0.0012961410071942424,
+      0.0017054055755395708
+     ],
+     "n_up": 77,
+     "n_down": 62
+    }
+   },
+   "fp8all": {
+    "go": 0.1242344964028777,
+    "stop": 0.15368658992805753,
+    "decel": 0.5270689280575539,
+    "diff_go": {
+     "diff": 0.00898086330935252,
+     "ci": [
+      0.007113174280575542,
+      0.011137025539568348
+     ],
+     "n_up": 123,
+     "n_down": 16
+    }
+   }
+  }
+ }
+}

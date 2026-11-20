@@ -1,0 +1,750 @@
+{
+ "conditions": {
+  "F1_all": {
+   "complete": true,
+   "n": 432,
+   "n_logs": 12,
+   "metric": "total_ms",
+   "median": 715.275,
+   "p90": 767.409,
+   "max": 851.57,
+   "over_1s": 0.0,
+   "tokens_median": 22.0,
+   "tokens_max": 36,
+   "fit_intercept_ms": 419.15065788880133,
+   "fit_ms_per_token": 9.161519462515162,
+   "per_log": {
+    "0bae3b5e-417d-3b03-abaa-806b433233b8": {
+     "n": 36,
+     "median": 728.0,
+     "max": 819.22,
+     "over_1s": 0.0,
+     "tokens_median": 24.0,
+     "tokens_max": 34
+    },
+    "36aec72e-5086-376c-b109-295b128e77e1": {
+     "n": 36,
+     "median": 751.015,
+     "max": 813.58,
+     "over_1s": 0.0,
+     "tokens_median": 26.0,
+     "tokens_max": 33
+    },
+    "0fb7276f-ecb5-3e5b-87a8-cc74c709c715": {
+     "n": 36,
+     "median": 720.73,
+     "max": 802.35,
+     "over_1s": 0.0,
+     "tokens_median": 22.0,
+     "tokens_max": 31
+    },
+    "201fe83b-7dd7-38f4-9d26-7b4a668638a9": {
+     "n": 36,
+     "median": 766.1949999999999,
+     "max": 796.1,
+     "over_1s": 0.0,
+     "tokens_median": 28.0,
+     "tokens_max": 30
+    },
+    "25e5c600-36fe-3245-9cc0-40ef91620c22": {
+     "n": 36,
+     "median": 740.3900000000001,
+     "max": 851.57,
+     "over_1s": 0.0,
+     "tokens_median": 24.0,
+     "tokens_max": 36
+    },
+    "88f47a10-87b4-3ea8-a0c7-a07d825b647d": {
+     "n": 36,
+     "median": 715.4749999999999,
+     "max": 763.9,
+     "over_1s": 0.0,
+     "tokens_median": 22.0,
+     "tokens_max": 27
+    },
+    "b87683ae-14c5-321f-8af3-623e7bafc3a7": {
+     "n": 36,
+     "median": 697.9449999999999,
+     "max": 781.95,
+     "over_1s": 0.0,
+     "tokens_median": 21.0,
+     "tokens_max": 29
+    },
+    "92b900b1-ac4a-3d41-b118-e42c66382c91": {
+     "n": 36,
+     "median": 691.125,
+     "max": 786.15,
+     "over_1s": 0.0,
+     "tokens_median": 20.0,
+     "tokens_max": 30
+    },
+    "bdb9d309-f14b-3ff6-ad1f-5d3f3f95a13e": {
+     "n": 36,
+     "median": 705.065,
+     "max": 745.84,
+     "over_1s": 0.0,
+     "tokens_median": 21.0,
+     "tokens_max": 25
+    },
+    "a7636fca-4d9e-3052-bef2-af0ce5d1df74": {
+     "n": 36,
+     "median": 696.1700000000001,
+     "max": 737.81,
+     "over_1s": 0.0,
+     "tokens_median": 20.0,
+     "tokens_max": 24
+    },
+    "d46ff5df-95e8-32da-a0d7-87f7b976a959": {
+     "n": 36,
+     "median": 712.3199999999999,
+     "max": 765.23,
+     "over_1s": 0.0,
+     "tokens_median": 22.0,
+     "tokens_max": 27
+    },
+    "c8ec7be0-92aa-3222-946e-fbcf398c841e": {
+     "n": 36,
+     "median": 694.84,
+     "max": 766.4,
+     "over_1s": 0.0,
+     "tokens_median": 20.0,
+     "tokens_max": 27
+    }
+   },
+   "slowest": [
+    {
+     "log_id": "25e5c600-36fe-3245-9cc0-40ef91620c22",
+     "t0_us": 4100000,
+     "pass": 2,
+     "total_ms": 851.57,
+     "e2e_ms": 749.4055470451713,
+     "render_ms": 102.16,
+     "tokens": 36,
+     "images_vit": 14,
+     "temp_before": 63,
+     "stages_ms": {
+      "preprocess": 12.247712135314941,
+      "pre_gen": 0.5695359706878662,
+      "vision": 153.75990295410156,
+      "prefill_total": 337.4150390625,
+      "decode": 342.9525146484375,
+      "gen_tail": 0.02502400055527687,
+      "post_decode": 0.3805440068244934,
+      "expert": 53.673118591308594,
+      "traj": 1.2172800302505493,
+      "tail": 0.8497599959373474,
+      "gpu_total": 749.3671264648438,
+      "prefill_llm": 183.65513610839844
+     },
+     "cot": "Decelerate to a stop before the intersection to yield to oncoming traffic before turning left, as the traffic light is green but oncoming vehicles have the right of way."
+    },
+    {
+     "log_id": "0bae3b5e-417d-3b03-abaa-806b433233b8",
+     "t0_us": 9100000,
+     "pass": 2,
+     "total_ms": 819.22,
+     "e2e_ms": 725.9170989855193,
+     "render_ms": 93.31,
+     "tokens": 34,
+     "images_vit": 14,
+     "temp_before": 65,
+     "stages_ms": {
+      "preprocess": 12.293343544006348,
+      "pre_gen": 0.6019520163536072,
+      "vision": 150.83413696289062,
+      "prefill_total": 333.252685546875,
+      "decode": 323.7143859863281,
+      "gen_tail": 0.01913600042462349,
+      "post_decode": 0.38473600149154663,
+      "expert": 53.546783447265625,
+      "traj": 1.2218559980392456,
+      "tail": 0.8028479814529419,
+      "gpu_total": 725.8775024414062,
+      "prefill_llm": 182.41854858398438
+     },
+     "cot": "Decelerate to a stop before the intersection to yield to pedestrians crossing our path, while preparing to turn left to follow our route under the green traffic light."
+    },
+    {
+     "log_id": "36aec72e-5086-376c-b109-295b128e77e1",
+     "t0_us": 4100000,
+     "pass": 3,
+     "total_ms": 813.58,
+     "e2e_ms": 722.0250680111349,
+     "render_ms": 91.56,
+     "tokens": 33,
+     "images_vit": 14,
+     "temp_before": 69,
+     "stages_ms": {
+      "preprocess": 12.655360221862793,
+      "pre_gen": 0.6716799736022949,
+      "vision": 152.86146545410156,
+      "prefill_total": 335.593505859375,
+      "decode": 315.99664306640625,
+      "gen_tail": 0.024032000452280045,
+      "post_decode": 0.3811199963092804,
+      "expert": 54.567935943603516,
+      "traj": 1.2276159524917603,
+      "tail": 0.8284479975700378,
+      "gpu_total": 721.9839477539062,
+      "prefill_llm": 182.73204040527344
+     },
+     "cot": "Wait in queue behind the stationary lead vehicle to follow our route straight through the intersection, as the traffic signal is green but the lead vehicle has not yet moved."
+    },
+    {
+     "log_id": "0fb7276f-ecb5-3e5b-87a8-cc74c709c715",
+     "t0_us": 4100000,
+     "pass": 3,
+     "total_ms": 802.35,
+     "e2e_ms": 700.7181809749454,
+     "render_ms": 101.63,
+     "tokens": 31,
+     "images_vit": 14,
+     "temp_before": 72,
+     "stages_ms": {
+      "preprocess": 12.32652759552002,
+      "pre_gen": 0.5734720230102539,
+      "vision": 152.30677795410156,
+      "prefill_total": 336.8174743652344,
+      "decode": 295.0176086425781,
+      "gen_tail": 0.024480000138282776,
+      "post_decode": 0.38998401165008545,
+      "expert": 53.439231872558594,
+      "traj": 1.2318400144577026,
+      "tail": 0.8207359910011292,
+      "gpu_total": 700.6803588867188,
+      "prefill_llm": 184.5106964111328
+     },
+     "cot": "Accelerate and steer left into the opposing lane to overtake the stationary delivery truck obstructing our lane, as the oncoming lane has cleared."
+    },
+    {
+     "log_id": "0bae3b5e-417d-3b03-abaa-806b433233b8",
+     "t0_us": 12100000,
+     "pass": 3,
+     "total_ms": 800.15,
+     "e2e_ms": 704.6727390261367,
+     "render_ms": 95.48,
+     "tokens": 31,
+     "images_vit": 14,
+     "temp_before": 68,
+     "stages_ms": {
+      "preprocess": 12.401472091674805,
+      "pre_gen": 0.6499519944190979,
+      "vision": 153.5629119873047,
+      "prefill_total": 339.76800537109375,
+      "decode": 296.39801025390625,
+      "gen_tail": 0.02534399926662445,
+      "post_decode": 0.39392000436782837,
+      "expert": 52.834144592285156,
+      "traj": 1.2625600099563599,
+      "tail": 0.860256016254425,
+      "gpu_total": 704.63134765625,
+      "prefill_llm": 186.20509338378906
+     },
+     "cot": "Proceed with the left turn through the intersection to follow our route, as the crossing pedestrians have cleared our path and the traffic light remains green."
+    }
+   ],
+   "top_residual": [
+    {
+     "log_id": "d46ff5df-95e8-32da-a0d7-87f7b976a959",
+     "t0_us": 8100000,
+     "pass": 3,
+     "e2e_ms": 572.7789480006322,
+     "residual_ms": 7.043978711588352,
+     "tokens": 16,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.66755199432373,
+      "pre_gen": 0.6971520185470581,
+      "vision": 154.28192138671875,
+      "prefill_total": 343.060302734375,
+      "decode": 159.3916778564453,
+      "gen_tail": 0.023296000435948372,
+      "post_decode": 0.37884798645973206,
+      "expert": 54.3950080871582,
+      "traj": 1.2772159576416016,
+      "tail": 0.8127040266990662,
+      "gpu_total": 572.7421264648438,
+      "prefill_llm": 188.77838134765625
+     }
+    },
+    {
+     "log_id": "25e5c600-36fe-3245-9cc0-40ef91620c22",
+     "t0_us": 5100000,
+     "pass": 3,
+     "e2e_ms": 646.0132719948888,
+     "residual_ms": 6.986147005723524,
+     "tokens": 24,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.020447731018066,
+      "pre_gen": 0.5575039982795715,
+      "vision": 153.2196807861328,
+      "prefill_total": 344.3009948730469,
+      "decode": 232.95724487304688,
+      "gen_tail": 0.029472000896930695,
+      "post_decode": 0.3941119909286499,
+      "expert": 53.56675338745117,
+      "traj": 1.258080005645752,
+      "tail": 0.8510079979896545,
+      "gpu_total": 645.975830078125,
+      "prefill_llm": 191.08131408691406
+     }
+    },
+    {
+     "log_id": "a7636fca-4d9e-3052-bef2-af0ce5d1df74",
+     "t0_us": 9100000,
+     "pass": 2,
+     "e2e_ms": 598.6337289796211,
+     "residual_ms": 5.414201303031632,
+     "tokens": 19,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 13.160703659057617,
+      "pre_gen": 0.6672319769859314,
+      "vision": 156.67724609375,
+      "prefill_total": 341.42547607421875,
+      "decode": 187.2169647216797,
+      "gen_tail": 0.023711999878287315,
+      "post_decode": 0.36771199107170105,
+      "expert": 53.601600646972656,
+      "traj": 1.2737280130386353,
+      "tail": 0.8208640217781067,
+      "gpu_total": 598.5963745117188,
+      "prefill_llm": 184.74822998046875
+     }
+    },
+    {
+     "log_id": "a7636fca-4d9e-3052-bef2-af0ce5d1df74",
+     "t0_us": 8100000,
+     "pass": 1,
+     "e2e_ms": 607.756603974849,
+     "residual_ms": 5.375556835744419,
+     "tokens": 20,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.36070442199707,
+      "pre_gen": 0.5779839754104614,
+      "vision": 157.01087951660156,
+      "prefill_total": 341.808837890625,
+      "decode": 195.81590270996094,
+      "gen_tail": 0.027008000761270523,
+      "post_decode": 0.43353599309921265,
+      "expert": 54.614017486572266,
+      "traj": 1.2269439697265625,
+      "tail": 0.7996799945831299,
+      "gpu_total": 607.7198486328125,
+      "prefill_llm": 184.79795837402344
+     }
+    },
+    {
+     "log_id": "d46ff5df-95e8-32da-a0d7-87f7b976a959",
+     "t0_us": 5100000,
+     "pass": 3,
+     "e2e_ms": 607.6304079615511,
+     "residual_ms": 5.249360822446533,
+     "tokens": 20,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.495903968811035,
+      "pre_gen": 0.6283199787139893,
+      "vision": 154.31878662109375,
+      "prefill_total": 340.98687744140625,
+      "decode": 196.62924194335938,
+      "gen_tail": 0.021247999742627144,
+      "post_decode": 0.3548159897327423,
+      "expert": 54.4692497253418,
+      "traj": 1.2188479900360107,
+      "tail": 0.7495359778404236,
+      "gpu_total": 607.5928344726562,
+      "prefill_llm": 186.6680908203125
+     }
+    }
+   ],
+   "render_ms": {
+    "median": 94.39,
+    "p90": 99.229,
+    "max": 105.23,
+    "over_1s": 0.0
+   },
+   "e2e_ms": {
+    "median": 620.6549485214055,
+    "p90": 672.5535104051232,
+    "max": 749.4055470451713,
+    "over_1s": 0.0
+   }
+  },
+  "F1_pgcv": {
+   "complete": true,
+   "n": 432,
+   "n_logs": 12,
+   "metric": "total_ms",
+   "median": 849.435,
+   "p90": 941.043,
+   "max": 1077.25,
+   "over_1s": 0.013888888888888888,
+   "tokens_median": 22.0,
+   "tokens_max": 36,
+   "fit_intercept_ms": 416.41113786360154,
+   "fit_ms_per_token": 15.432467267132477,
+   "per_log": {
+    "0bae3b5e-417d-3b03-abaa-806b433233b8": {
+     "n": 36,
+     "median": 877.02,
+     "max": 1063.63,
+     "over_1s": 0.05555555555555555,
+     "tokens_median": 24.0,
+     "tokens_max": 36
+    },
+    "36aec72e-5086-376c-b109-295b128e77e1": {
+     "n": 36,
+     "median": 911.02,
+     "max": 1022.49,
+     "over_1s": 0.027777777777777776,
+     "tokens_median": 26.0,
+     "tokens_max": 33
+    },
+    "0fb7276f-ecb5-3e5b-87a8-cc74c709c715": {
+     "n": 36,
+     "median": 860.735,
+     "max": 993.74,
+     "over_1s": 0.0,
+     "tokens_median": 22.5,
+     "tokens_max": 31
+    },
+    "201fe83b-7dd7-38f4-9d26-7b4a668638a9": {
+     "n": 36,
+     "median": 933.215,
+     "max": 979.4,
+     "over_1s": 0.0,
+     "tokens_median": 28.0,
+     "tokens_max": 30
+    },
+    "25e5c600-36fe-3245-9cc0-40ef91620c22": {
+     "n": 36,
+     "median": 889.995,
+     "max": 1077.25,
+     "over_1s": 0.027777777777777776,
+     "tokens_median": 24.0,
+     "tokens_max": 36
+    },
+    "88f47a10-87b4-3ea8-a0c7-a07d825b647d": {
+     "n": 36,
+     "median": 855.635,
+     "max": 893.32,
+     "over_1s": 0.0,
+     "tokens_median": 22.5,
+     "tokens_max": 25
+    },
+    "b87683ae-14c5-321f-8af3-623e7bafc3a7": {
+     "n": 36,
+     "median": 834.5999999999999,
+     "max": 961.57,
+     "over_1s": 0.0,
+     "tokens_median": 21.0,
+     "tokens_max": 29
+    },
+    "92b900b1-ac4a-3d41-b118-e42c66382c91": {
+     "n": 36,
+     "median": 821.16,
+     "max": 972.97,
+     "over_1s": 0.0,
+     "tokens_median": 20.0,
+     "tokens_max": 30
+    },
+    "bdb9d309-f14b-3ff6-ad1f-5d3f3f95a13e": {
+     "n": 36,
+     "median": 797.52,
+     "max": 895.41,
+     "over_1s": 0.0,
+     "tokens_median": 18.5,
+     "tokens_max": 25
+    },
+    "a7636fca-4d9e-3052-bef2-af0ce5d1df74": {
+     "n": 36,
+     "median": 817.65,
+     "max": 1053.06,
+     "over_1s": 0.027777777777777776,
+     "tokens_median": 20.0,
+     "tokens_max": 35
+    },
+    "d46ff5df-95e8-32da-a0d7-87f7b976a959": {
+     "n": 36,
+     "median": 848.025,
+     "max": 927.63,
+     "over_1s": 0.0,
+     "tokens_median": 22.0,
+     "tokens_max": 27
+    },
+    "c8ec7be0-92aa-3222-946e-fbcf398c841e": {
+     "n": 36,
+     "median": 788.3050000000001,
+     "max": 1033.33,
+     "over_1s": 0.027777777777777776,
+     "tokens_median": 18.0,
+     "tokens_max": 34
+    }
+   },
+   "slowest": [
+    {
+     "log_id": "25e5c600-36fe-3245-9cc0-40ef91620c22",
+     "t0_us": 4100000,
+     "pass": 2,
+     "total_ms": 1077.25,
+     "e2e_ms": 974.9029100057669,
+     "render_ms": 102.35,
+     "tokens": 36,
+     "images_vit": 14,
+     "temp_before": 67,
+     "stages_ms": {
+      "preprocess": 12.575200080871582,
+      "pre_gen": 0.6255679726600647,
+      "vision": 152.1472930908203,
+      "prefill_total": 334.3921813964844,
+      "decode": 572.888427734375,
+      "gen_tail": 0.02473600022494793,
+      "post_decode": 0.38441601395606995,
+      "expert": 51.878719329833984,
+      "traj": 1.269055962562561,
+      "tail": 0.7909759879112244,
+      "gpu_total": 974.8663330078125,
+      "prefill_llm": 182.24488830566406
+     },
+     "cot": "Decelerate to a stop before the intersection to yield to oncoming traffic before turning left, as the traffic light is green but oncoming vehicles have the right of way."
+    },
+    {
+     "log_id": "0bae3b5e-417d-3b03-abaa-806b433233b8",
+     "t0_us": 8100000,
+     "pass": 3,
+     "total_ms": 1063.63,
+     "e2e_ms": 969.7998180054128,
+     "render_ms": 93.83,
+     "tokens": 36,
+     "images_vit": 14,
+     "temp_before": 63,
+     "stages_ms": {
+      "preprocess": 12.621952056884766,
+      "pre_gen": 0.6632639765739441,
+      "vision": 149.943359375,
+      "prefill_total": 329.1932373046875,
+      "decode": 573.0851440429688,
+      "gen_tail": 0.02534399926662445,
+      "post_decode": 0.39769598841667175,
+      "expert": 51.69472122192383,
+      "traj": 1.2663040161132812,
+      "tail": 0.7745599746704102,
+      "gpu_total": 969.7593994140625,
+      "prefill_llm": 179.2498779296875
+     },
+     "cot": "Brake to a stop to yield to the pedestrian crossing in the crosswalk ahead, but prepare to turn left at the intersection under the green traffic light to follow our route."
+    },
+    {
+     "log_id": "a7636fca-4d9e-3052-bef2-af0ce5d1df74",
+     "t0_us": 8100000,
+     "pass": 2,
+     "total_ms": 1053.06,
+     "e2e_ms": 955.4721650201827,
+     "render_ms": 97.59,
+     "tokens": 35,
+     "images_vit": 14,
+     "temp_before": 69,
+     "stages_ms": {
+      "preprocess": 12.58672046661377,
+      "pre_gen": 0.6793919801712036,
+      "vision": 148.71347045898438,
+      "prefill_total": 326.5159912109375,
+      "decode": 561.2257080078125,
+      "gen_tail": 0.027135999873280525,
+      "post_decode": 0.3943679928779602,
+      "expert": 51.84473419189453,
+      "traj": 1.279263973236084,
+      "tail": 0.8425279855728149,
+      "gpu_total": 955.4346313476562,
+      "prefill_llm": 177.80252075195312
+     },
+     "cot": "Decelerate while approaching the intersection to prepare for a right turn to follow our route, as the traffic light is green but an oncoming vehicle is crossing our path."
+    },
+    {
+     "log_id": "c8ec7be0-92aa-3222-946e-fbcf398c841e",
+     "t0_us": 9100000,
+     "pass": 3,
+     "total_ms": 1033.33,
+     "e2e_ms": 942.225581035018,
+     "render_ms": 91.1,
+     "tokens": 34,
+     "images_vit": 14,
+     "temp_before": 69,
+     "stages_ms": {
+      "preprocess": 12.43712043762207,
+      "pre_gen": 0.5978879928588867,
+      "vision": 147.8934326171875,
+      "prefill_total": 328.2984924316406,
+      "decode": 543.7589111328125,
+      "gen_tail": 0.02534399926662445,
+      "post_decode": 0.38576000928878784,
+      "expert": 54.577537536621094,
+      "traj": 1.2253119945526123,
+      "tail": 0.8449280261993408,
+      "gpu_total": 942.1889038085938,
+      "prefill_llm": 180.40505981445312
+     },
+     "cot": "Brake firmly to yield to the minivan cutting into our lane from the right, but maintain our plan to proceed straight under the green light to follow our route."
+    },
+    {
+     "log_id": "0bae3b5e-417d-3b03-abaa-806b433233b8",
+     "t0_us": 9100000,
+     "pass": 2,
+     "total_ms": 1023.46,
+     "e2e_ms": 925.8041930152103,
+     "render_ms": 97.65,
+     "tokens": 33,
+     "images_vit": 14,
+     "temp_before": 64,
+     "stages_ms": {
+      "preprocess": 12.734560012817383,
+      "pre_gen": 0.6479359865188599,
+      "vision": 152.72940063476562,
+      "prefill_total": 329.6681823730469,
+      "decode": 528.0806884765625,
+      "gen_tail": 0.02796800062060356,
+      "post_decode": 0.4105280041694641,
+      "expert": 52.021278381347656,
+      "traj": 1.2832319736480713,
+      "tail": 0.8497599959373474,
+      "gpu_total": 925.7650146484375,
+      "prefill_llm": 176.93878173828125
+     },
+     "cot": "Decelerate to a stop before the intersection to yield to pedestrians crossing our path, while preparing to turn left to follow our route under the green light."
+    }
+   ],
+   "top_residual": [
+    {
+     "log_id": "88f47a10-87b4-3ea8-a0c7-a07d825b647d",
+     "t0_us": 14100000,
+     "pass": 3,
+     "e2e_ms": 748.2571449945681,
+     "residual_ms": 7.76419452118455,
+     "tokens": 21,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.659392356872559,
+      "pre_gen": 0.6956160068511963,
+      "vision": 151.74298095703125,
+      "prefill_total": 335.4378662109375,
+      "decode": 345.1116943359375,
+      "gen_tail": 0.025855999439954758,
+      "post_decode": 0.40435200929641724,
+      "expert": 51.67375946044922,
+      "traj": 1.2912640571594238,
+      "tail": 0.8797119855880737,
+      "gpu_total": 748.2179565429688,
+      "prefill_llm": 183.69488525390625
+     }
+    },
+    {
+     "log_id": "88f47a10-87b4-3ea8-a0c7-a07d825b647d",
+     "t0_us": 7100000,
+     "pass": 2,
+     "e2e_ms": 794.2210559849627,
+     "residual_ms": 7.430703710181774,
+     "tokens": 24,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.453727722167969,
+      "pre_gen": 0.6074560284614563,
+      "vision": 151.19024658203125,
+      "prefill_total": 332.0987548828125,
+      "decode": 392.907958984375,
+      "gen_tail": 0.02582399919629097,
+      "post_decode": 0.39206400513648987,
+      "expert": 53.62284851074219,
+      "traj": 1.2199679613113403,
+      "tail": 0.818560004234314,
+      "gpu_total": 794.1845092773438,
+      "prefill_llm": 180.90850830078125
+     }
+    },
+    {
+     "log_id": "b87683ae-14c5-321f-8af3-623e7bafc3a7",
+     "t0_us": 5100000,
+     "pass": 2,
+     "e2e_ms": 762.1323950006627,
+     "residual_ms": 6.206977260146687,
+     "tokens": 22,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.228063583374023,
+      "pre_gen": 0.5783680081367493,
+      "vision": 151.96438598632812,
+      "prefill_total": 332.0934143066406,
+      "decode": 361.9621887207031,
+      "gen_tail": 0.02537599951028824,
+      "post_decode": 0.3694080114364624,
+      "expert": 52.754783630371094,
+      "traj": 1.2205760478973389,
+      "tail": 0.8282560110092163,
+      "gpu_total": 762.0980224609375,
+      "prefill_llm": 180.1290283203125
+     }
+    },
+    {
+     "log_id": "d46ff5df-95e8-32da-a0d7-87f7b976a959",
+     "t0_us": 4100000,
+     "pass": 2,
+     "e2e_ms": 715.0190559914336,
+     "residual_ms": 5.39104005231502,
+     "tokens": 19,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.599616050720215,
+      "pre_gen": 0.6173120141029358,
+      "vision": 150.59190368652344,
+      "prefill_total": 330.39337158203125,
+      "decode": 315.6661071777344,
+      "gen_tail": 0.023104000836610794,
+      "post_decode": 0.39449599385261536,
+      "expert": 53.271583557128906,
+      "traj": 1.210047960281372,
+      "tail": 0.773855984210968,
+      "gpu_total": 714.985107421875,
+      "prefill_llm": 179.8014678955078
+     }
+    },
+    {
+     "log_id": "d46ff5df-95e8-32da-a0d7-87f7b976a959",
+     "t0_us": 5100000,
+     "pass": 3,
+     "e2e_ms": 730.3118490381166,
+     "residual_ms": 5.251365831865542,
+     "tokens": 20,
+     "images_vit": 14,
+     "stages_ms": {
+      "preprocess": 12.377344131469727,
+      "pre_gen": 0.6123200058937073,
+      "vision": 149.53497314453125,
+      "prefill_total": 332.0195617675781,
+      "decode": 328.92877197265625,
+      "gen_tail": 0.02534399926662445,
+      "post_decode": 0.38576000928878784,
+      "expert": 53.749664306640625,
+      "traj": 1.2571519613265991,
+      "tail": 0.8810240030288696,
+      "gpu_total": 730.2756958007812,
+      "prefill_llm": 182.48458862304688
+     }
+    }
+   ],
+   "render_ms": {
+    "median": 93.91,
+    "p90": 98.792,
+    "max": 105.95,
+    "over_1s": 0.0
+   },
+   "e2e_ms": {
+    "median": 755.7213725231122,
+    "p90": 847.5797820254229,
+    "max": 974.9029100057669,
+    "over_1s": 0.0
+   }
+  }
+ }
+}

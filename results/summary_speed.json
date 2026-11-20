@@ -1,0 +1,1092 @@
+{
+ "single": {
+  "A_compile_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 2010.5747835186776,
+   "q25": 1974.9451289972058,
+   "q75": 2174.0965297212824,
+   "min": 1899.727176001761,
+   "max": 2295.170510013122,
+   "first": 31472.47077099746,
+   "stages": {
+    "preprocess": 1075.3963623046875,
+    "vision": 315.4465789794922,
+    "prefill_llm": 176.00125122070312,
+    "decode": 388.93580627441406,
+    "expert": 52.432464599609375,
+    "traj": 1.2679679989814758
+   },
+   "ms_per_token": 21.607544793023003,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "A_compile_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 2027.5817810324952,
+   "q25": 1963.4496752551058,
+   "q75": 2082.0885722496314,
+   "min": 1932.1794349816628,
+   "max": 2196.9779419596307,
+   "first": 9209.650484030135,
+   "stages": {
+    "preprocess": 1067.6552124023438,
+    "vision": 315.7434387207031,
+    "prefill_llm": 176.009521484375,
+    "decode": 410.78480529785156,
+    "expert": 52.82126426696777,
+    "traj": 1.250768005847931
+   },
+   "ms_per_token": 21.62025291041324,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "A_off_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 2524.2155304877087,
+   "q25": 2448.6141609959304,
+   "q75": 2545.0895702379057,
+   "min": 2396.316147991456,
+   "max": 2643.090402998496,
+   "first": 3998.827784031164,
+   "stages": {
+    "preprocess": 1075.721435546875,
+    "vision": 317.54527282714844,
+    "prefill_llm": 314.44395446777344,
+    "decode": 502.24974060058594,
+    "expert": 312.6836242675781,
+    "traj": 1.2714239954948425
+   },
+   "ms_per_token": 27.90276336669922,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "A_off_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 2543.3938979986124,
+   "q25": 2532.5797977420734,
+   "q75": 2561.2086945038754,
+   "min": 2444.7281179600395,
+   "max": 2652.382244996261,
+   "first": 3842.6401190226898,
+   "stages": {
+    "preprocess": 1069.6824951171875,
+    "vision": 316.6688232421875,
+    "prefill_llm": 315.20945739746094,
+    "decode": 529.0311889648438,
+    "expert": 308.7690124511719,
+    "traj": 1.2785120010375977
+   },
+   "ms_per_token": 27.843746787623356,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "A_tuned_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 1927.3183234909084,
+   "q25": 1842.6283822773257,
+   "q75": 2090.1979624904925,
+   "min": 1828.689641028177,
+   "max": 2204.2024740367197,
+   "first": 46579.2630109936,
+   "stages": {
+    "preprocess": 1081.1858520507812,
+    "vision": 319.56837463378906,
+    "prefill_llm": 175.2325439453125,
+    "decode": 296.39434814453125,
+    "expert": 52.112640380859375,
+    "traj": 1.2586399912834167
+   },
+   "ms_per_token": 16.466352674696182,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "A_tuned_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 1942.8828610107303,
+   "q25": 1918.3470884890994,
+   "q75": 2023.427063220879,
+   "min": 1834.7326110233553,
+   "max": 2122.4589070188813,
+   "first": 15843.306524970103,
+   "stages": {
+    "preprocess": 1082.8655395507812,
+    "vision": 316.91966247558594,
+    "prefill_llm": 175.48712158203125,
+    "decode": 313.8929443359375,
+    "expert": 52.226993560791016,
+    "traj": 1.236847996711731
+   },
+   "ms_per_token": 16.520681280838815,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "B_p_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 932.3202560190111,
+   "q25": 929.1236375138396,
+   "q75": 934.2329099890776,
+   "min": 919.8962989612482,
+   "max": 954.5879089855589,
+   "first": 10107.988864998333,
+   "stages": {
+    "preprocess": 81.72315216064453,
+    "vision": 317.8863220214844,
+    "prefill_llm": 176.2471923828125,
+    "decode": 298.95635986328125,
+    "expert": 52.567440032958984,
+    "traj": 1.2551999688148499
+   },
+   "ms_per_token": 16.608686659071182,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "B_p_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 947.9770004982129,
+   "q25": 943.0977717565838,
+   "q75": 951.9436372356722,
+   "min": 934.6662050229497,
+   "max": 960.9630909981206,
+   "first": 10581.598787975963,
+   "stages": {
+    "preprocess": 82.85848236083984,
+    "vision": 317.2933654785156,
+    "prefill_llm": 175.60675048828125,
+    "decode": 314.2102355957031,
+    "expert": 52.957584381103516,
+    "traj": 1.2625920176506042
+   },
+   "ms_per_token": 16.53738082082648,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "B_pg_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 865.2349339972716,
+   "q25": 863.4567057451932,
+   "q75": 866.3235520216404,
+   "min": 861.0192449996248,
+   "max": 888.2686430006288,
+   "first": 8707.120499981102,
+   "stages": {
+    "preprocess": 17.245487213134766,
+    "vision": 317.71783447265625,
+    "prefill_llm": 176.1145782470703,
+    "decode": 298.0860595703125,
+    "expert": 52.45123100280762,
+    "traj": 1.2552319765090942
+   },
+   "ms_per_token": 16.56033664279514,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "B_pg_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 879.3390185164753,
+   "q25": 877.9681339801755,
+   "q75": 880.9930329880444,
+   "min": 874.0315879695117,
+   "max": 899.5729869930074,
+   "first": 8068.34349501878,
+   "stages": {
+    "preprocess": 17.679471969604492,
+    "vision": 317.26634216308594,
+    "prefill_llm": 175.00140380859375,
+    "decode": 313.1407775878906,
+    "expert": 52.21760177612305,
+    "traj": 1.2450560331344604
+   },
+   "ms_per_token": 16.481093557257402,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "B_pgc_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 865.2113585267216,
+   "q25": 864.5042309944984,
+   "q75": 868.95301550976,
+   "min": 859.6348380087875,
+   "max": 883.8130080257542,
+   "first": 7954.424918978475,
+   "stages": {
+    "preprocess": 17.464431762695312,
+    "vision": 317.95782470703125,
+    "prefill_llm": 175.99163818359375,
+    "decode": 298.71568298339844,
+    "expert": 52.43655967712402,
+    "traj": 1.2534239888191223
+   },
+   "ms_per_token": 16.59531572129991,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "B_pgc_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 881.1662964872085,
+   "q25": 879.486699210247,
+   "q75": 884.7677435260266,
+   "min": 877.0518159726635,
+   "max": 901.224736997392,
+   "first": 8185.594514012337,
+   "stages": {
+    "preprocess": 17.25166416168213,
+    "vision": 318.6694641113281,
+    "prefill_llm": 176.58421325683594,
+    "decode": 313.90382385253906,
+    "expert": 52.43592071533203,
+    "traj": 1.2395679950714111
+   },
+   "ms_per_token": 16.52125388697574,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "B_pgcv_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 790.0633280223701,
+   "q25": 788.6813465302112,
+   "q75": 791.757245970075,
+   "min": 786.8236209615134,
+   "max": 795.0120570021681,
+   "first": 22262.75087002432,
+   "stages": {
+    "preprocess": 17.392000198364258,
+    "vision": 241.20061492919922,
+    "prefill_llm": 176.2557373046875,
+    "decode": 298.7021484375,
+    "expert": 52.2086238861084,
+    "traj": 1.251263976097107
+   },
+   "ms_per_token": 16.594563802083332,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "B_pgcv_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 803.2867050205823,
+   "q25": 802.2930422303034,
+   "q75": 804.5500982552767,
+   "min": 799.8952780035324,
+   "max": 814.3250469584018,
+   "first": 10542.644613015,
+   "stages": {
+    "preprocess": 17.546496391296387,
+    "vision": 241.64733123779297,
+    "prefill_llm": 174.2717514038086,
+    "decode": 314.1376495361328,
+    "expert": 52.351423263549805,
+    "traj": 1.2655680179595947
+   },
+   "ms_per_token": 16.53356050190173,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "B_pgv_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 787.8856314928271,
+   "q25": 786.2076349993004,
+   "q75": 789.2132257547928,
+   "min": 783.2490479922853,
+   "max": 795.943601988256,
+   "first": 10584.322053007782,
+   "stages": {
+    "preprocess": 17.688223838806152,
+    "vision": 240.9030990600586,
+    "prefill_llm": 175.33539581298828,
+    "decode": 297.78369140625,
+    "expert": 52.20350456237793,
+    "traj": 1.266767978668213
+   },
+   "ms_per_token": 16.543538411458332,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "B_pgv_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 803.0329975008499,
+   "q25": 801.9138669624226,
+   "q75": 806.1737077514408,
+   "min": 800.4936730139889,
+   "max": 816.905438026879,
+   "first": 10365.57027103845,
+   "stages": {
+    "preprocess": 17.59556770324707,
+    "vision": 240.67152404785156,
+    "prefill_llm": 175.54618072509766,
+    "decode": 314.0421447753906,
+    "expert": 52.59931182861328,
+    "traj": 1.2528640031814575
+   },
+   "ms_per_token": 16.528533935546875,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "C_all_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 677.5876289757434,
+   "q25": 674.7438019810943,
+   "q75": 679.7070492029889,
+   "min": 670.5868730205111,
+   "max": 687.5510370009579,
+   "first": 18313.721448008437,
+   "stages": {
+    "preprocess": 17.851744651794434,
+    "vision": 242.46302032470703,
+    "prefill_llm": 178.70723724365234,
+    "decode": 180.19529724121094,
+    "expert": 53.91377639770508,
+    "traj": 1.2623519897460938
+   },
+   "ms_per_token": 10.01084984673394,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "C_all_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 683.5845940222498,
+   "q25": 683.2492662506411,
+   "q75": 685.4125872341683,
+   "min": 679.758584999945,
+   "max": 692.2228200128302,
+   "first": 13153.263424988836,
+   "stages": {
+    "preprocess": 17.63689613342285,
+    "vision": 243.37493896484375,
+    "prefill_llm": 177.72000122070312,
+    "decode": 188.31332397460938,
+    "expert": 53.649871826171875,
+    "traj": 1.24481600522995
+   },
+   "ms_per_token": 9.91122757761102,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "C_body_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 695.3414109884761,
+   "q25": 691.4867402520031,
+   "q75": 697.1668957557995,
+   "min": 689.5692750113085,
+   "max": 707.5216469820589,
+   "first": 21576.092057977803,
+   "stages": {
+    "preprocess": 17.795727729797363,
+    "vision": 242.66177368164062,
+    "prefill_llm": 178.41612243652344,
+    "decode": 199.3303680419922,
+    "expert": 53.49881553649902,
+    "traj": 1.2716320157051086
+   },
+   "ms_per_token": 11.073909335666233,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "C_body_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 704.3383870040998,
+   "q25": 702.7593809762038,
+   "q75": 705.7887677801773,
+   "min": 698.4563799924217,
+   "max": 709.7312420373783,
+   "first": 14083.420206035953,
+   "stages": {
+    "preprocess": 17.585071563720703,
+    "vision": 242.4999237060547,
+    "prefill_llm": 177.61104583740234,
+    "decode": 208.96753692626953,
+    "expert": 53.08113479614258,
+    "traj": 1.2613279819488525
+   },
+   "ms_per_token": 10.99829141717208,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "C_head_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 770.4674995038658,
+   "q25": 768.2359390164493,
+   "q75": 771.6641610313673,
+   "min": 765.3535960125737,
+   "max": 773.2180780149065,
+   "first": 24613.51401999127,
+   "stages": {
+    "preprocess": 17.677824020385742,
+    "vision": 241.00846099853516,
+    "prefill_llm": 177.3064422607422,
+    "decode": 277.8920593261719,
+    "expert": 52.2412166595459,
+    "traj": 1.2719680070877075
+   },
+   "ms_per_token": 15.438447740342882,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "C_head_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 782.7726034738589,
+   "q25": 780.6502157473005,
+   "q75": 784.3998080206802,
+   "min": 777.7766360086389,
+   "max": 795.6158320303075,
+   "first": 17415.35288997693,
+   "stages": {
+    "preprocess": 17.45451259613037,
+    "vision": 241.00936126708984,
+    "prefill_llm": 176.33068084716797,
+    "decode": 292.8872985839844,
+    "expert": 51.23054313659668,
+    "traj": 1.258192002773285
+   },
+   "ms_per_token": 15.41512097810444,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  }
+ },
+ "stream": {
+  "S10_all": {
+   "n": 595,
+   "images_vit": 6,
+   "e2e_median": 484.16257300414145,
+   "p10": 364.2674038070254,
+   "p90": 519.1652788198554,
+   "max": 591.6749850148335,
+   "frac_over_1s": 0.0,
+   "reason_n": 427,
+   "reason_median": 487.65006504254416,
+   "reason_over_1s": 0.0,
+   "nominal_n": 168,
+   "nominal_median": 364.9384500167798,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    568.0242140078917,
+    565.0048319948837,
+    567.2413830179721,
+    567.50500400085,
+    564.9874180089682
+   ],
+   "stages": {
+    "preprocess": 8.827199935913086,
+    "vision": 51.71033477783203,
+    "prefill_llm": 179.57373046875,
+    "decode": 188.0116424560547,
+    "expert": 53.529598236083984,
+    "traj": 1.2829439640045166
+   },
+   "tokens_median": 19,
+   "tokens_p90": 22.600000000000023,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 138,
+    "n_rendered": 908,
+    "prepare_s": 30.5,
+    "render_ms_median": 28.21,
+    "render_ms_p90": 37.4
+   }
+  },
+  "S10_body": {
+   "n": 595,
+   "images_vit": 6,
+   "e2e_median": 503.888140025083,
+   "p10": 373.0652489932254,
+   "p90": 539.5035797962919,
+   "max": 624.5935519691557,
+   "frac_over_1s": 0.0,
+   "reason_n": 425,
+   "reason_median": 508.5199280292727,
+   "reason_over_1s": 0.0,
+   "nominal_n": 170,
+   "nominal_median": 373.78924450604245,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    572.9939899756573,
+    576.6844659810886,
+    578.7908709608018,
+    575.0559010193683,
+    578.4828669857234
+   ],
+   "stages": {
+    "preprocess": 8.844287872314453,
+    "vision": 51.68956756591797,
+    "prefill_llm": 180.7327003479004,
+    "decode": 207.50962829589844,
+    "expert": 53.48543930053711,
+    "traj": 1.2787840366363525
+   },
+   "tokens_median": 19,
+   "tokens_p90": 22.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 138,
+    "n_rendered": 908,
+    "prepare_s": 30.02,
+    "render_ms_median": 27.8,
+    "render_ms_p90": 37.0
+   }
+  },
+  "S10_p": {
+   "n": 119,
+   "images_vit": 22,
+   "e2e_median": 941.5717519586906,
+   "p10": 747.1224989974871,
+   "p90": 986.3898754236288,
+   "max": 1111.260014004074,
+   "frac_over_1s": 0.01680672268907563,
+   "reason_n": 92,
+   "reason_median": 952.4187085335143,
+   "reason_over_1s": 0.021739130434782608,
+   "nominal_n": 27,
+   "nominal_median": 749.1047829971649,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    750.4661079728976
+   ],
+   "stages": {
+    "preprocess": 84.34435272216797,
+    "vision": 320.1583251953125,
+    "prefill_llm": 177.01791381835938,
+    "decode": 299.40087890625,
+    "expert": 52.177791595458984,
+    "traj": 1.2557439804077148
+   },
+   "tokens_median": 18,
+   "tokens_p90": 21.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 138,
+    "n_rendered": 908,
+    "prepare_s": 30.31,
+    "render_ms_median": 28.04,
+    "render_ms_p90": 37.21
+   }
+  },
+  "S10_pg": {
+   "n": 238,
+   "images_vit": 22.0,
+   "e2e_median": 880.2543620113283,
+   "p10": 681.1090041010175,
+   "p90": 914.0544712950941,
+   "max": 1053.4111839951947,
+   "frac_over_1s": 0.004201680672268907,
+   "reason_n": 177,
+   "reason_median": 883.0502310302109,
+   "reason_over_1s": 0.005649717514124294,
+   "nominal_n": 61,
+   "nominal_median": 681.936003966257,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    675.4711320390925,
+    678.1239099800587
+   ],
+   "stages": {
+    "preprocess": 17.679183959960938,
+    "vision": 318.6916046142578,
+    "prefill_llm": 176.9776153564453,
+    "decode": 312.27015686035156,
+    "expert": 52.27908706665039,
+    "traj": 1.2514240145683289
+   },
+   "tokens_median": 19.0,
+   "tokens_p90": 21.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 138,
+    "n_rendered": 908,
+    "prepare_s": 30.16,
+    "render_ms_median": 27.62,
+    "render_ms_p90": 36.94
+   }
+  },
+  "S10_pgc": {
+   "n": 238,
+   "images_vit": 6.0,
+   "e2e_median": 625.2816175110638,
+   "p10": 426.575210201554,
+   "p90": 659.199845418334,
+   "max": 793.1457700324245,
+   "frac_over_1s": 0.0,
+   "reason_n": 177,
+   "reason_median": 628.7570820422843,
+   "reason_over_1s": 0.0,
+   "nominal_n": 61,
+   "nominal_median": 426.9926340202801,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    683.2415930111893,
+    687.8367550089024
+   ],
+   "stages": {
+    "preprocess": 8.62663984298706,
+    "vision": 74.19392013549805,
+    "prefill_llm": 176.0536994934082,
+    "decode": 312.1751403808594,
+    "expert": 52.25774383544922,
+    "traj": 1.2673279643058777
+   },
+   "tokens_median": 19.0,
+   "tokens_p90": 21.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 138,
+    "n_rendered": 908,
+    "prepare_s": 30.43,
+    "render_ms_median": 28.06,
+    "render_ms_p90": 37.57
+   }
+  },
+  "S10_pgcv": {
+   "n": 595,
+   "images_vit": 6,
+   "e2e_median": 598.4199619852006,
+   "p10": 407.5797954108566,
+   "p90": 663.0341289914214,
+   "max": 783.4261740208603,
+   "frac_over_1s": 0.0,
+   "reason_n": 428,
+   "reason_median": 609.9882650014479,
+   "reason_over_1s": 0.0,
+   "nominal_n": 167,
+   "nominal_median": 408.3400369854644,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    608.4277909831144,
+    609.6681770286523,
+    608.2989780115895,
+    606.9829119951464,
+    606.2210089876316
+   ],
+   "stages": {
+    "preprocess": 9.527392387390137,
+    "vision": 52.9180793762207,
+    "prefill_llm": 177.1637420654297,
+    "decode": 300.40631103515625,
+    "expert": 52.51887893676758,
+    "traj": 1.3038079738616943
+   },
+   "tokens_median": 18,
+   "tokens_p90": 22.600000000000023,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 138,
+    "n_rendered": 908,
+    "prepare_s": 30.46,
+    "render_ms_median": 28.07,
+    "render_ms_p90": 37.78
+   }
+  },
+  "S10_pgv": {
+   "n": 238,
+   "images_vit": 22.0,
+   "e2e_median": 801.5851119707804,
+   "p10": 603.1477831304073,
+   "p90": 836.1120820802171,
+   "max": 977.4461869965307,
+   "frac_over_1s": 0.0,
+   "reason_n": 177,
+   "reason_median": 805.8630980085582,
+   "reason_over_1s": 0.0,
+   "nominal_n": 61,
+   "nominal_median": 604.0300250169821,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    601.8683640286326,
+    604.5598979690112
+   ],
+   "stages": {
+    "preprocess": 17.78268814086914,
+    "vision": 241.73150634765625,
+    "prefill_llm": 176.22996520996094,
+    "decode": 311.58123779296875,
+    "expert": 52.09956741333008,
+    "traj": 1.2623680233955383
+   },
+   "tokens_median": 19.0,
+   "tokens_p90": 21.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 138,
+    "n_rendered": 908,
+    "prepare_s": 30.33,
+    "render_ms_median": 27.89,
+    "render_ms_p90": 37.23
+   }
+  },
+  "S10_tuned": {
+   "n": 119,
+   "images_vit": 22,
+   "e2e_median": 1927.3088710033335,
+   "p10": 1753.304973198101,
+   "p90": 2129.9622917780653,
+   "max": 2191.1957730189897,
+   "frac_over_1s": 1.0,
+   "reason_n": 92,
+   "reason_median": 1963.957638014108,
+   "reason_over_1s": 1.0,
+   "nominal_n": 27,
+   "nominal_median": 1765.740692964755,
+   "nominal_over_1s": 1.0,
+   "cold": [
+    1738.5078439838253
+   ],
+   "stages": {
+    "preprocess": 1084.353515625,
+    "vision": 318.5768737792969,
+    "prefill_llm": 175.77072143554688,
+    "decode": 297.9951171875,
+    "expert": 52.297279357910156,
+    "traj": 1.2550400495529175
+   },
+   "tokens_median": 18,
+   "tokens_p90": 21.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 138,
+    "n_rendered": 908,
+    "prepare_s": 30.2,
+    "render_ms_median": 27.96,
+    "render_ms_p90": 37.08
+   }
+  },
+  "S1_all": {
+   "n": 60,
+   "images_vit": 14.0,
+   "e2e_median": 582.6591734949034,
+   "p10": 465.54822174366564,
+   "p90": 622.4516918999143,
+   "max": 690.94847998349,
+   "frac_over_1s": 0.0,
+   "reason_n": 43,
+   "reason_median": 588.3215609937906,
+   "reason_over_1s": 0.0,
+   "nominal_n": 17,
+   "nominal_median": 466.0861710435711,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    568.6959169688635,
+    566.4327819831669,
+    563.0115270032547,
+    570.631037990097,
+    566.0592630156316
+   ],
+   "stages": {
+    "preprocess": 13.299471855163574,
+    "vision": 150.3482894897461,
+    "prefill_llm": 177.72210693359375,
+    "decode": 182.0125732421875,
+    "expert": 53.77619171142578,
+    "traj": 1.2751839756965637
+   },
+   "tokens_median": 18.0,
+   "tokens_p90": 23.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 14,
+    "n_rendered": 204,
+    "prepare_s": 8.13,
+    "render_ms_median": 27.03,
+    "render_ms_p90": 35.99
+   }
+  },
+  "S1_body": {
+   "n": 60,
+   "images_vit": 14.0,
+   "e2e_median": 600.5037330032792,
+   "p10": 473.39308619266376,
+   "p90": 631.2247511930764,
+   "max": 724.3893150007352,
+   "frac_over_1s": 0.0,
+   "reason_n": 42,
+   "reason_median": 607.3717575054616,
+   "reason_over_1s": 0.0,
+   "nominal_n": 18,
+   "nominal_median": 473.9716359763406,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    571.4468929800205,
+    570.874010969419,
+    569.2308800062165,
+    571.390497032553,
+    572.1217680256814
+   ],
+   "stages": {
+    "preprocess": 13.20582389831543,
+    "vision": 150.11685943603516,
+    "prefill_llm": 178.29733276367188,
+    "decode": 201.08302307128906,
+    "expert": 53.28059196472168,
+    "traj": 1.2578080296516418
+   },
+   "tokens_median": 18.0,
+   "tokens_p90": 21.200000000000003,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 14,
+    "n_rendered": 204,
+    "prepare_s": 8.4,
+    "render_ms_median": 27.7,
+    "render_ms_p90": 37.02
+   }
+  },
+  "S1_pgcv": {
+   "n": 60,
+   "images_vit": 14.0,
+   "e2e_median": 697.6244734833017,
+   "p10": 503.95250858273357,
+   "p90": 766.1156777932774,
+   "max": 877.9345019720495,
+   "frac_over_1s": 0.0,
+   "reason_n": 43,
+   "reason_median": 707.2542039677501,
+   "reason_over_1s": 0.0,
+   "nominal_n": 17,
+   "nominal_median": 505.3970960434526,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    602.1410649991594,
+    601.8883450306021,
+    600.2371679642238,
+    602.5070589967072,
+    599.5982729946263
+   ],
+   "stages": {
+    "preprocess": 13.003471851348877,
+    "vision": 148.66619110107422,
+    "prefill_llm": 176.126220703125,
+    "decode": 304.9861145019531,
+    "expert": 51.98758506774902,
+    "traj": 1.2728800177574158
+   },
+   "tokens_median": 18.5,
+   "tokens_p90": 23.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 14,
+    "n_rendered": 204,
+    "prepare_s": 8.18,
+    "render_ms_median": 27.03,
+    "render_ms_p90": 36.32
+   }
+  },
+  "S1_pgv": {
+   "n": 60,
+   "images_vit": 22.0,
+   "e2e_median": 795.6101949966978,
+   "p10": 602.1040721854661,
+   "p90": 864.7879682073835,
+   "max": 976.679224986583,
+   "frac_over_1s": 0.0,
+   "reason_n": 43,
+   "reason_median": 805.7650150149129,
+   "reason_over_1s": 0.0,
+   "nominal_n": 17,
+   "nominal_median": 602.934496011585,
+   "nominal_over_1s": 0.0,
+   "cold": [
+    602.0908469799906,
+    597.7072999812663,
+    599.943479988724,
+    606.6456729895435,
+    606.3912909594364
+   ],
+   "stages": {
+    "preprocess": 17.538543701171875,
+    "vision": 241.57891082763672,
+    "prefill_llm": 175.8231658935547,
+    "decode": 306.3219451904297,
+    "expert": 52.21705436706543,
+    "traj": 1.2622239589691162
+   },
+   "tokens_median": 18.5,
+   "tokens_p90": 23.0,
+   "tokens_max": 30,
+   "source": {
+    "kind": "av2_source",
+    "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+    "config": "wide_ft",
+    "nav": "gt",
+    "n_t0": 14,
+    "n_rendered": 204,
+    "prepare_s": 8.28,
+    "render_ms_median": 27.21,
+    "render_ms_p90": 36.56
+   }
+  }
+ },
+ "fit": {
+  "S10_all": {
+   "a": 309.2115094083544,
+   "b": 9.365670351256155,
+   "resid_sd": 2.038617836957962,
+   "max_tokens_1s": 73.75750636995191,
+   "decode_slope": 9.36417037400288
+  },
+  "S10_body": {
+   "a": 312.07241649193577,
+   "b": 10.334870406569323,
+   "resid_sd": 2.0626320551274593,
+   "max_tokens_1s": 66.56373582302353,
+   "decode_slope": 10.33708713019253
+  },
+  "S10_p": {
+   "a": 656.9944089972989,
+   "b": 15.536620384155832,
+   "resid_sd": 7.9358629232128886,
+   "max_tokens_1s": 22.077233176946027,
+   "decode_slope": 15.47305572879483
+  },
+  "S10_pg": {
+   "a": 588.8586625555645,
+   "b": 15.50673839068017,
+   "resid_sd": 2.4118065961129167,
+   "max_tokens_1s": 26.513721137614528,
+   "decode_slope": 15.512918214967371
+  },
+  "S10_pgc": {
+   "a": 334.0592205346883,
+   "b": 15.527006041695094,
+   "resid_sd": 2.174297092758188,
+   "max_tokens_1s": 42.889194328709785,
+   "decode_slope": 15.507430781113026
+  },
+  "S10_pgcv": {
+   "a": 315.70026063530406,
+   "b": 15.49432762360438,
+   "resid_sd": 2.227113755410628,
+   "max_tokens_1s": 44.16453272371881,
+   "decode_slope": 15.485649663607807
+  },
+  "S10_pgv": {
+   "a": 510.3690179929262,
+   "b": 15.55136925264087,
+   "resid_sd": 2.3216391979311566,
+   "max_tokens_1s": 31.484750574225266,
+   "decode_slope": 15.50858595157626
+  },
+  "S10_tuned": {
+   "a": 1679.5936709087894,
+   "b": 15.337030014253319,
+   "resid_sd": 101.37588069276973,
+   "max_tokens_1s": -44.310643604219045,
+   "decode_slope": 15.5509273528741
+  },
+  "S1_all": {
+   "a": 410.1681356614238,
+   "b": 9.369195598644632,
+   "resid_sd": 1.9689284706555523,
+   "max_tokens_1s": 62.95437619254129,
+   "decode_slope": 9.336577330330458
+  },
+  "S1_body": {
+   "a": 412.7511010451231,
+   "b": 10.272973179236319,
+   "resid_sd": 1.8055214406045463,
+   "max_tokens_1s": 57.16445363079711,
+   "decode_slope": 10.320469648353491
+  },
+  "S1_pgcv": {
+   "a": 412.61628965827185,
+   "b": 15.479887569943315,
+   "resid_sd": 2.4204459363892514,
+   "max_tokens_1s": 37.944959721944485,
+   "decode_slope": 15.436605455750781
+  },
+  "S1_pgv": {
+   "a": 509.9004105185846,
+   "b": 15.512429566156474,
+   "resid_sd": 2.7961063026312054,
+   "max_tokens_1s": 31.593992893973716,
+   "decode_slope": 15.464496795845184
+  }
+ },
+ "agree": {
+  "S10_body": {
+   "n": 595,
+   "same_cot": 0.9596638655462185,
+   "ade_median": 0.00858183481590124,
+   "ade_p90": 0.023336310454580626,
+   "ade_max": 0.6372582227125303
+  },
+  "S10_all": {
+   "n": 595,
+   "same_cot": 0.9310924369747899,
+   "ade_median": 0.009085399643147123,
+   "ade_p90": 0.024619621330545294,
+   "ade_max": 0.6404648492552057
+  },
+  "bf16_seed_diff": {
+   "n": 476,
+   "same_cot": 0.26260504201680673,
+   "ade_median": 1.7184077108584934,
+   "ade_p90": 3.4457529344929547,
+   "ade_max": 5.363844851605603
+  }
+ },
+ "render": {
+  "log_id": "9e9bcfb7-601d-3d80-bc12-ef7025174beb",
+  "config": "wide_ft",
+  "maps_build_s": 2.37,
+  "full_22img_ms": {
+   "median": 565.3,
+   "max": 573.9,
+   "n": 20
+  },
+  "jpeg_decode_ms_in_full": {
+   "median": 186.2,
+   "files_per_t0": 27
+  },
+  "stream10hz": {
+   "per_t0_ms_median": 176.3,
+   "per_t0_ms_max": 417.4,
+   "new_images_per_t0": 6,
+   "n": 37
+  },
+  "stream1hz": {
+   "per_t0_ms_median": 369.1,
+   "per_t0_ms_max": 385.6,
+   "new_images_per_t0": 14,
+   "n": 11
+  }
+ }
+}

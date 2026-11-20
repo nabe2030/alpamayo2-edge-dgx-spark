@@ -1,0 +1,66 @@
+{
+ "device": "NVIDIA GB10",
+ "torch": "2.8.0+cu129",
+ "shapes": {
+  "qkv": {
+   "N": 4096,
+   "K": 2048,
+   "act": 0,
+   "copies": 64,
+   "rel_err_vs_fp32_dequant": 0.0016319537535309792,
+   "fp8_us": 39.92,
+   "bf16_linear_us": 110.13,
+   "read_only_us": 41.9,
+   "fp8_GBps": 210.2,
+   "bf16_GBps": 152.3
+  },
+  "o": {
+   "N": 2048,
+   "K": 2048,
+   "act": 0,
+   "copies": 128,
+   "rel_err_vs_fp32_dequant": 0.0016848478699102998,
+   "fp8_us": 22.71,
+   "bf16_linear_us": 57.75,
+   "read_only_us": 20.72,
+   "fp8_GBps": 184.7,
+   "bf16_GBps": 145.3
+  },
+  "fc1": {
+   "N": 9216,
+   "K": 2048,
+   "act": 1,
+   "copies": 29,
+   "rel_err_vs_fp32_dequant": 0.0016412632539868355,
+   "fp8_us": 83.13,
+   "bf16_linear_us": 231.5,
+   "read_only_us": 85.14,
+   "fp8_GBps": 227.1,
+   "bf16_GBps": 163.1
+  },
+  "fc2": {
+   "N": 2048,
+   "K": 9216,
+   "act": 0,
+   "copies": 29,
+   "rel_err_vs_fp32_dequant": 0.0016317889094352722,
+   "fp8_us": 84.04,
+   "bf16_linear_us": 173.83,
+   "read_only_us": 82.51,
+   "fp8_GBps": 224.6,
+   "bf16_GBps": 217.2
+  },
+  "head": {
+   "N": 135168,
+   "K": 2048,
+   "act": 0,
+   "copies": 2,
+   "rel_err_vs_fp32_dequant": 0.0016555272741243243,
+   "fp8_us": 1158.35,
+   "bf16_linear_us": 3325.75,
+   "read_only_us": 1180.97,
+   "fp8_GBps": 239.0,
+   "bf16_GBps": 166.5
+  }
+ }
+}

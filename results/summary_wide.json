@@ -1,0 +1,1612 @@
+{
+ "n_samples": 400,
+ "n_clips": 250,
+ "seeds": [
+  "43",
+  "44",
+  "45",
+  "46",
+  "47"
+ ],
+ "variants": [
+  "base",
+  "fp8body",
+  "fp8all"
+ ],
+ "gt_available": 400,
+ "overall": {
+  "bf16_seed_traj_mean": [
+   2.3023609753201284,
+   2.1583267552020327,
+   2.4462146999852687
+  ],
+  "bf16_seed_traj_median": [
+   2.0232687233937363,
+   1.8662273010459582,
+   2.191000786630141
+  ],
+  "bf16_seed_cot_same": [
+   0.233,
+   0.2,
+   0.26579302115583076
+  ],
+  "tf_noise_alt_mean": [
+   3.604036210891012,
+   3.3034789895996277,
+   3.9268586506020857
+  ],
+  "base_ade_gt": [
+   3.2484813554799272,
+   2.977514474773666,
+   3.5253589754404984
+  ],
+  "base_minade_gt": [
+   1.7341034049117612,
+   1.5311877180004947,
+   1.9516694753440471
+  ],
+  "base_ntok": [
+   18.559,
+   17.930599199606906,
+   19.18660798969072
+  ],
+  "base_nominal": [
+   0.2065,
+   0.17283443891652847,
+   0.24073244975333746
+  ],
+  "fp8body": {
+   "same_seed_traj_mean": [
+    0.04137055992378394,
+    0.03005115220460299,
+    0.05507370602673608
+   ],
+   "same_seed_traj_median": [
+    0.014844749849679421,
+    0.012661442504453866,
+    0.016043025536758057
+   ],
+   "ratio_traj_vs_bf16_seed": [
+    0.017968754842203505,
+    0.013305266080930515,
+    0.023703564527104187
+   ],
+   "same_seed_cot": [
+    0.9125,
+    0.8999999999999999,
+    0.9248151550160034
+   ],
+   "ade_gt": [
+    3.2456374393640566,
+    2.9755729690585224,
+    3.5225060220779523
+   ],
+   "d_ade_gt": [
+    -0.0028439161158708304,
+    -0.011955214887670096,
+    0.005278926506846445
+   ],
+   "d_minade_gt": [
+    0.007113458759440821,
+    0.00062450447343563,
+    0.014481053006871856
+   ],
+   "d_ntok": [
+    -0.17600000000000002,
+    -0.2580669848584596,
+    -0.09351232559009473
+   ],
+   "d_nominal": [
+    0.012,
+    0.007329523687907035,
+    0.017115253151693936
+   ],
+   "div_pos_median": 10.0
+  },
+  "fp8all": {
+   "same_seed_traj_mean": [
+    0.04527897531077171,
+    0.03629050179459799,
+    0.05461417736585475
+   ],
+   "same_seed_traj_median": [
+    0.016113118495264638,
+    0.014843219299179634,
+    0.01797755151555752
+   ],
+   "ratio_traj_vs_bf16_seed": [
+    0.01966632330730674,
+    0.015981037675983325,
+    0.023528797595566614
+   ],
+   "same_seed_cot": [
+    0.8725,
+    0.8574222598139211,
+    0.8866498740554156
+   ],
+   "ade_gt": [
+    3.2528008629012195,
+    2.9808282094722305,
+    3.529331065286191
+   ],
+   "d_ade_gt": [
+    0.004319507421292533,
+    -0.004175244581083194,
+    0.012865485351386924
+   ],
+   "d_minade_gt": [
+    0.0010997001383910615,
+    -0.008363228750975673,
+    0.009842078135060764
+   ],
+   "d_ntok": [
+    0.010499999999999976,
+    -0.0695060897435898,
+    0.09091136363636358
+   ],
+   "d_nominal": [
+    0.002,
+    -0.0005209358595800519,
+    0.004975124378109452
+   ],
+   "div_pos_median": 8.0
+  },
+  "tf_eager": {
+   "kl_t1": [
+    7.947294317869941e-05,
+    7.441861135491415e-05,
+    8.449019676644961e-05
+   ],
+   "kl_t06": [
+    0.00012049586744837727,
+    0.0001102847939199644,
+    0.00013125774470198982
+   ],
+   "top1": [
+    0.997909127938045,
+    0.9969289452081206,
+    0.9987840388258749
+   ],
+   "top1_miss_total": 18,
+   "n_tok_total": 7530,
+   "traj": [
+    0.007676855259984565,
+    0.007020924850774627,
+    0.00839815574868129
+   ],
+   "traj_ratio_vs_noise": [
+    0.0021300716226951132,
+    0.0019224529123016314,
+    0.002337310553925643
+   ]
+  },
+  "tf_fp8body": {
+   "kl_t1": [
+    0.000260664882247521,
+    0.00024881006308359957,
+    0.00027359070556210656
+   ],
+   "kl_t06": [
+    0.00039429021823413025,
+    0.00036337464019953224,
+    0.000428833641760952
+   ],
+   "top1": [
+    0.9956440280181849,
+    0.9938917727459914,
+    0.9971399026390005
+   ],
+   "top1_miss_total": 32,
+   "n_tok_total": 7530,
+   "traj": [
+    0.018523350855813612,
+    0.016669328643428617,
+    0.020555614263545616
+   ],
+   "traj_ratio_vs_noise": [
+    0.00513961285955952,
+    0.004663610482655024,
+    0.00565465896962958
+   ],
+   "kl_ratio_vs_eager": [
+    3.279919829587804,
+    3.0732230623005976,
+    3.4988511093552424
+   ]
+  },
+  "tf_fp8all": {
+   "kl_t1": [
+    0.0004263925910128274,
+    0.0004019321551748761,
+    0.00045165305195139994
+   ],
+   "kl_t06": [
+    0.000640104699295553,
+    0.0005895053371683175,
+    0.0006908575381162433
+   ],
+   "top1": [
+    0.9941521042159891,
+    0.9924939819333432,
+    0.9958578964291718
+   ],
+   "top1_miss_total": 49,
+   "n_tok_total": 7530,
+   "traj": [
+    0.018727314024891934,
+    0.01683753645318763,
+    0.02079354590917174
+   ],
+   "traj_ratio_vs_noise": [
+    0.005196205845074474,
+    0.004713524440088794,
+    0.005728553973141257
+   ],
+   "kl_ratio_vs_eager": [
+    5.365254814510386,
+    5.058737501804018,
+    5.677374193118603
+   ]
+  },
+  "straight": {
+   "n": 400,
+   "ade_gt": [
+    4.126691588239669,
+    3.7522432460274793,
+    4.519892237409358
+   ],
+   "minade_gt": [
+    2.4121640858836453,
+    2.112413894429919,
+    2.7167952464061376
+   ],
+   "d_ade_gt": [
+    0.8782102327597411,
+    0.6418442932646427,
+    1.140452407772679
+   ],
+   "cot_same_as_gt_nav": [
+    0.7115,
+    0.6641414141414141,
+    0.7545005806845966
+   ],
+   "by_motion": {
+    "left": {
+     "n": 63,
+     "d_ade_gt": 1.6054062406536629
+    },
+    "other": {
+     "n": 80,
+     "d_ade_gt": 0.1584579665151196
+    },
+    "right": {
+     "n": 81,
+     "d_ade_gt": 2.6482473285162946
+    },
+    "stop": {
+     "n": 19,
+     "d_ade_gt": 0.0
+    },
+    "straight": {
+     "n": 157,
+     "d_ade_gt": 0.1462345796922692
+    }
+   }
+  }
+ },
+ "by_category": {
+  "motion": {
+   "left": {
+    "n": 63,
+    "n_clips": 63,
+    "bf16_seed_traj": 2.2830410504169065,
+    "bf16_seed_cot_same": 0.17301587301587304,
+    "base_ntok": 21.133333333333333,
+    "base_nominal": 0.1111111111111111,
+    "fp8body": {
+     "same_traj": 0.02765573022010862,
+     "ratio": 0.012113549257057118,
+     "ratio_ci": [
+      0.012113549257057118,
+      0.008517708353666362,
+      0.016533741129894697
+     ],
+     "same_cot": 0.9047619047619045,
+     "d_ade_gt": 0.002520546745163431,
+     "tf_kl": 0.0002385667705527864
+    },
+    "fp8all": {
+     "same_traj": 0.040127221508370975,
+     "ratio": 0.017576215504773045,
+     "ratio_ci": [
+      0.017576215504773045,
+      0.010900783195567051,
+      0.027413069116059525
+     ],
+     "same_cot": 0.8539682539682538,
+     "d_ade_gt": 0.006511449180120275,
+     "tf_kl": 0.0004113705263613961
+    }
+   },
+   "other": {
+    "n": 80,
+    "n_clips": 76,
+    "bf16_seed_traj": 2.099233407517446,
+    "bf16_seed_cot_same": 0.16499999999999998,
+    "base_ntok": 20.03,
+    "base_nominal": 0.10750000000000001,
+    "fp8body": {
+     "same_traj": 0.03606113908802331,
+     "ratio": 0.017178241809075068,
+     "ratio_ci": [
+      0.017178241809075068,
+      0.011982404951853359,
+      0.02364809029473545
+     ],
+     "same_cot": 0.905,
+     "d_ade_gt": 0.0034224574272602054,
+     "tf_kl": 0.0002559790631933929
+    },
+    "fp8all": {
+     "same_traj": 0.05218834418042293,
+     "ratio": 0.024860667705427233,
+     "ratio_ci": [
+      0.024860667705427233,
+      0.017036960861066874,
+      0.034141557383777964
+     ],
+     "same_cot": 0.8425,
+     "d_ade_gt": 0.008698157639534455,
+     "tf_kl": 0.0004770975471559402
+    }
+   },
+   "right": {
+    "n": 81,
+    "n_clips": 75,
+    "bf16_seed_traj": 2.354685291963911,
+    "bf16_seed_cot_same": 0.11851851851851851,
+    "base_ntok": 21.71604938271605,
+    "base_nominal": 0.024691358024691357,
+    "fp8body": {
+     "same_traj": 0.0281863146433549,
+     "ratio": 0.01197031074154554,
+     "ratio_ci": [
+      0.01197031074154554,
+      0.00786665370376893,
+      0.018072309544952994
+     ],
+     "same_cot": 0.9012345679012346,
+     "d_ade_gt": 0.008198447412269308,
+     "tf_kl": 0.00023819150402859402
+    },
+    "fp8all": {
+     "same_traj": 0.049679372595867695,
+     "ratio": 0.021098094410074184,
+     "ratio_ci": [
+      0.021098094410074184,
+      0.013034040704106535,
+      0.031211891008853056
+     ],
+     "same_cot": 0.8444444444444446,
+     "d_ade_gt": 0.01592543814331146,
+     "tf_kl": 0.0004684777815203977
+    }
+   },
+   "stop": {
+    "n": 19,
+    "n_clips": 16,
+    "bf16_seed_traj": 1.68135199635777,
+    "bf16_seed_cot_same": 0.08421052631578949,
+    "base_ntok": 22.284210526315793,
+    "base_nominal": 0.0,
+    "fp8body": {
+     "same_traj": 0.021433169244573783,
+     "ratio": 0.012747580096852652,
+     "ratio_ci": [
+      0.012747580096852652,
+      0.006224832016759287,
+      0.019937502724659793
+     ],
+     "same_cot": 0.9157894736842105,
+     "d_ade_gt": 0.008200255943529253,
+     "tf_kl": 0.00026292934957908016
+    },
+    "fp8all": {
+     "same_traj": 0.04860459276070671,
+     "ratio": 0.028908041187090176,
+     "ratio_ci": [
+      0.028908041187090176,
+      0.00936672023322312,
+      0.05952352718706434
+     ],
+     "same_cot": 0.8315789473684212,
+     "d_ade_gt": 0.033210649633724554,
+     "tf_kl": 0.000577623984771299
+    }
+   },
+   "straight": {
+    "n": 157,
+    "n_clips": 105,
+    "bf16_seed_traj": 2.4617766545892756,
+    "bf16_seed_cot_same": 0.36878980891719737,
+    "base_ntok": 14.696815286624204,
+    "base_nominal": 0.4140127388535032,
+    "fp8body": {
+     "same_traj": 0.05879426838755553,
+     "ratio": 0.023882860485312712,
+     "ratio_ci": [
+      0.023882860485312712,
+      0.013570219937664852,
+      0.03745530065624858
+     ],
+     "same_cot": 0.9248407643312101,
+     "d_ade_gt": -0.015223162985957418,
+     "tf_kl": 0.0002832404575184253
+    },
+    "fp8all": {
+     "same_traj": 0.041152810140947564,
+     "ratio": 0.016716711511675916,
+     "ratio_ci": [
+      0.016716711511675916,
+      0.011009309925949751,
+      0.023622565871619903
+     ],
+     "same_cot": 0.9146496815286624,
+     "d_ade_gt": -0.008275374354409651,
+     "tf_kl": 0.0003665690029177126
+    }
+   }
+  },
+  "city": {
+   "ATX": {
+    "n": 12,
+    "n_clips": 8,
+    "bf16_seed_traj": 2.606917980155083,
+    "bf16_seed_cot_same": 0.13333333333333333,
+    "base_ntok": 22.516666666666666,
+    "base_nominal": 0.05000000000000001,
+    "fp8body": {
+     "same_traj": 0.018478663173934585,
+     "ratio": 0.007088317819970426,
+     "ratio_ci": [
+      0.007088317819970426,
+      0.004255202342223684,
+      0.010199806617175951
+     ],
+     "same_cot": 0.8833333333333333,
+     "d_ade_gt": -0.002239791366519417,
+     "tf_kl": 0.0003060283478312503
+    },
+    "fp8all": {
+     "same_traj": 0.08695992580825361,
+     "ratio": 0.033357369303609795,
+     "ratio_ci": [
+      0.033357369303609795,
+      0.008965237232724164,
+      0.075519759230658
+     ],
+     "same_cot": 0.8333333333333335,
+     "d_ade_gt": 0.04453012099959175,
+     "tf_kl": 0.0005765918200962642
+    }
+   },
+   "DTW": {
+    "n": 55,
+    "n_clips": 34,
+    "bf16_seed_traj": 2.7102758860697325,
+    "bf16_seed_cot_same": 0.19090909090909092,
+    "base_ntok": 18.825454545454548,
+    "base_nominal": 0.20363636363636362,
+    "fp8body": {
+     "same_traj": 0.03945610400791515,
+     "ratio": 0.014557965929118698,
+     "ratio_ci": [
+      0.014557965929118698,
+      0.00747073237505889,
+      0.02330626316266482
+     ],
+     "same_cot": 0.9199999999999999,
+     "d_ade_gt": -0.01525763974631251,
+     "tf_kl": 0.00025079979867077216
+    },
+    "fp8all": {
+     "same_traj": 0.06753476267694003,
+     "ratio": 0.024918039902895123,
+     "ratio_ci": [
+      0.024918039902895123,
+      0.015246039451451886,
+      0.036549735958508675
+     ],
+     "same_cot": 0.8618181818181817,
+     "d_ade_gt": 0.004263391658443494,
+     "tf_kl": 0.0004218606500141019
+    }
+   },
+   "MIA": {
+    "n": 130,
+    "n_clips": 81,
+    "bf16_seed_traj": 2.3755357481355435,
+    "bf16_seed_cot_same": 0.26692307692307693,
+    "base_ntok": 18.52,
+    "base_nominal": 0.18923076923076923,
+    "fp8body": {
+     "same_traj": 0.04099027943308762,
+     "ratio": 0.017255172634324335,
+     "ratio_ci": [
+      0.017255172634324335,
+      0.010786186472808839,
+      0.026223378706357697
+     ],
+     "same_cot": 0.9230769230769231,
+     "d_ade_gt": 0.007451456166887278,
+     "tf_kl": 0.00024393465555810895
+    },
+    "fp8all": {
+     "same_traj": 0.048675946545829574,
+     "ratio": 0.020490513175410324,
+     "ratio_ci": [
+      0.020490513175410324,
+      0.014460086854360746,
+      0.028165667422019338
+     ],
+     "same_cot": 0.88,
+     "d_ade_gt": -0.0002761837820842759,
+     "tf_kl": 0.00039402095232022693
+    }
+   },
+   "PAO": {
+    "n": 15,
+    "n_clips": 8,
+    "bf16_seed_traj": 2.2317829554703006,
+    "bf16_seed_cot_same": 0.21333333333333335,
+    "base_ntok": 18.253333333333334,
+    "base_nominal": 0.26666666666666666,
+    "fp8body": {
+     "same_traj": 0.10272462289027061,
+     "ratio": 0.04602805243156971,
+     "ratio_ci": [
+      0.04602805243156971,
+      0.007032194971038554,
+      0.10703029655104168
+     ],
+     "same_cot": 0.8933333333333334,
+     "d_ade_gt": -0.08368901578205999,
+     "tf_kl": 0.00030824159414297853
+    },
+    "fp8all": {
+     "same_traj": 0.0586844134315285,
+     "ratio": 0.026294856893537846,
+     "ratio_ci": [
+      0.026294856893537846,
+      0.007597412551891317,
+      0.05382516481574505
+     ],
+     "same_cot": 0.8533333333333333,
+     "d_ade_gt": 0.034861393136855455,
+     "tf_kl": 0.00044248971273056593
+    }
+   },
+   "PIT": {
+    "n": 142,
+    "n_clips": 91,
+    "bf16_seed_traj": 2.122436109797724,
+    "bf16_seed_cot_same": 0.2161971830985915,
+    "base_ntok": 18.37042253521127,
+    "base_nominal": 0.2112676056338028,
+    "fp8body": {
+     "same_traj": 0.037236077018706626,
+     "ratio": 0.01754402728393806,
+     "ratio_ci": [
+      0.01754402728393806,
+      0.009914154643127641,
+      0.029035531125328275
+     ],
+     "same_cot": 0.9098591549295774,
+     "d_ade_gt": 0.00363119307028852,
+     "tf_kl": 0.00026880769582505977
+    },
+    "fp8all": {
+     "same_traj": 0.03206596296928434,
+     "ratio": 0.015108093393840885,
+     "ratio_ci": [
+      0.015108093393840885,
+      0.011297202639008595,
+      0.019841154899636337
+     ],
+     "same_cot": 0.864788732394366,
+     "d_ade_gt": 3.2750125836862072e-06,
+     "tf_kl": 0.00043655447121729757
+    }
+   },
+   "WDC": {
+    "n": 46,
+    "n_clips": 28,
+    "bf16_seed_traj": 2.1068235098131147,
+    "bf16_seed_cot_same": 0.2717391304347826,
+    "base_ntok": 18.000000000000004,
+    "base_nominal": 0.26521739130434785,
+    "fp8body": {
+     "same_traj": 0.043462297493026894,
+     "ratio": 0.020629301548321058,
+     "ratio_ci": [
+      0.020629301548321058,
+      0.011563570539880864,
+      0.032353955033598294
+     ],
+     "same_cot": 0.8956521739130434,
+     "d_ade_gt": -0.010880483583659284,
+     "tf_kl": 0.0002672565620931218
+    },
+    "fp8all": {
+     "same_traj": 0.03461202333279984,
+     "ratio": 0.016428534792584545,
+     "ratio_ci": [
+      0.016428534792584545,
+      0.007843753175618837,
+      0.02786083390601529
+     ],
+     "same_cot": 0.9043478260869565,
+     "d_ade_gt": 0.010249411263886107,
+     "tf_kl": 0.0004474955306033895
+    }
+   }
+  },
+  "split": {
+   "train": {
+    "n": 100,
+    "n_clips": 100,
+    "bf16_seed_traj": 2.3634303309227467,
+    "bf16_seed_cot_same": 0.122,
+    "base_ntok": 21.701999999999998,
+    "base_nominal": 0.064,
+    "fp8body": {
+     "same_traj": 0.0322962556027028,
+     "ratio": 0.013664991593000955,
+     "ratio_ci": [
+      0.013664991593000955,
+      0.009578503531618248,
+      0.018814059606938948
+     ],
+     "same_cot": 0.9,
+     "d_ade_gt": 0.0069790221615337366,
+     "tf_kl": 0.0002369120438840525
+    },
+    "fp8all": {
+     "same_traj": 0.05008759536425874,
+     "ratio": 0.021192753054287493,
+     "ratio_ci": [
+      0.021192753054287493,
+      0.013375522825791016,
+      0.030269725782228814
+     ],
+     "same_cot": 0.848,
+     "d_ade_gt": 0.01770981555567256,
+     "tf_kl": 0.00043705534277769316
+    }
+   },
+   "val": {
+    "n": 300,
+    "n_clips": 150,
+    "bf16_seed_traj": 2.2820045234525894,
+    "bf16_seed_cot_same": 0.27,
+    "base_ntok": 17.511333333333333,
+    "base_nominal": 0.254,
+    "fp8body": {
+     "same_traj": 0.044395328030810983,
+     "ratio": 0.019454531125837768,
+     "ratio_ci": [
+      0.019454531125837768,
+      0.013200703290556847,
+      0.02715078657513657
+     ],
+     "same_cot": 0.9166666666666665,
+     "d_ade_gt": -0.006118228875005685,
+     "tf_kl": 0.00026858249503534384
+    },
+    "fp8all": {
+     "same_traj": 0.04367610195960937,
+     "ratio": 0.01913935818739265,
+     "ratio_ci": [
+      0.01913935818739265,
+      0.01517991158422643,
+      0.02359614471347074
+     ],
+     "same_cot": 0.8806666666666666,
+     "d_ade_gt": -0.00014392862350080877,
+     "tf_kl": 0.00042283834042453874
+    }
+   }
+  },
+  "nav_group": {
+   "Continue straight": {
+    "n": 236,
+    "n_clips": 128,
+    "bf16_seed_traj": 2.3109895060631027,
+    "bf16_seed_cot_same": 0.28771186440677965,
+    "base_ntok": 16.700847457627116,
+    "base_nominal": 0.2940677966101695,
+    "fp8body": {
+     "same_traj": 0.049499304182791644,
+     "ratio": 0.02141909517673078,
+     "ratio_ci": [
+      0.02141909517673078,
+      0.013802566349631317,
+      0.030738420284021177
+     ],
+     "same_cot": 0.9177966101694915,
+     "d_ade_gt": -0.009173222180881414,
+     "tf_kl": 0.00027181779656808584
+    },
+    "fp8all": {
+     "same_traj": 0.04596980389573995,
+     "ratio": 0.019891827191397347,
+     "ratio_ci": [
+      0.019891827191397347,
+      0.014998944830839245,
+      0.025332593252005528
+     ],
+     "same_cot": 0.8906779661016951,
+     "d_ade_gt": -0.0008242830825358197,
+     "tf_kl": 0.0004071840985694709
+    }
+   },
+   "Turn left": {
+    "n": 73,
+    "n_clips": 64,
+    "bf16_seed_traj": 2.265003315179132,
+    "bf16_seed_cot_same": 0.1767123287671233,
+    "base_ntok": 21.068493150684933,
+    "base_nominal": 0.12602739726027395,
+    "fp8body": {
+     "same_traj": 0.03331926533392696,
+     "ratio": 0.01471047089010192,
+     "ratio_ci": [
+      0.01471047089010192,
+      0.009885208704272258,
+      0.020473795087812167
+     ],
+     "same_cot": 0.9041095890410958,
+     "d_ade_gt": 0.004528693706875095,
+     "tf_kl": 0.0002514414651462189
+    },
+    "fp8all": {
+     "same_traj": 0.03926433095628873,
+     "ratio": 0.0173352200825293,
+     "ratio_ci": [
+      0.0173352200825293,
+      0.011439692264682978,
+      0.02586908892562462
+     ],
+     "same_cot": 0.8547945205479451,
+     "d_ade_gt": 0.005657565821597399,
+     "tf_kl": 0.0004333384561832297
+    }
+   },
+   "Turn right": {
+    "n": 91,
+    "n_clips": 78,
+    "bf16_seed_traj": 2.3099519196602483,
+    "bf16_seed_cot_same": 0.13626373626373625,
+    "base_ntok": 21.364835164835167,
+    "base_nominal": 0.04395604395604396,
+    "fp8body": {
+     "same_traj": 0.026748151791187676,
+     "ratio": 0.0115795275059759,
+     "ratio_ci": [
+      0.0115795275059759,
+      0.0078078400042107836,
+      0.01689108066346682
+     ],
+     "same_cot": 0.9054945054945056,
+     "d_ade_gt": 0.00765625656854725,
+     "tf_kl": 0.0002391398456402873
+    },
+    "fp8all": {
+     "same_traj": 0.04831231038576901,
+     "ratio": 0.020914855402217578,
+     "ratio_ci": [
+      0.020914855402217578,
+      0.013616204179545299,
+      0.030173605555985587
+     ],
+     "same_cot": 0.8395604395604396,
+     "d_ade_gt": 0.016586060121086335,
+     "tf_kl": 0.00047063606419076986
+    }
+   }
+  },
+  "behavior": {
+   "stop": {
+    "n": 19,
+    "n_clips": 16,
+    "bf16_seed_traj": 1.68135199635777,
+    "bf16_seed_cot_same": 0.08421052631578949,
+    "base_ntok": 22.284210526315793,
+    "base_nominal": 0.0,
+    "fp8body": {
+     "same_traj": 0.021433169244573783,
+     "ratio": 0.012747580096852652,
+     "ratio_ci": [
+      0.012747580096852652,
+      0.006224832016759287,
+      0.019937502724659793
+     ],
+     "same_cot": 0.9157894736842105,
+     "d_ade_gt": 0.008200255943529253,
+     "tf_kl": 0.00026292934957908016
+    },
+    "fp8all": {
+     "same_traj": 0.04860459276070671,
+     "ratio": 0.028908041187090176,
+     "ratio_ci": [
+      0.028908041187090176,
+      0.00936672023322312,
+      0.05952352718706434
+     ],
+     "same_cot": 0.8315789473684212,
+     "d_ade_gt": 0.033210649633724554,
+     "tf_kl": 0.000577623984771299
+    }
+   },
+   "straight": {
+    "n": 221,
+    "n_clips": 135,
+    "bf16_seed_traj": 2.351983368805116,
+    "bf16_seed_cot_same": 0.3171945701357466,
+    "base_ntok": 16.324886877828057,
+    "base_nominal": 0.3248868778280543,
+    "fp8body": {
+     "same_traj": 0.05243305636116453,
+     "ratio": 0.02229312377655214,
+     "ratio_ci": [
+      0.02229312377655214,
+      0.01447049316545013,
+      0.03214665972235766
+     ],
+     "same_cot": 0.9203619909502262,
+     "d_ade_gt": -0.00922253984721074,
+     "tf_kl": 0.000273600528100125
+    },
+    "fp8all": {
+     "same_traj": 0.04287302377199863,
+     "ratio": 0.018228455328652905,
+     "ratio_ci": [
+      0.018228455328652905,
+      0.01354837876562891,
+      0.02401982765617181
+     ],
+     "same_cot": 0.8986425339366517,
+     "d_ade_gt": -0.0007940596565290704,
+     "tf_kl": 0.00039944924607606444
+    }
+   },
+   "turn_left": {
+    "n": 66,
+    "n_clips": 66,
+    "bf16_seed_traj": 2.347985155304812,
+    "bf16_seed_cot_same": 0.16363636363636364,
+    "base_ntok": 21.078787878787875,
+    "base_nominal": 0.10606060606060606,
+    "fp8body": {
+     "same_traj": 0.029338444897163283,
+     "ratio": 0.01249515774445116,
+     "ratio_ci": [
+      0.01249515774445116,
+      0.009014343822914888,
+      0.01692799768441237
+     ],
+     "same_cot": 0.8909090909090909,
+     "d_ade_gt": 0.0019212076204837003,
+     "tf_kl": 0.0002471587786078759
+    },
+    "fp8all": {
+     "same_traj": 0.04707618909010106,
+     "ratio": 0.02004961103938057,
+     "ratio_ci": [
+      0.02004961103938057,
+      0.01213776141195727,
+      0.031116373872580143
+     ],
+     "same_cot": 0.8363636363636363,
+     "d_ade_gt": 0.0011931698633763424,
+     "tf_kl": 0.0004225746609713109
+    }
+   },
+   "turn_right": {
+    "n": 94,
+    "n_clips": 87,
+    "bf16_seed_traj": 2.279184653629846,
+    "bf16_seed_cot_same": 0.11382978723404256,
+    "base_ntok": 21.289361702127657,
+    "base_nominal": 0.04042553191489361,
+    "fp8body": {
+     "same_traj": 0.027839903562090797,
+     "ratio": 0.012214852148005105,
+     "ratio_ci": [
+      0.012214852148005105,
+      0.008312309904539164,
+      0.017818067847545506
+     ],
+     "same_cot": 0.9085106382978723,
+     "d_ade_gt": 0.00657457759581129,
+     "tf_kl": 0.00023927765062508983
+    },
+    "fp8all": {
+     "same_traj": 0.04900144817337116,
+     "ratio": 0.02149955164682734,
+     "ratio_ci": [
+      0.02149955164682734,
+      0.014591342463237142,
+      0.030631059346388444
+     ],
+     "same_cot": 0.8446808510638297,
+     "d_ade_gt": 0.012697219133897158,
+     "tf_kl": 0.000461850741357016
+    }
+   }
+  }
+ },
+ "largest": {
+  "fp8body": [
+   {
+    "sample_id": "v_214e388e_7.0",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "PIT",
+    "behavior": "straight",
+    "same_traj": 1.461133203070023,
+    "bf16_seed_traj": 3.67842496055061,
+    "rel": 0.3972170749002615,
+    "same_cot": 0.8,
+    "tf_kl": 0.0003957184562575026,
+    "d_ade_gt": -0.4439876044674391,
+    "base_cot": {
+     "43": "<NOMINAL>",
+     "44": "Decelerate to a stop before the intersection to yield to the crossing vehicle and follow our route straight.",
+     "45": "<NOMINAL>",
+     "46": "Decelerate and come to a stop before the intersection stop line to comply with the traffic signal.",
+     "47": "<NOMINAL>"
+    },
+    "var_cot_diff": {
+     "44": "<NOMINAL>"
+    }
+   },
+   {
+    "sample_id": "v_e1d68dde_6.5",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "PAO",
+    "behavior": "straight",
+    "same_traj": 1.2399938981461927,
+    "bf16_seed_traj": 3.4227801984097814,
+    "rel": 0.3622768119093046,
+    "same_cot": 0.8,
+    "tf_kl": 0.000465248901833822,
+    "d_ade_gt": -1.2219303481804853,
+    "base_cot": {
+     "43": "Decelerate to stop before the upcoming intersection as required by the stop sign ahead.",
+     "44": "Decelerate to a stop before the intersection to yield to cyclists crossing our path.",
+     "45": "Brake to a stop before the intersection stop line for the upcoming all-way stop sign.",
+     "46": "Decelerate and come to a stop at the stop line for the stop sign ahead.",
+     "47": "Decelerate to a stop at the stop line for the all-way stop sign, preparing to continue straight along our route."
+    },
+    "var_cot_diff": {
+     "45": "<NOMINAL>"
+    }
+   },
+   {
+    "sample_id": "v_b50c4763_4.0",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "MIA",
+    "behavior": "straight",
+    "same_traj": 1.2449252259758765,
+    "bf16_seed_traj": 3.5599763861047427,
+    "rel": 0.34970041678789043,
+    "same_cot": 0.4,
+    "tf_kl": 0.0003947167925880838,
+    "d_ade_gt": 0.2685986228408783,
+    "base_cot": {
+     "43": "Proceed straight through the intersection to follow our route, as the crossing truck has cleared our path.",
+     "44": "Change lanes to the left into the dedicated turn lane to follow our route for the upcoming left turn.",
+     "45": "Proceed straight through the intersection to follow our route, as the crossing vehicle has cleared our path.",
+     "46": "Decelerate and execute a U-turn at the intersection to follow our route, as the traffic signal is green.",
+     "47": "Proceed straight through the intersection to follow our route, as the crossing vehicle has cleared our path."
+    },
+    "var_cot_diff": {
+     "45": "<NOMINAL>",
+     "46": "Decelerate and come to a stop at the intersection stop line to yield to the crossing vehicle before proceeding straight to follow our route.",
+     "47": "<NOMINAL>"
+    }
+   },
+   {
+    "sample_id": "v_f3cd0d0d_6.5",
+    "nav_text": "Continue straight",
+    "motion": "other",
+    "city": "WDC",
+    "behavior": "straight",
+    "same_traj": 0.20713478668363444,
+    "bf16_seed_traj": 0.924148132875566,
+    "rel": 0.22413591427070986,
+    "same_cot": 0.6,
+    "tf_kl": 0.00023356942100167256,
+    "d_ade_gt": 0.18806158400101514,
+    "base_cot": {
+     "43": "Decelerate to a stop behind the queued lead vehicle for the red traffic light ahead.",
+     "44": "Decelerate to a stop behind the queued vehicle in our lane as the traffic light ahead is red.",
+     "45": "<NOMINAL>",
+     "46": "Decelerate to come to a stop behind the queued lead vehicle in our lane as the traffic light ahead is red.",
+     "47": "Decelerate to a stop in our lane for the red traffic light and the queued lead vehicle ahead."
+    },
+    "var_cot_diff": {
+     "43": "Proceed straight through the intersection to follow our route, as permitted by the green traffic light.",
+     "47": "<NOMINAL>"
+    }
+   },
+   {
+    "sample_id": "v_7fab2350_3.5",
+    "nav_text": "Turn left in 27m",
+    "motion": "straight",
+    "city": "PIT",
+    "behavior": "straight",
+    "same_traj": 0.31013427250773506,
+    "bf16_seed_traj": 1.3974755943356825,
+    "rel": 0.2219246430955837,
+    "same_cot": 0.8,
+    "tf_kl": 0.0005576863894626527,
+    "d_ade_gt": 0.29043306795999024,
+    "base_cot": {
+     "43": "Proceed straight through the intersection to follow our route, as the traffic light has turned green.",
+     "44": "Decelerate to a stop before the intersection to yield to oncoming traffic before turning left to follow our route.",
+     "45": "<NOMINAL>",
+     "46": "Decelerate and come to a stop at the intersection stop line to yield to oncoming traffic before turning left to follow our route.",
+     "47": "<NOMINAL>"
+    },
+    "var_cot_diff": {
+     "44": "<NOMINAL>"
+    }
+   },
+   {
+    "sample_id": "v_e2e921fe_5.5",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "WDC",
+    "behavior": "straight",
+    "same_traj": 0.4972288985616836,
+    "bf16_seed_traj": 2.9683659743064936,
+    "rel": 0.16750929732572897,
+    "same_cot": 0.8,
+    "tf_kl": 0.00031832893244185717,
+    "d_ade_gt": -0.4926515942679812,
+    "base_cot": {
+     "43": "<NOMINAL>",
+     "44": "<NOMINAL>",
+     "45": "<NOMINAL>",
+     "46": "Decelerate and maintain a safe following distance behind the lead vehicle ahead in our lane.",
+     "47": "<NOMINAL>"
+    },
+    "var_cot_diff": {
+     "46": "<NOMINAL>"
+    }
+   },
+   {
+    "sample_id": "t_46d917cd_9.0",
+    "nav_text": "Turn right",
+    "motion": "right",
+    "city": "PIT",
+    "behavior": "turn_right",
+    "same_traj": 0.4727111139717051,
+    "bf16_seed_traj": 2.832119597841527,
+    "rel": 0.16691071744709418,
+    "same_cot": 0.8,
+    "tf_kl": 0.00037022810327576165,
+    "d_ade_gt": 0.46005005074831296,
+    "base_cot": {
+     "43": "Brake heavily to yield to the pedestrian crossing our path in the crosswalk ahead.",
+     "44": "Decelerate to a stop before the intersection to yield to pedestrians crossing our path.",
+     "45": "Brake to a stop to yield to the pedestrian crossing our path in the crosswalk ahead.",
+     "46": "Decelerate and yield to the pedestrian crossing our path in the crosswalk while proceeding through the intersection to follow our route.",
+     "47": "Decelerate to a near stop to yield to the pedestrian crossing our intended path, as the traffic signal has turned yellow."
+    },
+    "var_cot_diff": {
+     "47": "Decelerate to yield to the pedestrian crossing the street ahead of us."
+    }
+   },
+   {
+    "sample_id": "v_d3ca0450_7.0",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "DTW",
+    "behavior": "straight",
+    "same_traj": 0.34461762649135147,
+    "bf16_seed_traj": 2.350365227939748,
+    "rel": 0.14662301092389451,
+    "same_cot": 0.6,
+    "tf_kl": 0.00022280605606007572,
+    "d_ade_gt": -0.3319886809766839,
+    "base_cot": {
+     "43": "Decelerate to stop before the upcoming intersection as required by the stop sign.",
+     "44": "Decelerate to a stop before the intersection to comply with the posted stop sign.",
+     "45": "<NOMINAL>",
+     "46": "Decelerate and come to a stop before the intersection stop line to comply with the stop sign and prepare to turn right to follow our route.",
+     "47": "<NOMINAL>"
+    },
+    "var_cot_diff": {
+     "43": "Steer left into the open lane to bypass the traffic cones and construction debris obstructing the right side of the roadway.",
+     "44": "Decelerate to a stop before the intersection to yield to the crossing vehicle and obey the stop sign."
+    }
+   },
+   {
+    "sample_id": "v_cf5aaa11_2.5",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "DTW",
+    "behavior": "straight",
+    "same_traj": 0.5481764917770092,
+    "bf16_seed_traj": 4.793024049122583,
+    "rel": 0.1143696518437789,
+    "same_cot": 0.8,
+    "tf_kl": 0.00028189683331233397,
+    "d_ade_gt": -0.5422221558204146,
+    "base_cot": {
+     "43": "Proceed straight through the intersection to follow our route, as the roadway ahead is clear.",
+     "44": "<NOMINAL>",
+     "45": "<NOMINAL>",
+     "46": "Proceed straight through the intersection to follow our route while decelerating to maintain our lane.",
+     "47": "<NOMINAL>"
+    },
+    "var_cot_diff": {
+     "46": "<NOMINAL>"
+    }
+   },
+   {
+    "sample_id": "v_adf9a841_4.5",
+    "nav_text": "Continue straight",
+    "motion": "other",
+    "city": "PIT",
+    "behavior": "turn_right",
+    "same_traj": 0.15308961964183657,
+    "bf16_seed_traj": 1.4580935705453164,
+    "rel": 0.10499300095300616,
+    "same_cot": 0.6,
+    "tf_kl": 0.00042897621893191326,
+    "d_ade_gt": 0.08209808819639863,
+    "base_cot": {
+     "43": "Steer left into the open lane to bypass the stationary semi-truck obstructing our lane.",
+     "44": "Decelerate to maintain a safe following distance behind the slowing lead vehicle.",
+     "45": "Accelerate forward to follow the departing lead vehicle along our route as the truck ahead pulls away.",
+     "46": "Decelerate and follow at a safe distance as the lead vehicle ahead in our lane is braking and slowing down.",
+     "47": "<NOMINAL>"
+    },
+    "var_cot_diff": {
+     "45": "<NOMINAL>",
+     "46": "Decelerate and follow at a safe distance as the lead vehicle ahead in our lane is braking."
+    }
+   }
+  ],
+  "fp8body_kl_top": [
+   {
+    "sample_id": "v_de9cf513_3.5",
+    "nav_text": "Continue straight",
+    "kl": 0.001087824728585501,
+    "eager_kl": 3.849727899312798e-06,
+    "top1_miss": 0,
+    "tf_traj": 0.004027976826309465,
+    "base_cot": "<NOMINAL>"
+   },
+   {
+    "sample_id": "v_a91d4c7b_6.0",
+    "nav_text": "Continue straight",
+    "kl": 0.0009900223305664053,
+    "eager_kl": 1.2680473925700635e-06,
+    "top1_miss": 0,
+    "tf_traj": 0.015392524986325963,
+    "base_cot": "<NOMINAL>"
+   },
+   {
+    "sample_id": "v_78da7b7e_2.5",
+    "nav_text": "Continue straight",
+    "kl": 0.0007373355813999153,
+    "eager_kl": 8.613198742119892e-05,
+    "top1_miss": 1,
+    "tf_traj": 0.018871451324900926,
+    "base_cot": "<NOMINAL>"
+   },
+   {
+    "sample_id": "v_76916359_9.0",
+    "nav_text": "Continue straight",
+    "kl": 0.0007288109671064191,
+    "eager_kl": 3.456182221232377e-06,
+    "top1_miss": 0,
+    "tf_traj": 0.013808806078727703,
+    "base_cot": "<NOMINAL>"
+   },
+   {
+    "sample_id": "v_dafe14f5_7.5",
+    "nav_text": "Continue straight",
+    "kl": 0.0007167541265617657,
+    "eager_kl": 8.607313407099175e-05,
+    "top1_miss": 0,
+    "tf_traj": 0.020900764310192204,
+    "base_cot": "<NOMINAL>"
+   }
+  ],
+  "fp8all": [
+   {
+    "sample_id": "v_d46ff5df_8.5",
+    "nav_text": "Continue straight",
+    "motion": "stop",
+    "city": "DTW",
+    "behavior": "stop",
+    "same_traj": 0.1262420185045805,
+    "bf16_seed_traj": 0.3609881585171743,
+    "rel": 0.34971235351082697,
+    "same_cot": 0.6,
+    "tf_kl": 0.0006958399709255175,
+    "d_ade_gt": 0.1256904670218827,
+    "base_cot": {
+     "43": "Remain stopped before the crosswalk to yield to pedestrians crossing our path.",
+     "44": "Remain stopped at the intersection to yield to pedestrians crossing our path in the crosswalk.",
+     "45": "Wait in the intersection to yield to pedestrians crossing our path before turning right.",
+     "46": "Remain stopped and wait at the intersection to yield to pedestrians crossing in the crosswalk ahead.",
+     "47": "Remain stopped at the intersection to yield to pedestrians crossing the crosswalk directly in our path."
+    },
+    "var_cot_diff": {
+     "43": "Proceed forward into the intersection to follow our route, as the crossing pedestrians have cleared our path.",
+     "47": "Remain stopped at the intersection to yield to pedestrians crossing the crosswalk directly in front of us."
+    }
+   },
+   {
+    "sample_id": "v_ba67827f_8.0",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "MIA",
+    "behavior": "straight",
+    "same_traj": 0.9025072876797079,
+    "bf16_seed_traj": 3.0192271593217646,
+    "rel": 0.298919968606286,
+    "same_cot": 0.6,
+    "tf_kl": 0.00039484992674300646,
+    "d_ade_gt": -0.7139926785030262,
+    "base_cot": {
+     "43": "Proceed straight through the intersection to follow our route, as the crossing vehicle has cleared our path.",
+     "44": "Decelerate to maintain a safe following distance behind the vehicle cutting into our lane.",
+     "45": "Brake to yield space as a vehicle cuts into our lane from the right.",
+     "46": "Decelerate and yield to the adjacent vehicle cutting across our lane from the right while continuing straight through the intersection to follow our route.",
+     "47": "Decelerate to yield to the silver sedan cutting into our lane from the right, while continuing straight through the intersection to follow our route."
+    },
+    "var_cot_diff": {
+     "45": "Proceed straight through the intersection to follow our route, as the crossing vehicle has cleared our path.",
+     "47": "Proceed straight through the intersection to follow our route, as the crossing vehicle has cleared our path."
+    }
+   },
+   {
+    "sample_id": "t_f5a3ee79_9.0",
+    "nav_text": "Turn left in 12m",
+    "motion": "left",
+    "city": "DTW",
+    "behavior": "turn_left",
+    "same_traj": 0.5622521665106643,
+    "bf16_seed_traj": 2.4258425815774656,
+    "rel": 0.23177603146245607,
+    "same_cot": 0.6,
+    "tf_kl": 0.0005953802486158843,
+    "d_ade_gt": 0.27034286494742643,
+    "base_cot": {
+     "43": "Decelerate and yield before turning left at the intersection to follow our route, as the traffic light is green but an oncoming vehicle is turning across our path.",
+     "44": "Decelerate to a stop and wait before the intersection to yield to an oncoming vehicle before turning left to follow our route.",
+     "45": "Proceed forward into the intersection under the green light to turn left to follow our route, but yield to the oncoming vehicle turning across our path.",
+     "46": "Decelerate and yield to oncoming traffic before turning left to follow our route.",
+     "47": "Decelerate to yield to the oncoming vehicle before turning left to follow our route."
+    },
+    "var_cot_diff": {
+     "43": "Proceed into the intersection and turn left to follow our route, as the traffic light has turned green.",
+     "44": "Decelerate to a stop before the intersection to yield to the oncoming vehicle turning left across our path."
+    }
+   },
+   {
+    "sample_id": "v_f3cd0d0d_6.5",
+    "nav_text": "Continue straight",
+    "motion": "other",
+    "city": "WDC",
+    "behavior": "straight",
+    "same_traj": 0.20567660569436894,
+    "bf16_seed_traj": 0.924148132875566,
+    "rel": 0.22255804927548636,
+    "same_cot": 0.6,
+    "tf_kl": 0.0005332124423198775,
+    "d_ade_gt": 0.18655949502711522,
+    "base_cot": {
+     "43": "Decelerate to a stop behind the queued lead vehicle for the red traffic light ahead.",
+     "44": "Decelerate to a stop behind the queued vehicle in our lane as the traffic light ahead is red.",
+     "45": "<NOMINAL>",
+     "46": "Decelerate to come to a stop behind the queued lead vehicle in our lane as the traffic light ahead is red.",
+     "47": "Decelerate to a stop in our lane for the red traffic light and the queued lead vehicle ahead."
+    },
+    "var_cot_diff": {
+     "43": "Proceed straight through the intersection to follow our route, as permitted by the green traffic light.",
+     "47": "<NOMINAL>"
+    }
+   },
+   {
+    "sample_id": "v_d5d6f11c_3.5",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "PAO",
+    "behavior": "straight",
+    "same_traj": 0.5645323347003293,
+    "bf16_seed_traj": 2.9342496410040906,
+    "rel": 0.19239410539968513,
+    "same_cot": 0.6,
+    "tf_kl": 0.00042584980184980575,
+    "d_ade_gt": 0.531397259871697,
+    "base_cot": {
+     "43": "Proceed straight through the intersection to follow our route, as our path is clear.",
+     "44": "Proceed straight through the intersection to follow our route, as we have the right of way and the roadway is clear.",
+     "45": "Proceed straight through the intersection to follow our route, as we have the right of way and our path is clear.",
+     "46": "Proceed straight through the intersection to follow our route, as the roadway ahead is clear.",
+     "47": "Proceed straight through the intersection to follow our route, as the crossing is clear and we have the right of way."
+    },
+    "var_cot_diff": {
+     "43": "Proceed straight through the intersection to follow our route, as we have the right of way and the roadway ahead is clear.",
+     "46": "Proceed straight through the intersection to follow our route while decelerating to maintain safe clearance from the parked pickup truck on the right."
+    }
+   },
+   {
+    "sample_id": "t_46d917cd_9.0",
+    "nav_text": "Turn right",
+    "motion": "right",
+    "city": "PIT",
+    "behavior": "turn_right",
+    "same_traj": 0.48185115710618537,
+    "bf16_seed_traj": 2.832119597841527,
+    "rel": 0.1701379975172742,
+    "same_cot": 0.6,
+    "tf_kl": 0.0008043500071861498,
+    "d_ade_gt": 0.45050889768542435,
+    "base_cot": {
+     "43": "Brake heavily to yield to the pedestrian crossing our path in the crosswalk ahead.",
+     "44": "Decelerate to a stop before the intersection to yield to pedestrians crossing our path.",
+     "45": "Brake to a stop to yield to the pedestrian crossing our path in the crosswalk ahead.",
+     "46": "Decelerate and yield to the pedestrian crossing our path in the crosswalk while proceeding through the intersection to follow our route.",
+     "47": "Decelerate to a near stop to yield to the pedestrian crossing our intended path, as the traffic signal has turned yellow."
+    },
+    "var_cot_diff": {
+     "43": "Brake heavily to yield as a pedestrian enters the crosswalk across our path.",
+     "47": "Decelerate to yield to the pedestrian crossing the street ahead of us."
+    }
+   },
+   {
+    "sample_id": "v_d3ca0450_7.0",
+    "nav_text": "Continue straight",
+    "motion": "straight",
+    "city": "DTW",
+    "behavior": "straight",
+    "same_traj": 0.3452985074978657,
+    "bf16_seed_traj": 2.350365227939748,
+    "rel": 0.1469127024996634,
+    "same_cot": 0.6,
+    "tf_kl": 0.0005553665641516574,
+    "d_ade_gt": -0.3321273308099233,
+    "base_cot": {
+     "43": "Decelerate to stop before the upcoming intersection as required by the stop sign.",
+     "44": "Decelerate to a stop before the intersection to comply with the posted stop sign.",
+     "45": "<NOMINAL>",
+     "46": "Decelerate and come to a stop before the intersection stop line to comply with the stop sign and prepare to turn right to follow our route.",
+     "47": "<NOMINAL>"
+    },
+    "var_cot_diff": {
+     "43": "Steer left into the open lane to bypass the traffic cones and construction debris obstructing the right side of the roadway.",
+     "44": "Decelerate to a stop before the intersection to yield to the crossing vehicle and obey the stop sign."
+    }
+   },
+   {
+    "sample_id": "t_5b1d8b11_8.5",
+    "nav_text": "Turn right",
+    "motion": "right",
+    "city": "ATX",
+    "behavior": "turn_right",
+    "same_traj": 0.7189463557173993,
+    "bf16_seed_traj": 5.041777427398545,
+    "rel": 0.14259779731854627,
+    "same_cot": 0.8,
+    "tf_kl": 0.0004979875734746564,
+    "d_ade_gt": 0.6980350833812992,
+    "base_cot": {
+     "43": "Turn right at the intersection to follow our route, as the crossing pedestrian has cleared our path.",
+     "44": "Turn right at the intersection to follow our route, as permitted by the green traffic signal.",
+     "45": "Proceed forward into the intersection under the green light to follow our route, as the pedestrian has cleared our path.",
+     "46": "Turn right at the intersection to follow our route under the green traffic signal, but yield to the pedestrian crossing the crosswalk.",
+     "47": "Turn right at the intersection under the green light to follow our route, but slow down to yield to a pedestrian crossing our path."
+    },
+    "var_cot_diff": {
+     "47": "Turn right at the intersection to follow our route, as the crossing pedestrian has cleared our path."
+    }
+   },
+   {
+    "sample_id": "v_ff0dbfc5_8.5",
+    "nav_text": "Continue straight",
+    "motion": "other",
+    "city": "PIT",
+    "behavior": "turn_right",
+    "same_traj": 0.1702645073999293,
+    "bf16_seed_traj": 1.2184133915309472,
+    "rel": 0.1397428069844098,
+    "same_cot": 0.6,
+    "tf_kl": 0.0005714407470732924,
+    "d_ade_gt": -0.16930409604377772,
+    "base_cot": {
+     "43": "Proceed straight through the intersection to follow our route, as the crossing pedestrian has cleared our path.",
+     "44": "Decelerate to a stop behind the queued vehicle for the red traffic light at the upcoming intersection.",
+     "45": "Proceed straight through the intersection to follow our route, while slowing down to yield to the pedestrian crossing our path.",
+     "46": "Decelerate to come to a stop behind the queued lead vehicle in our lane.",
+     "47": "Proceed straight through the intersection to follow our route, while slowing down for the red traffic light and the queued vehicle ahead."
+    },
+    "var_cot_diff": {
+     "44": "Decelerate to a stop behind the queued vehicle in our lane as it brakes for the red traffic light ahead.",
+     "46": "Decelerate to a complete stop for the red traffic light and the queued lead vehicle ahead."
+    }
+   },
+   {
+    "sample_id": "v_b8489c02_7.5",
+    "nav_text": "Continue straight",
+    "motion": "other",
+    "city": "MIA",
+    "behavior": "turn_left",
+    "same_traj": 0.4196733542090783,
+    "bf16_seed_traj": 3.1721827023783877,
+    "rel": 0.13229797700316012,
+    "same_cot": 0.4,
+    "tf_kl": 0.00038897106666436294,
+    "d_ade_gt": -0.2616392485528385,
+    "base_cot": {
+     "43": "Decelerate to yield as a vehicle cuts into our lane from the left.",
+     "44": "Decelerate to maintain a safe following distance behind the vehicle cutting into our lane.",
+     "45": "Brake firmly to yield to the black SUV cutting into our lane from the left, as it blocks our path.",
+     "46": "Decelerate and yield to the oncoming vehicle turning left across our path into the driveway.",
+     "47": "Decelerate to yield to the vehicle cutting across our lane ahead."
+    },
+    "var_cot_diff": {
+     "43": "Brake heavily to yield as a vehicle cuts into our lane from the left.",
+     "45": "Brake firmly to yield to the black SUV cutting into our lane from the left, as it obstructs our path.",
+     "46": "Decelerate to yield to the black SUV entering our lane from the left and maintain clearance as it brakes ahead."
+    }
+   }
+  ],
+  "fp8all_kl_top": [
+   {
+    "sample_id": "v_0b5142c1_8.0",
+    "nav_text": "Continue straight",
+    "kl": 0.0011987540276625287,
+    "eager_kl": 0.00018370228980814859,
+    "top1_miss": 0,
+    "tf_traj": 0.005296929117710193,
+    "base_cot": "Proceed forward to follow the lead vehicle as it departs and accelerates ahead in the queue."
+   },
+   {
+    "sample_id": "v_185d3943_2.5",
+    "nav_text": "Continue straight",
+    "kl": 0.0011453985652876391,
+    "eager_kl": 9.483806257346372e-05,
+    "top1_miss": 1,
+    "tf_traj": 0.015770043620506973,
+    "base_cot": "Proceed forward and accelerate as the lead vehicle ahead departs and clears our lane."
+   },
+   {
+    "sample_id": "v_87ca3d9f_3.0",
+    "nav_text": "Continue straight",
+    "kl": 0.0010355899800204016,
+    "eager_kl": 0.00010042305738624011,
+    "top1_miss": 0,
+    "tf_traj": 0.013694503183487586,
+    "base_cot": "Decelerate to yield to the crossing scooter rider and prepare to turn left into the entrance to follow our route."
+   },
+   {
+    "sample_id": "v_f292cc5c_9.0",
+    "nav_text": "Turn right",
+    "kl": 0.0010322680195355306,
+    "eager_kl": 0.00016722016993269044,
+    "top1_miss": 2,
+    "tf_traj": 0.0033972706301298966,
+    "base_cot": "Decelerate to yield to the pedestrian crossing the street in our path while turning right to follow our route."
+   },
+   {
+    "sample_id": "v_280269f9_6.5",
+    "nav_text": "Continue straight",
+    "kl": 0.0010257590639272541,
+    "eager_kl": 0.00014931414107160638,
+    "top1_miss": 0,
+    "tf_traj": 0.012155948130790795,
+    "base_cot": "Decelerate and follow the lead vehicle in our lane as it slows down in traffic ahead."
+   }
+  ]
+ },
+ "speed": {
+  "base": {
+   "n_calls": 2000,
+   "ms_per_token_slope": 15.47962830227585,
+   "decode_intercept_ms": 18.632788338065215,
+   "e2e_median": 830.915,
+   "e2e_p90": 937.543,
+   "e2e_max": 1281.61,
+   "under_1s": 0.983,
+   "n_tok_median": 20.0,
+   "n_tok_p90": 27.0,
+   "n_tok_max": 40,
+   "e2e_at_26tok_fit": null,
+   "e2e_fit": {
+    "slope": 15.566991948804803,
+    "intercept": 520.3598514221377,
+    "at_26": 925.1016420910626
+   },
+   "tokens_within_1s_fit": 30.81135714306629
+  },
+  "fp8all": {
+   "n_calls": 2000,
+   "ms_per_token_slope": 9.170586006653279,
+   "decode_intercept_ms": 11.187593149453722,
+   "e2e_median": 699.245,
+   "e2e_p90": 760.818,
+   "e2e_max": 941.76,
+   "under_1s": 1.0,
+   "n_tok_median": 20.0,
+   "n_tok_p90": 27.0,
+   "n_tok_max": 40,
+   "e2e_at_26tok_fit": null,
+   "e2e_fit": {
+    "slope": 9.235679856263541,
+    "intercept": 514.0374929091187,
+    "at_26": 754.1651691719708
+   },
+   "tokens_within_1s_fit": 52.617946340063604
+  },
+  "fp8body": {
+   "n_calls": 2000,
+   "ms_per_token_slope": 10.301502185288086,
+   "decode_intercept_ms": 12.560370327850896,
+   "e2e_median": 721.645,
+   "e2e_p90": 792.8340000000001,
+   "e2e_max": 925.12,
+   "under_1s": 1.0,
+   "n_tok_median": 20.0,
+   "n_tok_p90": 27.0,
+   "n_tok_max": 40,
+   "e2e_at_26tok_fit": null,
+   "e2e_fit": {
+    "slope": 10.351391643049807,
+    "intercept": 515.4487574258154,
+    "at_26": 784.5849401451104
+   },
+   "tokens_within_1s_fit": 46.81025115106382
+  }
+ },
+ "ntok_hist_base": {
+  "bins": [
+   0,
+   5,
+   10,
+   20,
+   30,
+   40,
+   50,
+   60,
+   80,
+   120,
+   257
+  ],
+  "counts": [
+   0,
+   413,
+   479,
+   1051,
+   56,
+   1,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "excluded_new_graph_calls": 0,
+ "temp_max": 81.0
+}
