@@ -9,7 +9,8 @@
 #   Figure 7 : one scene (log 02678d04, t0 = 5.0 s) as input built in 3 layouts, drawn with av2_build.render.
 #              The front 3 slots for each layout, plus the other 3 slots of the adopted layout (wide_ft).
 #   Figure 11: pedestrian crossing (v_d46ff5df_8.5). Uses the records in raw/wide/wide.jsonl
-#              (BF16, FP8 body only and FP8 body + output layer, 5 seeds each).
+#              (BF16, FP8 body only and FP8 body + output layer, 5 seeds each). Front image and top views only;
+#              the reasoning per seed is in the article text.
 #   The reasoning text is the model output as is. An attribution line (Argoverse 2, © 2021 Argo AI, LLC,
 #   CC BY-NC-SA 4.0, modified) is added below each figure. Width 1600 px and body text of 26 px or more,
 #   so that the figures stay readable when scaled down to about 800 px.
@@ -316,24 +317,8 @@ def fig11(out):
         canvas.paste(sub, (px0 + k * colw + 3, y + head_h + 72))
         dr.multiline_text((px0 + k * colw + colw // 2, y + head_h + 4), short[v], font=font(22, True), fill=TCOL[v],
                           anchor="ma", align="center", spacing=2)
-    y += fh + 22
-    fx = [float(np.asarray(S[v][s]["xyz"])[-1, 0]) for v in vs for s in seeds]
-    mn = lambda v: f"{v:+.1f}".replace("-", "−")  # noqa: E731  minus sign is U+2212
-    y = text_block(dr, 16, y, (f"The recorded vehicle stays stopped. The predicted longitudinal position 6.4 s later is {mn(min(fx))} to {mn(max(fx))} m "
-                                "in every configuration (only slight movement back and forth; some seeds move backward). "
-                                "Reasoning (as output by the model) per seed, from top: BF16, FP8 body only, FP8 body + output layer:"),
-                   f_s, INK, WID - 32)
-    y += 8
-    for s in seeds:
-        b = S["base"][s]
-        dr.text((16, y), f"seed {s}", font=f_l, fill=INK)
-        x0 = 140
-        y = text_block(dr, x0, y, f"BF16: {b['cot']}", f_e, TCOL["base"], WID - x0 - 16, gap=4)
-        for v in ("fp8body", "fp8all"):
-            same = S[v][s]["gen_ids"] == b["gen_ids"]
-            t = f"{NAME[v]}: " + ("(same reasoning as BF16)" if same else S[v][s]["cot"])
-            y = text_block(dr, x0, y, t, f_e, TCOL[v], WID - x0 - 16, gap=4)
-        y += 10
+    # only the upper part (front image and top views); the reasoning per seed is given in the article text
+    y += fh + 6
     footer(canvas, y).save(out)
 
 

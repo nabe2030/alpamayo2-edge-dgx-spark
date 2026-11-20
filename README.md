@@ -23,7 +23,7 @@ It does not contain the model weights, the upstream code or any AV2 data. Get ea
 | `measure/` | Speed measurements (single input / continuous 10 Hz and 1 Hz / including re-rendering), BF16 vs FP8 output comparisons, the stopped-scene study, the input-layout comparison (`av2_eval.py`), summaries and plots |
 | `results/` | Result tables and plots on AV2 (no AV2 images) |
 | `results_av2_images/` | Figures that contain AV2 images (with attribution; CC BY-NC-SA 4.0; see `results_av2_images/LIST.md`) |
-| `docs/` | The English article (`article_en.md`) and its figures. `docs/figs_av2/` holds article figures 6, 7 and 11 (they contain AV2 images; CC BY-NC-SA 4.0; source, modifications and license in `docs/figs_av2/README.md`). They are drawn by `measure/article_figs.py` |
+| `docs/` | The English article (`article_en.md`) and its figures. `docs/figs_av2/` holds article figures 6, 7 and 11 and the real-time demo animation shown above (they contain AV2 images; CC BY-NC-SA 4.0; source, modifications and license in `docs/figs_av2/README.md`). They are drawn by `measure/article_figs.py` |
 | `LICENSES/` | Apache-2.0 (this code and the upstream code) and CC BY-NC-SA 4.0 (AV2) |
 
 ## The four optimizations and FP8
@@ -97,6 +97,7 @@ On this scene (seed 43, 18 reasoning tokens) we measured 1927 ms for official tu
 - BF16 vs FP8: `measure/run_wide.sh` (`wide_eval.py`), `measure/av2_stopgo.py` (more seeds on stopped scenes)
 - Input layouts and navigation text (BF16): `measure/av2_eval.py` (its records `raw/cfg.jsonl` and `raw/samples/` are used for article figure 6)
 - Article figures 6, 7 and 11: `measure/article_figs.py` (see `docs/figs_av2/README.md`)
+- Real-time demo animation: `measure/demo_realtime.py` (real-time loop: each inference starts on the latest input when the previous one ends) and `measure/demo_frames.py` (frames; ffmpeg commands at the top of the script)
 - Summaries: `summarize_speed.py`, `summarize_multi.py`, `summarize_wide.py`, `summarize_stopgo.py`
 - `run_*.sh` read `env.sh` in this repository (set `A2E_ENV=/path/to/env.sh` to use another). Put full logs in `$A2E_WORK/data/av2/val/` (`av2_input/av2_fetch.py`).
 
@@ -141,7 +142,7 @@ On this scene (seed 43, 18 reasoning tokens) we measured 1927 ms for official tu
   - `accel/a2e_fp8.py`, `DecodeStepQ.forward`: follows the CoT decode step in upstream `alpamayo2_edge/accel/decode.py`; its linear layers call the FP8 kernel.
   - `accel/a2e_stagea.py`, `GpuPrep`: follows upstream `alpamayo2_edge/helper.py` `prepare_model_inputs` and moves image processing to the GPU.
   - Upstream: NVlabs/alpamayo2-edge, Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES, Apache-2.0.
-- Figures in `results_av2_images/` and `docs/figs_av2/`: CC BY-NC-SA 4.0 (above).
+- Figures in `results_av2_images/` and `docs/figs_av2/`, including the demo animation `docs/figs_av2/demo_realtime.gif`: CC BY-NC-SA 4.0 (above).
 - Upstream files, model weights (NVIDIA's license) and AV2 data are not included.
 
 ## Results (AV2, one NVIDIA GB10)
