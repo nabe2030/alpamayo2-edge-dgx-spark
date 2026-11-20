@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_stopgo.py <plan.csv> <out.jsonl>
-# 止まるべき場面・譲る判断が出る場面で seed を増やし、BF16 と FP8(本体だけ/本体 + 出力層)の
-#   「進む」の割合を比べるための生の記録を取る。plan.csv の列: scene_id, tier, seed_from, n_seeds。
-#   設定は wide_eval.py / av2_seedsweep.py と同じ(tuned + 4 つの手、温度 0.6、top_p 0.98、拡散 10 ステップ、
-#   torch.manual_seed(s) と拡散の乱数 s)。場面ごとに描き直しは 1 回。seed ごとに 3 つの変種を続けて回す(同じ seed で対にする)。
-#   途中から再開できる(out にある (scene, seed) は飛ばす)。84℃ で休む。
-#   場面ごとに 1 回、1 トークン目の分布も記録する(<out>_tf.jsonl): BF16 の最初の seed の判断理由を teacher forcing で流し
-#   (qcheck.ForcedSampler、乱数を使わない)、位置 0 の分布(温度 0.6 をかけた softmax)の上位 30 を変種ごとに残す。
-#   「どのトークンで分かれたか」が 1 トークン目に集まっていたため(5 seed の記録の試しの集計)。
+# On stopped scenes and scenes where a yield decision appears, uses more seeds and records raw data for comparing
+#   the "go" rate of BF16 vs FP8 (FP8 body only / FP8 body + output layer). Columns of plan.csv: scene_id, tier, seed_from, n_seeds.
+#   Settings are the same as wide_eval.py / av2_seedsweep.py (tuned + the four optimizations, temperature 0.6, top_p 0.98, 10 diffusion steps,
+#   torch.manual_seed(s) and diffusion RNG s). Re-rendering once per scene. Per seed, runs the 3 variants back to back (paired by the same seed).
+#   Can resume from where it left off (skips (scene, seed) already in out). Pauses at 84°C.
+#   Once per scene, also records the first-token distribution (<out>_tf.jsonl): feeds the reasoning of BF16's first seed by teacher forcing
+#   (qcheck.ForcedSampler, no RNG) and keeps, per variant, the top 30 of the position-0 distribution (softmax at temperature 0.6).
+#   This is because the token where they diverged was concentrated at the first token (trial tally of the 5-seed records).
 import os
 import json
 import sys
@@ -43,7 +43,9 @@ def main():
     tfp = outp.with_name(outp.stem + "_tf.jsonl")
     tf_done = {json.loads(l)["scene"] for l in tfp.read_text().splitlines()} if tfp.exists() else set()
     tfo = open(tfp, "a")
-    scenes = pd.read_csv(HERE.parent / "raw/wide/scenes_t0.csv").set_index("scene_id")
+    # records and data live under A2E_WORK (as in the other scripts); falls back to one level above this file
+    work = Path(os.environ.get("A2E_WORK") or HERE.parent)
+    scenes = pd.read_csv(work / "raw/wide/scenes_t0.csv").set_index("scene_id")
     S.install_processor_once()
     from alpamayo2_edge.accel import AccelConfig, enable_acceleration
     from alpamayo2_edge.checkpoint import load_model
@@ -92,8 +94,8 @@ def main():
         return 7 <= now.hour < 12
 
     for p in plan.itertuples():
-        if past_7am():  # 07:00 JST を過ぎたら新しい場面を始めない(指示 §4)
-            log("07:00 JST を過ぎたので止める")
+        if past_7am():  # do not start a new scene after 07:00 JST (instruction §4)
+            log("stopping because it is past 07:00 JST")
             break
         seeds = [s for s in range(p.seed_from, p.seed_from + p.n_seeds) if (p.scene_id, s) not in done]
         if not seeds:

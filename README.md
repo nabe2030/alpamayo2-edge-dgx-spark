@@ -1,177 +1,179 @@
-# Alpamayo 2 Edge を Argoverse 2 の映像で動かし、1 台の DGX Spark(GB10)で 1Hz に収める
+# Running Alpamayo 2 Edge on Argoverse 2 at 1 Hz on a single DGX Spark (GB10)
 
-[English](README.en.md)
+**Article:** the write-up is [`docs/article_en.md`](docs/article_en.md). A Japanese version of the article is on [Qiita](https://qiita.com/nabe2030/items/f220eb860dda549e966d).
 
-**記事:** 経過と結果の解説は Qiita の記事「[自動運転 AI「Alpamayo 2 Edge」DGX Spark でソースコード解析＋FP8 カーネルチューニング](https://qiita.com/nabe2030/items/f220eb860dda549e966d)」(日本語)にまとめた。英語版の記事は [`docs/article_en.md`](docs/article_en.md)。
+We ran NVIDIA's driving VLA model [Alpamayo 2 Edge](https://huggingface.co/nvidia/Alpamayo2-Edge) on camera
+footage from the public [Argoverse 2 Sensor](https://www.argoverse.org/av2.html) dataset (AV2). With four inference
+optimizations and a custom FP8 decode kernel, we measured whether continuous 1 Hz inference fits on one NVIDIA GB10,
+and compared the outputs (trajectories and reasoning text) of FP8 against BF16. This repository holds the code and the results.
 
-NVIDIA の運転用 VLA モデル [Alpamayo 2 Edge](https://huggingface.co/nvidia/Alpamayo2-Edge) を、
-公開データセット [Argoverse 2 Sensor](https://www.argoverse.org/av2.html)(AV2)のカメラ映像で動かした。
-推論を速くする 4 つの手と、自作の FP8 デコードカーネルを使い、1 台の NVIDIA GB10 で連続 1Hz の推論が収まるかを測った。
-あわせて、FP8 にしたときの出力の変わり方(軌跡・判断理由)を BF16 と比べた。そのためのコード一式と結果。
+It does not contain the model weights, the upstream code or any AV2 data. Get each from its distributor.
 
-モデルの重み、上流のコード、AV2 のデータは含まない。それぞれの配布元から取る。
+## Contents
 
-## 中身
-
-| フォルダ | 中身 |
+| Folder | Contents |
 |---|---|
-| `kernels/fp8_gemv/` | FP8(E4M3)の重み × BF16 の行列×ベクトル積の CUDA カーネル(`fp8_gemv.cu`)、ビルドの手順(`build.sh`)、データセットもモデルも使わない単体のベンチ(`bench_fp8_gemv.py`、合成データ) |
-| `accel/` | 加速の 4 つの手(`a2e_stagea.py`)と、CoT デコードの重みを FP8 で読む差し替え(`a2e_fp8.py`)。どちらも上流のコードを書き換えず、読み込んだあとのモデルに差し込む |
-| `av2_input/` | AV2 のログから、Alpamayo 2 Edge の入力(公式ローダと同じ形の dict)を組み立てるスクリプト。データの取得、場面選び、仮想カメラへの描き直し、ナビ文の作り方 |
-| `measure/` | 速さの測定(1 回だけ / 連続 10Hz・1Hz / 描き直し込み)、BF16 と FP8 の出力の比較、止まる場面での比較、集計と図のスクリプト |
-| `results/` | AV2 で測った結果の表と図(AV2 の画像を含まないもの) |
-| `results_av2_images/` | AV2 の画像を含む図(帰属表示つき。CC BY-NC-SA 4.0。一覧は `results_av2_images/LIST.md`) |
-| `docs/` | 英語版の記事(`article_en.md`)と、その図。`docs/figs_av2/` は記事の図 6・7・11(AV2 の画像を含む。英語ラベルの版と、`_ja` を付けた日本語ラベルの版。CC BY-NC-SA 4.0。出典・加工・ライセンスは `docs/figs_av2/README.md`)。描くスクリプトは `measure/article_figs.py`(`A2E_FIG_LANG=en` で英語ラベル、既定は日本語ラベル) |
-| `LICENSES/` | Apache-2.0(このリポジトリのコードと、上流のコード)と CC BY-NC-SA 4.0(AV2)のライセンスの本文 |
+| `kernels/fp8_gemv/` | CUDA kernel for FP8 (E4M3) weight × BF16 vector products (`fp8_gemv.cu`), build script (`build.sh`), and a standalone benchmark on synthetic data that needs neither a dataset nor the model (`bench_fp8_gemv.py`) |
+| `accel/` | The four optimizations (`a2e_stagea.py`) and the FP8 weights for CoT decoding (`a2e_fp8.py`). Both patch the loaded model from outside; the upstream code is not edited |
+| `av2_input/` | Scripts that build Alpamayo 2 Edge inputs (the same dict as the official loader) from AV2 logs: download, scene selection, re-rendering to virtual cameras, navigation text |
+| `measure/` | Speed measurements (single input / continuous 10 Hz and 1 Hz / including re-rendering), BF16 vs FP8 output comparisons, the stopped-scene study, the input-layout comparison (`av2_eval.py`), summaries and plots |
+| `results/` | Result tables and plots on AV2 (no AV2 images) |
+| `results_av2_images/` | Figures that contain AV2 images (with attribution; CC BY-NC-SA 4.0; see `results_av2_images/LIST.md`) |
+| `docs/` | The English article (`article_en.md`) and its figures. `docs/figs_av2/` holds article figures 6, 7 and 11 (they contain AV2 images; CC BY-NC-SA 4.0; source, modifications and license in `docs/figs_av2/README.md`). They are drawn by `measure/article_figs.py` |
+| `LICENSES/` | Apache-2.0 (this code and the upstream code) and CC BY-NC-SA 4.0 (AV2) |
 
-## 加速の 4 つの手と FP8
+## The four optimizations and FP8
 
-番号(#1 など)は作業のときの呼び名で、`accel/a2e_stagea.py` の節の見出しと同じ。記事では ①〜④ と呼んでいる(#1 = ①、#9 = ②、#2 = ③、#3 = ④)。
+The numbers (#1 etc.) are our working names and match the section headings in `accel/a2e_stagea.py`. The article calls them ① to ④ (#1 = ①, #9 = ②, #2 = ③, #3 = ④).
 
-1. **#1 プロセッサを 1 回だけ読む**(`install_processor_once`): 公式の前処理は、呼ぶたびに `AutoProcessor.from_pretrained` を読み直す(2026-11-20 の上流の main `02f55a7` でも同じ)。これを 1 回だけにする。上流に出ている提案 PR #11 と同じ変更。
-2. **#9 前処理の縮小を GPU で**(`GpuPrep`): 22 枚の縮小・パッチ化・正規化を GPU で行う。縮小後の uint8 の画素が上流と最大 1 違うことがある。プロンプト、トークン列、画像の格子の大きさは上流と一致する。
-3. **#2 ViT の結果を画像ごとに使い回す**(`VitFeatureCache`): 連続入力では、同じコマが次の時刻でも履歴として入る。そのため、前に ViT に通した画像の結果を使う(キーはカメラ・時刻・格子・画素の指紋)。
-4. **#3 ViT を compile / CUDA グラフにする**(`VisionAccel`)。上流の公式の加速では ViT は eager のまま。
-- **FP8 デコード**(`a2e_fp8.py` + `kernels/fp8_gemv`): CoT のデコード(バッチ 1)で、言語モデルの線形層(本体 28 層)の重みを、行ごとのスケールの E4M3 で読む。出力層も FP8 にできる(`--q all`)が、判断理由の 1 トークン目が「進む」寄りにわずかに偏るので、**本体だけ(`--q body`)を推す**。プリフィル・ViT・軌跡のエキスパートは BF16 のまま。
+1. **#1 Load the processor once** (`install_processor_once`): the official preprocessing calls `AutoProcessor.from_pretrained` on every call (still true on upstream main `02f55a7` as of 2026-11-20). Read it once instead. This is the same change as the upstream proposal PR #11.
+2. **#9 Resize images on the GPU** (`GpuPrep`): resize, patchify and normalize the 22 images on the GPU. Resized uint8 pixels can differ from upstream by at most 1. The prompt, token ids and image grid sizes match upstream.
+3. **#2 Reuse ViT results** (`VitFeatureCache`): with continuous input, a frame comes back as history at later timestamps, so reuse its earlier ViT output (keyed by camera, timestamp, grid and a pixel fingerprint).
+4. **#3 Compile the ViT too** (CUDA graphs, `VisionAccel`). The official acceleration leaves the ViT eager.
+- **FP8 decoding** (`a2e_fp8.py` + `kernels/fp8_gemv`): during CoT decoding (batch 1), read the weights of the language model's linear layers (the 28-layer body) as E4M3 with per-row scales. The output layer can be FP8 too (`--q all`), but that shifts the first reasoning token slightly towards "proceed", so **we recommend FP8 body only (`--q body`)**. Prefill, ViT and the trajectory expert stay in BF16.
 
-上流の公式の加速(`alpamayo2_edge.accel`、`mode="tuned"`)の上に重ねて使う。
+These sit on top of the official acceleration (`alpamayo2_edge.accel`, `mode="tuned"`).
 
-## 動かし方
+## How to run
 
-### 1. 用意するもの
+### 1. Requirements
 
-- 上流のコード: https://github.com/NVlabs/alpamayo2-edge (測ったのはコミット `02f55a7`)を `$A2E_ROOT/src/alpamayo2-edge` に置き、上流の README の手順で `.venv` を作る(FlashAttention 2 を含む。GB10 では flash-attn 2.8.3 を sm_121 向けにビルドした)。
-- モデル: https://huggingface.co/nvidia/Alpamayo2-Edge を `$A2E_ROOT/models/Alpamayo2-Edge` に置く(利用条件はモデルのページで確かめる)。測ったリビジョンは `f8951d0`。2026-11-20 の main `b92b6aa` は、重みと設定が同じでモデルカードだけが違う。
-  例: `hf download nvidia/Alpamayo2-Edge --local-dir $A2E_ROOT/models/Alpamayo2-Edge`
-- FP8 カーネルのビルド: sm_121 に対応した nvcc(CUDA 12.9 以降)と ninja(例: `$PY -m pip install ninja`、または ninja のバイナリを PATH に置く。無いと `Ninja is required to load C++ extensions` で止まる)。測ったのは CUDA 12.9(PyTorch の cu129 と同じ)。CUDA 13.0 の nvcc でもビルドと単体ベンチは通った(2026-11-20、DGX OS 7.6.0 の `/usr/local/cuda`)。
-- AV2 のデータ: 下の手順 4 で、場面ごとに要るコマだけを取る(1 場面 10 MB 前後)。
+- Upstream code: https://github.com/NVlabs/alpamayo2-edge (we measured commit `02f55a7`) in `$A2E_ROOT/src/alpamayo2-edge`, with its `.venv` built as in the upstream README (including FlashAttention 2; on GB10 we built flash-attn 2.8.3 for sm_121).
+- Model: https://huggingface.co/nvidia/Alpamayo2-Edge in `$A2E_ROOT/models/Alpamayo2-Edge` (check the terms on the model page). We measured revision `f8951d0`; main as of 2026-11-20 (`b92b6aa`) has the same weights and configs and differs only in the model card.
+  Example: `hf download nvidia/Alpamayo2-Edge --local-dir $A2E_ROOT/models/Alpamayo2-Edge`
+- To build the FP8 kernel: an nvcc that supports sm_121 (CUDA 12.9 or later) and ninja (e.g. `$PY -m pip install ninja`, or a ninja binary on PATH; without it the build stops with `Ninja is required to load C++ extensions`). We measured with CUDA 12.9 (matching PyTorch's cu129). The CUDA 13.0 nvcc of DGX OS 7.6.0 (`/usr/local/cuda`) also built the kernel and passed the standalone benchmark (2026-11-20).
+- AV2 data: step 4 below downloads only the frames needed for each scene (about 10 MB per scene).
 
-### 2. 環境変数
+### 2. Environment
 
 ```bash
-cp env.example.sh env.sh      # A2E_ROOT・A2E_WORK(と、必要なら CUDA_HOME)を書き換える
-source env.sh                 # PY(上流の venv の python)、PYTHONPATH、A2E_REPO などが決まり、A2E_WORK に移る
+cp env.example.sh env.sh      # edit A2E_ROOT, A2E_WORK (and CUDA_HOME if needed)
+source env.sh                 # sets PY (the upstream venv's python), PYTHONPATH, A2E_REPO, ... and cds to A2E_WORK
 ```
 
-`env.sh` が決めるもの: `A2E_ROOT`、`A2E_WORK`、`A2E_MODEL`、`A2E_FP8_SO`(カーネルの .so の置き場所)、`A2E_REPO`(このリポジトリ)、
-`PY`、`CUDA_HOME`、`PYTHONPATH`(上流の `src` と、このリポジトリの `accel/`・`av2_input/`・`measure/`)、コンパイルのキャッシュの場所。
+`env.sh` sets `A2E_ROOT`, `A2E_WORK`, `A2E_MODEL`, `A2E_FP8_SO` (where the kernel .so goes), `A2E_REPO` (this repository),
+`PY`, `CUDA_HOME`, `PYTHONPATH` (upstream `src` plus `accel/`, `av2_input/` and `measure/` of this repository) and the compiler cache paths.
 
-### 3. FP8 カーネル(データもモデルも使わない)
+### 3. FP8 kernel (no data, no model)
 
 ```bash
-PY=$PY $A2E_REPO/kernels/fp8_gemv/build.sh $(dirname $A2E_FP8_SO)    # 数分。既にあれば止まる
+PY=$PY $A2E_REPO/kernels/fp8_gemv/build.sh $(dirname $A2E_FP8_SO)    # a few minutes; stops if it already exists
 $PY $A2E_REPO/kernels/fp8_gemv/bench_fp8_gemv.py $A2E_FP8_SO --out $A2E_WORK/fp8_gemv_bench.json
 ```
 
-既定のアーキテクチャは sm_120 / sm_121(GB10)。ほかの GPU では `ARCH_FLAGS` を変える(FP8 の変換命令は sm_89 以降)。
-ベンチは、正しさ(同じ FP8 の重みを FP32 に戻した計算との相対誤差。0.2% 未満なら正常)と、カーネル・BF16 の `F.linear`・読むだけのカーネルの時間を出す。
+The default architectures are sm_120 / sm_121 (GB10). Change `ARCH_FLAGS` for other GPUs (FP8 conversion needs sm_89 or later).
+The benchmark reports correctness (relative error against the same FP8 weights dequantized to FP32; below 0.2% is normal)
+and the time of the kernel, BF16 `F.linear`, and a read-only kernel.
 
-### 4. AV2 の 1 場面で推論する(最小の確認)
+### 4. Inference on one AV2 scene (minimal check)
 
 ```bash
-# 場面の一覧(CSV。列は scene_id, split, log_id, t0_rel_s。t0_rel_s はログの最初のコマからの秒)
+# Scene list (CSV with columns scene_id, split, log_id, t0_rel_s; t0_rel_s is seconds from the first frame of the log)
 mkdir -p $A2E_WORK/data/av2 $A2E_WORK/inputs $A2E_WORK/raw/speed
 printf "scene_id,split,log_id,t0_rel_s\nv_9e9bcfb7_8.5,val,9e9bcfb7-601d-3d80-bc12-ef7025174beb,8.5\n" > $A2E_WORK/scenes.csv
-# 要るコマだけを公開 S3 から取る(匿名の HTTPS)。3 つ目の引数は「丸ごと取ったログの置き場所」(無ければ空のフォルダでよい)
+# Download only the needed frames from the public S3 bucket (anonymous HTTPS). The third argument is a folder of fully
+# downloaded logs (an empty folder is fine)
 $PY $A2E_REPO/av2_input/av2_fetch_frames.py $A2E_WORK/scenes.csv $A2E_WORK/data/av2 $A2E_WORK/data/av2/full $A2E_WORK/scenes_t0.csv 1
-# 入力を作る(仮想カメラへの描き直しとナビ文。組み立て方 wide_ft、ナビ文は記録された走行から)
+# Build the input (re-render to virtual cameras, navigation text from the recorded drive; layout wide_ft)
 $PY $A2E_REPO/av2_input/av2_make_input.py $A2E_WORK/data/av2/val/9e9bcfb7-601d-3d80-bc12-ef7025174beb 8.5 $A2E_WORK/inputs/9e9bcfb7_8.5.pt
-# 1 回だけの測定: 公式 tuned + 4 つの手 + 本体だけ FP8。初回はコンパイルで数分かかる
+# Single-input timing: official tuned + the four optimizations + FP8 body only. The first run compiles for a few minutes
 $PY $A2E_REPO/measure/a2e_bench2.py --model $A2E_MODEL --mode single --input pt:$A2E_WORK/inputs/9e9bcfb7_8.5.pt \
     --accel tuned --feat p,g,c,v --q body --runs 5 --label C_body_s43 --out $A2E_WORK/raw/speed/C_body_s43.jsonl
-# 集計(表は Markdown と JSON)
+# Summary (Markdown and JSON)
 $PY $A2E_REPO/measure/summarize_speed.py $A2E_WORK/raw/speed $A2E_WORK/raw/speed/summary_speed.md $A2E_WORK/raw/speed/summary_speed.json
 ```
 
-`--feat` は 4 つの手(p = #1、g = #9、c = #2、v = #3)、`--q` は FP8 の範囲(`none` / `body` / `head` / `all`)。
-公式のままの時間は `--accel tuned --feat "" --q none`(または `--accel off`)。
-この場面(seed 43、判断理由 18 トークン)で、作者の環境では公式 tuned 1927 ms、4 つの手 + 本体だけ FP8 695 ms(20 回の中央値)。
+`--feat` selects the optimizations (p = #1, g = #9, c = #2, v = #3) and `--q` the FP8 scope (`none` / `body` / `head` / `all`).
+For the official path use `--accel tuned --feat "" --q none` (or `--accel off`).
+On this scene (seed 43, 18 reasoning tokens) we measured 1927 ms for official tuned and 695 ms with the four optimizations + FP8 body only (median of 20 runs).
 
-### 5. 測定の一式
+### 5. Full measurements
 
-- 速さ: `measure/run_speed.sh`(1 回だけ・連続)、`measure/run_stream_multi.sh`(連続を 12 本のログで)、`measure/run_e2e.sh`(描き直し込み)
-- BF16 と FP8 の比較: `measure/run_wide.sh`(`wide_eval.py`)、`measure/av2_stopgo.py`(止まる場面で seed を増やす)
-- 集計: `summarize_speed.py`、`summarize_multi.py`、`summarize_wide.py`、`summarize_stopgo.py`
-- `run_*.sh` は、このリポジトリの `env.sh` を読む(別の場所の env.sh を使うときは `A2E_ENV=/path/to/env.sh`)。ログは `$A2E_WORK/data/av2/val/` に丸ごと置く(`av2_input/av2_fetch.py`)。
+- Speed: `measure/run_speed.sh` (single / continuous), `measure/run_stream_multi.sh` (continuous over 12 logs), `measure/run_e2e.sh` (including re-rendering)
+- BF16 vs FP8: `measure/run_wide.sh` (`wide_eval.py`), `measure/av2_stopgo.py` (more seeds on stopped scenes)
+- Input layouts and navigation text (BF16): `measure/av2_eval.py` (its records `raw/cfg.jsonl` and `raw/samples/` are used for article figure 6)
+- Article figures 6, 7 and 11: `measure/article_figs.py` (see `docs/figs_av2/README.md`)
+- Summaries: `summarize_speed.py`, `summarize_multi.py`, `summarize_wide.py`, `summarize_stopgo.py`
+- `run_*.sh` read `env.sh` in this repository (set `A2E_ENV=/path/to/env.sh` to use another). Put full logs in `$A2E_WORK/data/av2/val/` (`av2_input/av2_fetch.py`).
 
-## AV2 の入力の作り方(大事な前提)
+## How the AV2 inputs are built (important assumptions)
 
-- **カメラの組み直し**: Alpamayo 2 Edge は、NVIDIA の車のカメラ構成(前方広角 120°、前方望遠 30°、横、後ろ)を前提にしている。AV2 は向きと画角が違うリングカメラ 7 台。どのスロットも、キャリブレーションを使ってリングカメラから「仮想カメラ」(1920×1080)に描き直した。
-  - 前方と横: 120° の等距離射影
-  - 後ろ: 70°
-  - 望遠: 前方中央のカメラの 30° を切り出す
-  - 元のカメラで覆えない部分は黒にした。灰色や端の色で埋めても、結果に差は出なかった。
-- **ナビ文は、記録された走行(その先の実際の自車の動き)から作っている。** 例: "Turn left in 10m"、"Continue straight"。本来は経路の計画から来る入力で、モデルに先の答えの一部を渡していることになる。参考に、ナビ文を常に "Continue straight" にした比較も載せた。
-- **描き直しの時間は、推論の時間と分けて示している。** 「推論だけ」の数字には描き直しが入っていない。描き直し込みの数字は別に示した(`results/`)。
-- 時刻の揺れ: AV2 のコマの時刻は 50 ms きざみから ±数 ns 揺れる。そのため「求めた時刻と同じかそれより前のコマ」を選ぶときに 1 ms の許しを入れた。
+- **Camera re-mapping**: Alpamayo 2 Edge expects NVIDIA's camera rig (120° front wide, 30° front tele, sides, rears). AV2 has seven ring cameras with other headings and fields of view. Every slot is re-rendered from the ring cameras into a 1920×1080 "virtual camera" using the calibration.
+  - Front and cross (side-front): 120° equidistant (f-theta)
+  - Rear: 70°
+  - Tele: the central 30° of the front-center camera
+  - Areas no source camera covers stay black. Filling them with gray or edge colors made no difference.
+- **The navigation text is derived from the recorded drive** (the ego vehicle's actual future motion), e.g. "Turn left in 10m", "Continue straight". In a real car it comes from route planning, so this leaks part of the answer. For reference we also report runs with "Continue straight" everywhere.
+- **Re-rendering time is reported separately from inference.** "Inference only" numbers exclude it; numbers including it are reported separately (`results/`).
+- Timestamp jitter: AV2 frame timestamps deviate from the 50 ms grid by a few ns, so "the frame at or before the requested time" uses a 1 ms tolerance.
 
-## 測った環境と版
+## Environment and versions
 
 | | |
 |---|---|
-| マシン | NVIDIA DGX Spark(GB10、compute capability 12.1)、DGX OS 7.6.0、ドライバ 580.178.04 |
-| PyTorch | 2.8.0+cu129(CUDA 12.9)、torchvision 0.23.0、triton 3.4.0 |
+| Machine | NVIDIA DGX Spark (GB10, compute capability 12.1), DGX OS 7.6.0, driver 580.178.04 |
+| PyTorch | 2.8.0+cu129 (CUDA 12.9), torchvision 0.23.0, triton 3.4.0 |
 | transformers | 5.17.0 |
-| flash-attn | 2.8.3(sm_121 向けに自前でビルド) |
-| alpamayo2-edge | `02f55a7`(2026-11-20 の main と同じ) |
-| モデル | nvidia/Alpamayo2-Edge リビジョン `f8951d095de3589b3face1dec3f4394c8ecedb38`(2026-11-18 に取得。2026-11-20 の main `b92b6aa` と重み・設定は同じ) |
-| FP8 カーネル | `kernels/fp8_gemv/fp8_gemv.cu`、nvcc 12.9、`-O3 --use_fast_math`、sm_120/sm_121 |
-| 推論の設定 | 公式の `inference` と同じ: 温度 0.6、top_p 0.98、拡散 10 ステップ、候補 1 本 |
+| flash-attn | 2.8.3 (built for sm_121) |
+| alpamayo2-edge | `02f55a7` (same as main on 2026-11-20) |
+| Model | nvidia/Alpamayo2-Edge revision `f8951d095de3589b3face1dec3f4394c8ecedb38` (downloaded 2026-11-18; same weights and configs as main `b92b6aa` on 2026-11-20) |
+| FP8 kernel | `kernels/fp8_gemv/fp8_gemv.cu`, nvcc 12.9, `-O3 --use_fast_math`, sm_120/sm_121 |
+| Sampling | Same as the official `inference`: temperature 0.6, top_p 0.98, 10 diffusion steps, 1 sample |
 
-## AV2 の入手とライセンス
+## AV2 access and license
 
-- 入手元: `s3://argoverse/datasets/av2/sensor/`(匿名で取れる。手順は https://argoverse.github.io/user-guide/getting_started.html )
-- ライセンス: **CC BY-NC-SA 4.0**(https://creativecommons.org/licenses/by-nc-sa/4.0/ )。利用規約: https://www.argoverse.org/about.html#terms-of-use
-- 帰属の書き方(図に入れているもの): `画像: Argoverse 2 (CC BY-NC-SA 4.0, © 2021 Argo AI, LLC)`
-- 引用: Wilson et al., "Argoverse 2: Next Generation Datasets for Self-driving Perception and Forecasting", NeurIPS Datasets and Benchmarks 2021
-- **AV2 の画像を含む図**(`results_av2_images/` と `docs/figs_av2/`)は AV2 の画像の翻案物なので、CC BY-NC-SA 4.0(非営利、同じライセンスで継承)で出す。このリポジトリのコードのライセンスとは別。
-- AV2 の画像そのもの、生のテンソル、AV2 のファイルは入れていない。
+- Source: `s3://argoverse/datasets/av2/sensor/` (anonymous access; see https://argoverse.github.io/user-guide/getting_started.html )
+- License: **CC BY-NC-SA 4.0** (https://creativecommons.org/licenses/by-nc-sa/4.0/ ). Terms of use: https://www.argoverse.org/about.html#terms-of-use
+- Attribution used in the figures: `Images: Argoverse 2 (CC BY-NC-SA 4.0, © 2021 Argo AI, LLC)`
+- Citation: Wilson et al., "Argoverse 2: Next Generation Datasets for Self-driving Perception and Forecasting", NeurIPS Datasets and Benchmarks 2021
+- **Figures containing AV2 images** (`results_av2_images/` and `docs/figs_av2/`) are adaptations of AV2 images and are released under CC BY-NC-SA 4.0 (non-commercial, share-alike), separately from the code license.
+- No AV2 images, raw tensors or AV2 files are included.
 
-## ライセンス
+## License
 
-- **コード: Apache License 2.0**(`LICENSES/Apache-2.0.txt`)。Copyright (c) 2026 [nabe2030](https://github.com/nabe2030)。
-- 自作のコード(`.py`・`.sh`・`.cu`)の頭には `SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030` と `SPDX-License-Identifier: Apache-2.0` を入れた。
-- 上流のコードを変更したものを含む 2 ファイル(それぞれの頭に、元の著作権表示、nabe2030 の変更の著作権表示、変更した旨を書いた):
-  - `accel/a2e_fp8.py` の `DecodeStepQ.forward`: 上流の `alpamayo2_edge/accel/decode.py` の CoT デコードの 1 ステップを写し、線形層を FP8 のカーネルに差し替えた。
-  - `accel/a2e_stagea.py` の `GpuPrep`: 上流の `alpamayo2_edge/helper.py` の `prepare_model_inputs` の処理の順を写し、画像の処理を GPU に移した。
-  - 上流: NVlabs/alpamayo2-edge、Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES、Apache-2.0。
-- `results_av2_images/` と `docs/figs_av2/` の図: CC BY-NC-SA 4.0(上記)。
-- 上流のファイルそのもの、モデルの重み(NVIDIA のライセンス)、AV2 のデータは含まない。
+- **Code: Apache License 2.0** (`LICENSES/Apache-2.0.txt`). Copyright (c) 2026 [nabe2030](https://github.com/nabe2030).
+- Our own code files (`.py`, `.sh`, `.cu`) start with `SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030` and `SPDX-License-Identifier: Apache-2.0`.
+- Two files contain modified upstream code (each starts with the original copyright notice, nabe2030's copyright notice for the modifications, and a statement of the changes):
+  - `accel/a2e_fp8.py`, `DecodeStepQ.forward`: follows the CoT decode step in upstream `alpamayo2_edge/accel/decode.py`; its linear layers call the FP8 kernel.
+  - `accel/a2e_stagea.py`, `GpuPrep`: follows upstream `alpamayo2_edge/helper.py` `prepare_model_inputs` and moves image processing to the GPU.
+  - Upstream: NVlabs/alpamayo2-edge, Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES, Apache-2.0.
+- Figures in `results_av2_images/` and `docs/figs_av2/`: CC BY-NC-SA 4.0 (above).
+- Upstream files, model weights (NVIDIA's license) and AV2 data are not included.
 
-## 結果(AV2、NVIDIA GB10 1 台)
+## Results (AV2, one NVIDIA GB10)
 
-表の元は `results/summary_*.md/json` と `results/compare_3configs.md`、図は `results/fig_*.png`。
+Tables are in `results/summary_*.md/json` and `results/compare_3configs.md`; plots in `results/fig_*.png`.
 
-### 1 回だけ(ログ 9e9bcfb7、t0 = 8.5 s、seed 43、18 トークン、20 回の中央値)
+### Single input (log 9e9bcfb7, t0 = 8.5 s, seed 43, 18 tokens, median of 20 runs)
 
-| 状態 | 時間 |
+| Setup | Time |
 |---|---|
-| 公式の加速なし | 2524 ms |
-| 公式 tuned | 1927 ms(前処理 1081 ms を除くと 847 ms) |
-| + プロセッサを 1 回だけ読む | 932 ms |
-| + 加速の 4 つの手 | 790 ms |
-| + 本体だけ FP8(推す構成) | 695 ms |
-| + 本体と出力層 FP8(参考) | 678 ms |
+| Official, no acceleration | 2524 ms |
+| Official tuned | 1927 ms (847 ms without the 1081 ms preprocessing) |
+| + load the processor once | 932 ms |
+| + all four optimizations | 790 ms |
+| + FP8 body only (recommended) | 695 ms |
+| + FP8 body + output layer (reference) | 678 ms |
 
-### 連続(12 本のログ、`compare_3configs.md`)
+### Continuous (12 logs, `compare_3configs.md`)
 
-| 構成 | 推論だけ 10Hz 中央値 / 最大 | 推論だけ 1Hz 中央値 / 最大 | 描き直し込み 1Hz 中央値 / 最大 | 1 秒超え | 1 トークンあたり |
+| Setup | Inference only, 10 Hz median / max | Inference only, 1 Hz median / max | With re-rendering, 1 Hz median / max | Over 1 s | Per token |
 |---|---|---|---|---|---|
-| 4 つの手(BF16) | 641 / 867 ms | 757 / 977 ms | 849 / 1077 ms | 推論だけ 0%、描き直し込み 1.4% | 15.4 ms |
-| + 本体だけ FP8(推す構成) | 528 / 685 ms | 638 / 780 ms | 736 / 878 ms | 0% | 10.0 ms |
-| + 本体と出力層 FP8(参考) | 512 / 644 ms | 620 / 752 ms | 715 / 852 ms | 0% | 9.2 ms |
+| Four optimizations (BF16) | 641 / 867 ms | 757 / 977 ms | 849 / 1077 ms | 0% inference only, 1.4% with re-rendering | 15.4 ms |
+| + FP8 body only (recommended) | 528 / 685 ms | 638 / 780 ms | 736 / 878 ms | 0% | 10.0 ms |
+| + FP8 body + output layer (reference) | 512 / 644 ms | 620 / 752 ms | 715 / 852 ms | 0% | 9.2 ms |
 
-- 推論だけ: 10Hz は 1428 歩、1Hz は 432 歩(条件ごと)。描き直し込み: 1Hz で 432 歩。
-- 1 秒に収まる判断理由の長さ(1Hz の当てはめ): BF16 37 トークン、本体だけ FP8 58 トークン、本体と出力層 FP8 63 トークン。12 本のログで出た判断理由は最長 37 トークン。
+- Inference only: 1428 steps at 10 Hz and 432 steps at 1 Hz per setup. With re-rendering: 432 steps at 1 Hz.
+- Reasoning length that fits in 1 s (1 Hz fit): 37 tokens (BF16), 58 (FP8 body only), 63 (FP8 body + output layer). The longest reasoning over the 12 logs was 37 tokens.
 
-- 遅い回は、判断理由の長さでほぼ説明できる(時間 ≈ 固定分 + 1 トークンあたりの時間 × トークン数)。
-- 描き直しは、出力が画素まで同じ速くした版(`av2_render_fast.py`)で測った。1Hz で約 94 ms。
+- Slow steps are explained almost entirely by reasoning length (time ≈ fixed part + per-token time × tokens).
+- Re-rendering used the faster renderer with pixel-identical output (`av2_render_fast.py`): about 94 ms at 1 Hz.
 
-### BF16 と FP8 の出力(400 場面 × 5 seed、`summary_wide.md`)
-- 同じ seed での軌跡の差は、BF16 どうしで seed を変えたときの幅の 1.8%(本体だけ)/ 2.0%(本体と出力層)。
-- 記録された走行との誤差の差は ±0.004 m 以内。走り方・都市で分けた傾向は無い。
+### BF16 vs FP8 outputs (400 scenes × 5 seeds, `summary_wide.md`)
+- With the same seed, the trajectory difference is 1.8% (FP8 body only) / 2.0% (FP8 body + output layer) of the BF16 seed-to-seed spread.
+- The change in error against the recorded drive is within ±0.004 m, with no trend by maneuver or city.
 
-### 止まるべき場面(22 場面 × 64 seed、ほか 117 場面 × 16 seed、`summary_stopgo.md`)
-- 軌跡が動き出す割合(3 s で 2 m 以上)は、BF16 と FP8 で変わらない(差 −0.1 pt、95% 区間 [−0.5, +0.4])。
-- 出力層まで FP8 にすると、判断理由の 1 トークン目が「進む」系になる確率が上がる(22 場面で +1.45 pt、22 場面すべてで同じ向き)。出力層だけ FP8 でも同じ向きに出るので、出どころは主に出力層。
-- 本体だけ FP8 なら +0.37 pt(117 場面では −0.05 pt)。
+### Scenes where the car should stay stopped (22 scenes × 64 seeds, plus 117 scenes × 16 seeds, `summary_stopgo.md`)
+- The share of trajectories that start moving (≥ 2 m in 3 s) does not change between BF16 and FP8 (−0.1 pt, 95% CI [−0.5, +0.4]).
+- With the output layer in FP8, the probability that the first reasoning token is a "proceed"-type token rises (+1.45 pt over 22 scenes, same direction in all 22). FP8 on the output layer alone gives the same direction, so the output layer is the main source.
+- With FP8 body only it is +0.37 pt (−0.05 pt over the 117 scenes).

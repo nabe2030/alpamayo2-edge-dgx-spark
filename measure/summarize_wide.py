@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # summarize_wide.py <wide.jsonl> <scenes.csv> <out_prefix> [--ref-1clip <summary_fp8.json>]
-#   wide_eval.py の記録を集計する。出力: <out_prefix>.json(数値)と <out_prefix>.md(表)。
+#   Summarizes the records of wide_eval.py. Output: <out_prefix>.json (numbers) and <out_prefix>.md (tables).
 #
-# 物差し: BF16(base)同士で seed だけを変えたときの差(seed の組 i<j)。FP8 の変種は、同じ場面・同じ seed の base と比べる。
-# 信頼区間: 同じクリップの t0 どうしは似ているので、クリップ単位のブートストラップ(2,000 回、seed 0)で 95% 区間を出す。
-# AV2: ここでの「クリップ」は AV2 のログ(clip_id = log_id)。同じログの 2 場面はまとめて抽出する。
+# Yardstick: the difference between BF16 (base) runs that differ only in seed (seed pairs i<j). FP8 variants are compared with base at the same scene and seed.
+# Confidence intervals: t0s from the same clip are similar, so 95% intervals come from a clip-level bootstrap (2,000 resamples, seed 0).
+# AV2: a "clip" here is an AV2 log (clip_id = log_id). The 2 scenes of the same log are resampled together.
 import argparse
 import itertools
 import json
@@ -36,7 +36,7 @@ def fde(a, b):
 
 
 def behavior(gt):
-    """記録された未来の軌跡(t0 の自車座標、x 前・y 左)から、行動の種類を大まかに決める。"""
+    """Roughly classify the behavior from the recorded future trajectory (ego frame at t0, x forward, y left)."""
     if gt is None:
         return "unknown"
     g = np.asarray(gt)
@@ -52,7 +52,7 @@ def behavior(gt):
 
 
 def boot(df, col, stat=np.mean, by="clip_id", seed=0):
-    """クリップ単位のブートストラップで stat(df[col]) の 95% 区間。"""
+    """95% interval of stat(df[col]) by clip-level bootstrap."""
     df = df[[by, col]].dropna()
     if df.empty:
         return [None, None, None]
@@ -68,7 +68,7 @@ def boot(df, col, stat=np.mean, by="clip_id", seed=0):
 
 
 def boot_ratio(df, num, den, by="clip_id", seed=0):
-    """mean(num) / mean(den) の 95% 区間(クリップ単位)。"""
+    """95% interval of mean(num) / mean(den) (clip level)."""
     df = df[[by, num, den]].dropna()
     groups = [(g[num].to_numpy(), g[den].to_numpy()) for _, g in df.groupby(by)]
     rng = np.random.default_rng(seed)
@@ -106,7 +106,7 @@ def main():
     recs = [json.loads(l) for l in open(a.jsonl)]
     meta = next(r for r in recs if r["kind"] == "meta")
     samples = [r for r in recs if r["kind"] == "sample"]
-    scenes = pd.read_csv(a.scenes)  # AV2: 分類は記録(sample)の側に入っているので、ここでは使わない
+    scenes = pd.read_csv(a.scenes)  # AV2: the categories are in the records (sample), so this is not used here
     variants = meta["variants"]
     others = variants[1:]
     seeds = sorted(samples[0]["sampled"]["base"].keys(), key=int)
@@ -117,11 +117,11 @@ def main():
         base = r["sampled"]["base"]
         gt = r["gt_xyz"]
         row = {"sample_id": r["sample_id"], "clip_id": r["clip_id"], "nav_text": r["nav_text"],
-               # AV2: 走り方(場面選びでの分類)、都市、split。nav_group は gt のナビ文の操作
+               # AV2: motion (category from scene selection), city, split. nav_group is the maneuver in the GT navigation text
                "motion": r.get("motion"), "city": r.get("city"), "split": r.get("split"),
                "nav_group": (r["nav_text"].split(" in ")[0] if r.get("nav_text") else None),
                "behavior": behavior(gt), "temp_max": r.get("temp_max")}
-        # BF16 同士(seed 違い)の幅
+        # spread between BF16 runs (different seeds)
         pairs = list(itertools.combinations(seeds, 2))
         row["bf16_seed_traj"] = float(np.mean([ade3(base[i]["xyz"], base[j]["xyz"]) for i, j in pairs]))
         row["bf16_seed_cot_same"] = float(np.mean([base[i]["gen_ids"] == base[j]["gen_ids"] for i, j in pairs]))
@@ -152,7 +152,7 @@ def main():
             row[f"{v}_d_nominal"] = row[f"{v}_nominal"] - row["base_nominal"]
             row[f"{v}_cot_examples"] = {s: d[s]["cot"] for s in seeds if d[s]["gen_ids"] != base[s]["gen_ids"]}
         row["base_cot"] = {s: base[s]["cot"] for s in seeds}
-        # AV2: 参考。BF16 で、ナビ文をいつも "Continue straight" にしたとき
+        # AV2: reference. BF16 with the navigation text always set to "Continue straight"
         if r.get("straight") and gt is not None:
             ss = [s for s in seeds if s in r["straight"]]
             row["straight_ade_gt"] = float(np.mean([ade(r["straight"][s]["xyz"], gt) for s in ss]))
@@ -175,7 +175,7 @@ def main():
     res = {"n_samples": len(df), "n_clips": int(df["clip_id"].nunique()), "seeds": seeds, "variants": variants,
            "gt_available": int(df["base_ade_gt"].notna().sum()) if "base_ade_gt" in df else 0}
 
-    # ---- 全体
+    # ---- overall
     ov = {"bf16_seed_traj_mean": boot(df, "bf16_seed_traj"), "bf16_seed_traj_median": boot(df, "bf16_seed_traj", np.median),
           "bf16_seed_cot_same": boot(df, "bf16_seed_cot_same"), "tf_noise_alt_mean": boot(df, "tf_noise_alt"),
           "base_ade_gt": boot(df, "base_ade_gt"), "base_minade_gt": boot(df, "base_minade_gt"),
@@ -205,7 +205,7 @@ def main():
                                         for k, x in g.groupby("motion")}}
     res["overall"] = ov
 
-    # ---- 場面の種類ごと
+    # ---- per scene category
     cats = {}
     for col in ("motion", "city", "split", "nav_group", "behavior"):
         cats[col] = {}
@@ -223,7 +223,7 @@ def main():
             cats[col][str(k)] = e
     res["by_category"] = cats
 
-    # ---- 差が大きい場面(FP8 の同 seed の軌跡差 ÷ BF16 の seed の幅、と KL の上位)
+    # ---- scenes with large differences (FP8 same-seed trajectory difference ÷ BF16 seed spread, and top KL)
     big = {}
     for v in others:
         df[f"{v}_rel"] = df[f"{v}_same_traj"] / df["bf16_seed_traj"].clip(lower=1e-3)
@@ -239,7 +239,7 @@ def main():
                               for t in topkl.to_dict("records")]
     res["largest"] = big
 
-    # ---- 速さ(1 回だけの測り方。新しいグラフを作った回は除く)
+    # ---- speed (single-input measurement; runs that built a new graph are excluded)
     spd = {}
     for v, g in sp.groupby("variant"):
         x, y = g["n_tok"].to_numpy(), g["decode_ms"].to_numpy()
@@ -264,34 +264,34 @@ def main():
     df.drop(columns=[c for c in df.columns if c.endswith("_cot_examples") or c == "base_cot" or c.endswith("_div_pos")]) \
       .to_csv(a.out + "_per_sample.csv", index=False)
 
-    # ---- 表(md)
-    L = [f"# 広いデータでの比較の集計(AV2、{res['n_samples']} 場面 / {res['n_clips']} ログ、seed {','.join(seeds)})", ""]
-    L += ["## 軌跡(m、平均 [ログ単位ブートストラップ 95% 区間])", "",
-          "| 比べるもの | 値 |", "|---|---|",
-          f"| BF16 同士、seed だけ違う(seed の組の平均) | {fmt(ov['bf16_seed_traj_mean'])} |",
-          f"| BF16、同じ CoT・拡散の乱数だけ違う(teacher forcing) | {fmt(ov['tf_noise_alt_mean'])} |"]
+    # ---- tables (md)
+    L = [f"# Summary of the wide-data comparison (AV2, {res['n_samples']} scenes / {res['n_clips']} logs, seed {','.join(seeds)})", ""]
+    L += ["## Trajectory (m, mean [log-level bootstrap 95% interval])", "",
+          "| Comparison | Value |", "|---|---|",
+          f"| BF16 vs BF16, different seed only (mean over seed pairs) | {fmt(ov['bf16_seed_traj_mean'])} |",
+          f"| BF16, same CoT, different diffusion noise only (teacher forcing) | {fmt(ov['tf_noise_alt_mean'])} |"]
     for v in others:
-        L.append(f"| {v} 対 BF16、同じ seed | {fmt(ov[v]['same_seed_traj_mean'])}(BF16 の seed の幅の {fmt(ov[v]['ratio_traj_vs_bf16_seed'], 1, True)} %) |")
-    L += ["", "| 記録された軌跡との誤差 | ADE(seed 平均) | 差(変種 − BF16) | minADE(5 seed) の差 |", "|---|---|---|---|",
+        L.append(f"| {v} vs BF16, same seed | {fmt(ov[v]['same_seed_traj_mean'])} ({fmt(ov[v]['ratio_traj_vs_bf16_seed'], 1, True)} % of the BF16 seed spread) |")
+    L += ["", "| Error vs. recorded drive | ADE (seed mean) | Difference (variant − BF16) | minADE (5 seeds) difference |", "|---|---|---|---|",
           f"| BF16 | {fmt(ov['base_ade_gt'])} | — | — |"]
     for v in others:
         L.append(f"| {v} | {fmt(ov[v]['ade_gt'])} | {fmt(ov[v]['d_ade_gt'])} | {fmt(ov[v]['d_minade_gt'])} |")
     if "straight" in ov:
         x = ov["straight"]
-        L += ["", "### 参考: ナビ文をいつも \"Continue straight\" にしたとき(BF16)", "",
-              f"- ADE {fmt(x['ade_gt'])}、gt のナビ文との差 {fmt(x['d_ade_gt'])}、minADE {fmt(x['minade_gt'])}、CoT が gt のナビ文と同じ {fmt(x['cot_same_as_gt_nav'], 1, True)} %",
-              "- 走り方ごとの ADE の差: " + "、".join(f"{k} {v['d_ade_gt']:+.2f}(n={v['n']})" for k, v in x["by_motion"].items())]
-    L += ["", "## 判断理由", "", "| | 同じ seed で CoT 一致 | 長さの差(トークン) | NOMINAL の割合の差 | 分かれる位置の中央値 |", "|---|---|---|---|---|",
-          f"| BF16 同士、seed 違い | {fmt(ov['bf16_seed_cot_same'], 1, True)} % | (BF16 の長さ {fmt(ov['base_ntok'], 1)}) | (BF16 {fmt(ov['base_nominal'], 1, True)} %) | |"]
+        L += ["", "### Reference: navigation text always \"Continue straight\" (BF16)", "",
+              f"- ADE {fmt(x['ade_gt'])}, difference from GT navigation text {fmt(x['d_ade_gt'])}, minADE {fmt(x['minade_gt'])}, CoT same as with GT navigation text {fmt(x['cot_same_as_gt_nav'], 1, True)} %",
+              "- ADE difference by motion: " + ", ".join(f"{k} {v['d_ade_gt']:+.2f} (n={v['n']})" for k, v in x["by_motion"].items())]
+    L += ["", "## Reasoning", "", "| | CoT match at same seed | Length difference (tokens) | NOMINAL share difference | Median divergence position |", "|---|---|---|---|---|",
+          f"| BF16 vs BF16, different seed | {fmt(ov['bf16_seed_cot_same'], 1, True)} % | (BF16 length {fmt(ov['base_ntok'], 1)}) | (BF16 {fmt(ov['base_nominal'], 1, True)} %) | |"]
     for v in others:
-        L.append(f"| {v} 対 BF16 | {fmt(ov[v]['same_seed_cot'], 1, True)} % | {fmt(ov[v]['d_ntok'], 2)} | {fmt(ov[v]['d_nominal'], 1, True)} pt | {ov[v]['div_pos_median']} |")
-    L += ["", "## teacher forcing(BF16 の seed 43 の CoT を固定)", "", "| 変種 | KL(T=1) | KL ÷ BF16 の丸めの揺れ(eager) | 上位 1 位の一致 | 入れ替わり | 軌跡差 ÷ 拡散の乱数の幅 |", "|---|---|---|---|---|---|"]
+        L.append(f"| {v} vs BF16 | {fmt(ov[v]['same_seed_cot'], 1, True)} % | {fmt(ov[v]['d_ntok'], 2)} | {fmt(ov[v]['d_nominal'], 1, True)} pt | {ov[v]['div_pos_median']} |")
+    L += ["", "## Teacher forcing (CoT fixed to BF16 seed 43)", "", "| Variant | KL (T=1) | KL ÷ BF16 rounding jitter (eager) | Top-1 match | Swaps | Trajectory difference ÷ diffusion noise spread |", "|---|---|---|---|---|---|"]
     for v in tfv:
         t = ov[f"tf_{v}"]
         L.append(f"| {v} | {fmt(t['kl_t1'], 6)} | {fmt(t.get('kl_ratio_vs_eager'), 2)} | {fmt(t['top1'], 2, True)} % | {t['top1_miss_total']}/{t['n_tok_total']} | {fmt(t['traj_ratio_vs_noise'], 2, True)} % |")
-    L += ["", "## 場面の種類ごと(FP8 の同 seed の軌跡差 ÷ BF16 の seed の幅)", ""]
+    L += ["", "## Per scene category (FP8 same-seed trajectory difference ÷ BF16 seed spread)", ""]
     for col, d in cats.items():
-        L += [f"### {col}", "", "| 種類 | 件数(ログ) | BF16 seed の幅 m | " + " | ".join(f"{v} 比 / CoT 一致 / ΔADE / KL" for v in others) + " |",
+        L += [f"### {col}", "", "| Category | Count (logs) | BF16 seed spread m | " + " | ".join(f"{v} ratio / CoT match / ΔADE / KL" for v in others) + " |",
               "|---|---|---|" + "---|" * len(others)]
         for k, e in d.items():
             cells = []
@@ -299,15 +299,15 @@ def main():
                 x = e[v]
                 ci = f" [{x['ratio_ci'][1]*100:.0f}, {x['ratio_ci'][2]*100:.0f}]" if x["ratio_ci"] else ""
                 cells.append(f"{x['ratio']*100:.1f}%{ci} / {x['same_cot']*100:.0f}% / {x['d_ade_gt']:+.3f} / {x['tf_kl']:.1e}")
-            L.append(f"| {k} | {e['n']}({e['n_clips']}) | {e['bf16_seed_traj']:.3f} | " + " | ".join(cells) + " |")
+            L.append(f"| {k} | {e['n']} ({e['n_clips']}) | {e['bf16_seed_traj']:.3f} | " + " | ".join(cells) + " |")
         L.append("")
-    L += ["## 速さ(1 回だけの測り方、ViT 込み、新しいグラフを作った回は除く)", "",
-          "| 変種 | 回数 | ms/トークン(傾き) | 時間 中央値 | 90% | 最大 | 1 秒未満 | 長さ 中央値 / 90% / 最大 | 1 秒に収まる長さ(回帰) |", "|---|---|---|---|---|---|---|---|---|"]
+    L += ["## Speed (single-input measurement, including ViT, runs that built a new graph excluded)", "",
+          "| Variant | Runs | ms per token (slope) | Time median | 90% | Max | Under 1 s | Length median / 90% / max | Length that fits in 1 s (regression) |", "|---|---|---|---|---|---|---|---|---|"]
     for v, e in spd.items():
         L.append(f"| {v} | {e['n_calls']} | {e['ms_per_token_slope']:.2f} | {e['e2e_median']:.0f} | {e['e2e_p90']:.0f} | {e['e2e_max']:.0f} | "
                  f"{e['under_1s']*100:.1f}% | {e['n_tok_median']:.0f} / {e['n_tok_p90']:.0f} / {e['n_tok_max']} | {e.get('tokens_within_1s_fit', float('nan')):.0f} |")
-    L += ["", f"BF16 の CoT の長さの分布(トークン、区間 {hist[1].tolist()}): {hist[0].tolist()}", "",
-          f"新しいグラフを作って除いた回: {res['excluded_new_graph_calls']}、最高温度 {res['temp_max']}℃"]
+    L += ["", f"BF16 CoT length distribution (tokens, bins {hist[1].tolist()}): {hist[0].tolist()}", "",
+          f"Runs excluded for building a new graph: {res['excluded_new_graph_calls']}, max temperature {res['temp_max']}°C"]
     open(a.out + ".md", "w").write("\n".join(L) + "\n")
     print("\n".join(L))
 

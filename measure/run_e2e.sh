@@ -2,21 +2,21 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# run_e2e.sh —  描き直し込みの連続の測定(GPU のマシン の tmux で実行)
-# 各歩で「AV2 の JPEG を読む → 仮想カメラに描き直す(av2_render_fast、GPU)→ 推論」を同じ GPU で続けて動かし、
-# 描き直し・推論・合計を記録する(a2e_bench2 --av2-render inline)。前の歩で描いた絵と読んだコマは使い回す
-# (カメラから 1 コマずつ届く流れにあたる)。パスの始めに捨てる。測り方のほかの点は run_stream_multi.sh と同じ。
-#   ログ: 9e9bcfb7( の速さの測定のログ)と、§3.1 の 12 本から 3 本(判断理由の長いもの・停止・右折)
-#   JPEG のファイルは 1 つ前のパス(準備のパス)で読んでいるので、OS のページキャッシュに載っている(ディスクの読み込みは
-#   ほぼ入らない。カメラの絵がメモリに届いている状態にあたる)。
+# run_e2e.sh — continuous measurement including re-rendering (run in tmux on the GPU machine)
+# At each step, runs "read AV2 JPEGs → re-render into virtual cameras (av2_render_fast, GPU) → inference" back to back on the same GPU,
+# and records re-rendering, inference and the total (a2e_bench2 --av2-render inline). Images rendered and frames read in the previous step are reused
+# (corresponds to frames arriving one at a time from the cameras). Discarded at the start of each pass. Otherwise measured the same way as run_stream_multi.sh.
+#   Logs: 9e9bcfb7 (the log of the speed measurement) and 3 of the 12 in §3.1 (long reasoning, stop, right turn)
+#   The JPEG files were read in the preceding pass (the warm-up pass), so they are in the OS page cache (disk reads are
+#   almost absent; corresponds to camera images having arrived in memory).
 set -u
-O=${A2E_ROOT:?A2E_ROOT を設定する(モデル・venv・ビルドの置き場所)}
-N=${A2E_WORK:?A2E_WORK を設定する(データ・記録の置き場所)}
+O=${A2E_ROOT:?set A2E_ROOT (location of models, venv and builds)}
+N=${A2E_WORK:?set A2E_WORK (location of data and records)}
 source "${A2E_ENV:-$(dirname "$0")/../env.sh}"
 OUT=$N/raw/speed_e2e; mkdir -p $OUT
 V=$N/data/av2/val
 DEC=${DEC:-pil_threads}
-OUTM=${OUTM:-pinned}  # 描いた絵の持ち方(cpu = 1 枚ずつ .cpu、pinned = 使い回しの pinned へまとめて)
+OUTM=${OUTM:-pinned}  # how rendered images are held (cpu = .cpu one at a time, pinned = batched into reused pinned memory)
 LOGS=""
 for i in 9e9bcfb7 0bae3b5e 25e5c600 a7636fca; do LOGS="$LOGS,$(ls -d $V/${i}*)"; done
 LOGS=${LOGS#,}

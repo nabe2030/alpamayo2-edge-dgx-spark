@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_render_check.py <out.json> <log_dir> [<log_dir> ...]
-# 速くした描き直し(av2_render_fast)が、これまでの描き直し(av2_build.render)と同じ絵を出すかと、時間。
-#   1. nvJPEG(torchvision.io.decode_jpeg の GPU 版)がこの環境で使えるか
-#   2. 一致: ログごとに t0 を 8 点、22 枚を両方で作って画素を比べる(decode = pil_threads / pil_draft / nvjpeg)
-#   3. 時間(GPU は推論を動かしていない状態): 22 枚を全部描く(コマの読み込みから)/ 連続で増える分だけ(10Hz・1Hz)
-#      これまでの方式(av2_build.render を 1 枚ずつ。av2_stream と同じく同じ絵は使い回す)と比べる
+# Whether the faster re-rendering (av2_render_fast) produces the same images as the previous re-rendering (av2_build.render), and timing.
+#   1. whether nvJPEG (the GPU version of torchvision.io.decode_jpeg) works in this environment
+#   2. match: per log, 8 t0 points, build the 22 images both ways and compare pixels (decode = pil_threads / pil_draft / nvjpeg)
+#   3. timing (with no inference running on the GPU): rendering all 22 images (from frame loading) / only the increment in continuous mode (10Hz, 1Hz)
+#      compared with the previous method (av2_build.render one image at a time; like av2_stream, identical images are reused)
 import json
 import sys
 import time
@@ -30,7 +30,7 @@ def synced(fn):
 
 
 class OldIncremental:
-    """これまでの方式(av2_stream.AV2StreamSource._render と同じ: 同じ絵は使い回す。JPEG はスロットごとに読む)"""
+    """The previous method (same as av2_stream.AV2StreamSource._render: identical images are reused; JPEGs are read per slot)"""
 
     def __init__(self, log):
         self.log, self.pool, self.cfg = log, {}, B.CONFIGS["wide_ft"]
@@ -71,7 +71,7 @@ def main():
         lo = max(int(c["ts"][0]) for c in log.cams.values()) + 2_000_000_000
         ok = fc[fc >= lo]
         r = {}
-        # 2. 一致(8 点)
+        # 2. match (8 points)
         pts = [int(x) for x in ok[:: max(1, len(ok) // 8)][:8]]
         for mode in modes:
             diffs, same = [], 0
@@ -86,9 +86,9 @@ def main():
             r[f"match_{mode}"] = {"t0": len(pts), "identical": same,
                                   "mean_abs_max": round(max(x[0] for x in diffs), 4), "max_abs": max(x[1] for x in diffs)}
             print(log.log_id[:8], mode, r[f"match_{mode}"], flush=True)
-        # 3. 時間
-        t0s_10 = [int(x) for x in ok[ok <= ok[0] + 13_000_000_000][::2]]  # 0.1 s きざみ(20 Hz のコマの 1 つおき)
-        t0s_1 = [int(x) for x in ok[ok <= ok[0] + 13_000_000_000][::20]]  # 1 s きざみ
+        # 3. timing
+        t0s_10 = [int(x) for x in ok[ok <= ok[0] + 13_000_000_000][::2]]  # 0.1 s steps (every other 20 Hz frame)
+        t0s_1 = [int(x) for x in ok[ok <= ok[0] + 13_000_000_000][::20]]  # 1 s steps
         for mode in ["old"] + modes:
             for name, seq in (("hz10", t0s_10), ("hz1", t0s_1)):
                 if mode == "old":

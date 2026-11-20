@@ -1,14 +1,14 @@
-## 条件ごと(計測の歩。1 秒を超えた割合は推論だけ、E* は描き直し込みの合計)
+## Per condition (measured steps; share over 1 s is inference only, for E* it is the total including re-rendering)
 
-| 条件 | 済み | 歩数 | ログ | 中央値 ms | p90 | 最大 | 1 秒超え | トークン 中央値/最大 | 当てはめ ms + ms/トークン |
+| Condition | Done | Steps | Logs | Median ms | p90 | Max | Over 1 s | Tokens median/max | Fit ms + ms per token |
 |---|---|---|---|---|---|---|---|---|---|
-| F1_body | 済 | 432 | 12 | **736** | 790 | 878 | **0.0%** | 22 / 36 | 420 + 9.96 |
+| F1_body | done | 432 | 12 | **736** | 790 | 878 | **0.0%** | 22 / 36 | 420 + 9.96 |
 
-- F1_body: 描き直し 中央値 95.5 / p90 99.9 / 最大 105.0 ms、推論 中央値 638 / 最大 778 ms、合計 中央値 736 / 最大 878 ms(1 秒超え 0.0%)
+- F1_body: re-rendering median 95.5 / p90 99.9 / max 105.0 ms, inference median 638 / max 778 ms, total median 736 / max 878 ms (over 1 s 0.0%)
 
-## ログごと(中央値 / 最大 / 1 秒超え、トークン数の中央値/最大)
+## Per log (median / max / over 1 s, token count median/max)
 
-| ログ | F1_body |
+| Log | F1_body |
 |---|---|
 | 0bae3b5e | 754 / 870 / 0% (24/36) |
 | 36aec72e | 770 / 842 / 0% (26/33) |
@@ -23,12 +23,12 @@
 | d46ff5df | 734 / 784 / 0% (22/27) |
 | c8ec7be0 | 693 / 783 / 0% (18/27) |
 
-## 最も遅い回(条件ごとに 5 回)
+## Slowest runs (5 per condition)
 
 - **F1_body**
-  - 25e5c600 t0=4.1s pass2: 878 ms(描き直し 101)、36 トークン、ViT 14 枚、65℃、vit 152 / prefill 185 / decode 372 / expert 53
-  - 0bae3b5e t0=8.1s pass3: 870 ms(描き直し 92)、36 トークン、ViT 14 枚、61℃、vit 150 / prefill 185 / decode 373 / expert 53
-  - 0bae3b5e t0=9.1s pass2: 851 ms(描き直し 95)、34 トークン、ViT 14 枚、60℃、vit 154 / prefill 183 / decode 351 / expert 53
-  - 36aec72e t0=4.1s pass3: 842 ms(描き直し 93)、33 トークン、ViT 14 枚、70℃、vit 152 / prefill 183 / decode 343 / expert 54
-  - 0fb7276f t0=12.1s pass3: 826 ms(描き直し 98)、31 トークン、ViT 14 枚、68℃、vit 156 / prefill 182 / decode 322 / expert 53
-  - 当てはめから最も上に外れた回(トークン数で説明できない分): 88f47a10 t0=14.1s +7 ms(24 トークン、vit 157 / prefill 184 / decode 254 / expert 54); a7636fca t0=10.1s +6 ms(20 トークン、vit 154 / prefill 186 / decode 215 / expert 54); bdb9d309 t0=10.1s +6 ms(25 トークン、vit 154 / prefill 188 / decode 264 / expert 53)
+  - 25e5c600 t0=4.1s pass2: 878 ms (re-rendering 101), 36 tokens, ViT 14 images, 65°C, vit 152 / prefill 185 / decode 372 / expert 53
+  - 0bae3b5e t0=8.1s pass3: 870 ms (re-rendering 92), 36 tokens, ViT 14 images, 61°C, vit 150 / prefill 185 / decode 373 / expert 53
+  - 0bae3b5e t0=9.1s pass2: 851 ms (re-rendering 95), 34 tokens, ViT 14 images, 60°C, vit 154 / prefill 183 / decode 351 / expert 53
+  - 36aec72e t0=4.1s pass3: 842 ms (re-rendering 93), 33 tokens, ViT 14 images, 70°C, vit 152 / prefill 183 / decode 343 / expert 54
+  - 0fb7276f t0=12.1s pass3: 826 ms (re-rendering 98), 31 tokens, ViT 14 images, 68°C, vit 156 / prefill 182 / decode 322 / expert 53
+  - Runs furthest above the fit (the part not explained by token count): 88f47a10 t0=14.1s +7 ms (24 tokens, vit 157 / prefill 184 / decode 254 / expert 54); a7636fca t0=10.1s +6 ms (20 tokens, vit 154 / prefill 186 / decode 215 / expert 54); bdb9d309 t0=10.1s +6 ms (25 tokens, vit 154 / prefill 188 / decode 264 / expert 53)

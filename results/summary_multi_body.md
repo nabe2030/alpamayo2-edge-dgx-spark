@@ -1,13 +1,13 @@
-## 条件ごと(計測の歩。1 秒を超えた割合は推論だけ、E* は描き直し込みの合計)
+## Per condition (measured steps; share over 1 s is inference only, for E* it is the total including re-rendering)
 
-| 条件 | 済み | 歩数 | ログ | 中央値 ms | p90 | 最大 | 1 秒超え | トークン 中央値/最大 | 当てはめ ms + ms/トークン |
+| Condition | Done | Steps | Logs | Median ms | p90 | Max | Over 1 s | Tokens median/max | Fit ms + ms per token |
 |---|---|---|---|---|---|---|---|---|---|
-| M10_body | 済 | 1428 | 12 | **528** | 586 | 685 | **0.0%** | 21 / 37 | 314 + 10.05 |
-| M1_body | 済 | 432 | 12 | **638** | 694 | 780 | **0.0%** | 22 / 36 | 419 + 9.98 |
+| M10_body | done | 1428 | 12 | **528** | 586 | 685 | **0.0%** | 21 / 37 | 314 + 10.05 |
+| M1_body | done | 432 | 12 | **638** | 694 | 780 | **0.0%** | 22 / 36 | 419 + 9.98 |
 
-## ログごと(中央値 / 最大 / 1 秒超え、トークン数の中央値/最大)
+## Per log (median / max / over 1 s, token count median/max)
 
-| ログ | M10_body | M1_body |
+| Log | M10_body | M1_body |
 |---|---|---|
 | 0bae3b5e | 536 / 673 / 0% (22/36) | 658 / 780 / 0% (24/36) |
 | 36aec72e | 573 / 588 / 0% (26/27) | 677 / 745 / 0% (26/33) |
@@ -22,19 +22,19 @@
 | d46ff5df | 535 / 666 / 0% (22/35) | 638 / 688 / 0% (22/27) |
 | c8ec7be0 | 493 / 595 / 0% (18/28) | 600 / 692 / 0% (18/27) |
 
-## 最も遅い回(条件ごとに 5 回)
+## Slowest runs (5 per condition)
 
 - **M10_body**
-  - 92b900b1 t0=14.4s pass1: 685 ms、37 トークン、ViT 6 枚、65℃、vit 52 / prefill 181 / decode 386 / expert 54
-  - 0bae3b5e t0=8.5s pass1: 673 ms、36 トークン、ViT 6 枚、56℃、vit 52 / prefill 181 / decode 376 / expert 53
-  - 0bae3b5e t0=8.4s pass1: 673 ms、36 トークン、ViT 6 枚、63℃、vit 53 / prefill 182 / decode 372 / expert 54
-  - d46ff5df t0=5.3s pass1: 666 ms、35 トークン、ViT 6 枚、61℃、vit 52 / prefill 181 / decode 364 / expert 57
-  - d46ff5df t0=6.2s pass1: 666 ms、35 トークン、ViT 6 枚、62℃、vit 52 / prefill 186 / decode 362 / expert 54
-  - 当てはめから最も上に外れた回(トークン数で説明できない分): 201fe83b t0=8.9s +8 ms(28 トークン、vit 52 / prefill 183 / decode 295 / expert 55); b87683ae t0=10.8s +7 ms(21 トークン、vit 52 / prefill 187 / decode 225 / expert 54); a7636fca t0=8.4s +7 ms(20 トークン、vit 54 / prefill 185 / decode 215 / expert 55)
+  - 92b900b1 t0=14.4s pass1: 685 ms, 37 tokens, ViT 6 images, 65°C, vit 52 / prefill 181 / decode 386 / expert 54
+  - 0bae3b5e t0=8.5s pass1: 673 ms, 36 tokens, ViT 6 images, 56°C, vit 52 / prefill 181 / decode 376 / expert 53
+  - 0bae3b5e t0=8.4s pass1: 673 ms, 36 tokens, ViT 6 images, 63°C, vit 53 / prefill 182 / decode 372 / expert 54
+  - d46ff5df t0=5.3s pass1: 666 ms, 35 tokens, ViT 6 images, 61°C, vit 52 / prefill 181 / decode 364 / expert 57
+  - d46ff5df t0=6.2s pass1: 666 ms, 35 tokens, ViT 6 images, 62°C, vit 52 / prefill 186 / decode 362 / expert 54
+  - Runs furthest above the fit (the part not explained by token count): 201fe83b t0=8.9s +8 ms (28 tokens, vit 52 / prefill 183 / decode 295 / expert 55); b87683ae t0=10.8s +7 ms (21 tokens, vit 52 / prefill 187 / decode 225 / expert 54); a7636fca t0=8.4s +7 ms (20 tokens, vit 54 / prefill 185 / decode 215 / expert 55)
 - **M1_body**
-  - 0bae3b5e t0=8.1s pass3: 780 ms、36 トークン、ViT 14 枚、64℃、vit 155 / prefill 181 / decode 374 / expert 54
-  - 25e5c600 t0=4.1s pass2: 779 ms、36 トークン、ViT 14 枚、63℃、vit 152 / prefill 184 / decode 372 / expert 53
-  - 0bae3b5e t0=9.1s pass2: 757 ms、34 トークン、ViT 14 枚、67℃、vit 151 / prefill 182 / decode 352 / expert 54
-  - 36aec72e t0=4.1s pass3: 745 ms、33 トークン、ViT 14 枚、62℃、vit 154 / prefill 179 / decode 342 / expert 54
-  - 0fb7276f t0=5.1s pass3: 729 ms、31 トークン、ViT 14 枚、64℃、vit 156 / prefill 181 / decode 322 / expert 54
-  - 当てはめから最も上に外れた回(トークン数で説明できない分): d46ff5df t0=15.1s +8 ms(22 トークン、vit 153 / prefill 180 / decode 233 / expert 55); a7636fca t0=13.1s +6 ms(19 トークン、vit 157 / prefill 183 / decode 204 / expert 54); b87683ae t0=11.1s +5 ms(21 トークン、vit 154 / prefill 182 / decode 226 / expert 54)
+  - 0bae3b5e t0=8.1s pass3: 780 ms, 36 tokens, ViT 14 images, 64°C, vit 155 / prefill 181 / decode 374 / expert 54
+  - 25e5c600 t0=4.1s pass2: 779 ms, 36 tokens, ViT 14 images, 63°C, vit 152 / prefill 184 / decode 372 / expert 53
+  - 0bae3b5e t0=9.1s pass2: 757 ms, 34 tokens, ViT 14 images, 67°C, vit 151 / prefill 182 / decode 352 / expert 54
+  - 36aec72e t0=4.1s pass3: 745 ms, 33 tokens, ViT 14 images, 62°C, vit 154 / prefill 179 / decode 342 / expert 54
+  - 0fb7276f t0=5.1s pass3: 729 ms, 31 tokens, ViT 14 images, 64°C, vit 156 / prefill 181 / decode 322 / expert 54
+  - Runs furthest above the fit (the part not explained by token count): d46ff5df t0=15.1s +8 ms (22 tokens, vit 153 / prefill 180 / decode 233 / expert 55); a7636fca t0=13.1s +6 ms (19 tokens, vit 157 / prefill 183 / decode 204 / expert 54); b87683ae t0=11.1s +5 ms (21 tokens, vit 154 / prefill 182 / decode 226 / expert 54)

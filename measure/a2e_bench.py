@@ -2,25 +2,25 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# a2e_bench.py — Alpamayo 2 Edge の段階別所要時間を測る
+# a2e_bench.py — measures the per-stage time of Alpamayo 2 Edge
 #
-# 公式の alpamayo2_edge パッケージ(NVlabs/alpamayo2-edge)の推論経路をそのまま使い、
-# モデルのインスタンスのメソッドに計時ラッパーを重ねるだけで、計算そのものは変えない。
-# 加速(--accel compile|tuned)は公式の enable_acceleration をそのまま使い、その外側に重ねる。
+# Uses the inference path of the official alpamayo2_edge package (NVlabs/alpamayo2-edge) as is,
+# only layering timing wrappers on the methods of the model instance; the computation itself is unchanged.
+# Acceleration (--accel compile|tuned) uses the official enable_acceleration as is, with the wrappers layered outside it.
 #
-# 段階(コードの区切りに合わせた):
-#   preprocess   : prepare_model_inputs(CPU: プロンプト組み立て・画像の bicubic 縮小・トークナイズ・正規化)+ GPU 転送
-#   pre_gen      : sample_trajectories_from_data の先頭〜生成開始(履歴トークン化 fuse_traj_tokens ほか)
-#   vision       : vlm.model.get_image_features(ViT 27層 + マージ/プロジェクタ)
-#   prefill_llm  : プリフィル全体 − vision(埋め込み・rope index・LLM 28層をプロンプト全体に)
-#   decode       : vlm.generate(CoT トークンの逐次生成。サンプリング込み)
-#   post_decode  : 生成後〜expert 開始(アンカー探索・KV の切り詰め・位置/マスク作成)
-#   expert       : _sample_actions(flow matching の Euler ループ、既定 10 ステップ)
-#   traj         : action_space.action_to_traj(加速度・曲率 → 軌跡の積分)
-#   tail         : 残り(テキストのデコードなど)
+# Stages (aligned with the boundaries in the code):
+#   preprocess   : prepare_model_inputs (CPU: prompt assembly, bicubic image resize, tokenization, normalization) + GPU transfer
+#   pre_gen      : start of sample_trajectories_from_data up to the start of generation (history tokenization fuse_traj_tokens, etc.)
+#   vision       : vlm.model.get_image_features (ViT 27 layers + merger/projector)
+#   prefill_llm  : whole prefill − vision (embedding, rope index, 28 LLM layers over the whole prompt)
+#   decode       : vlm.generate (sequential generation of CoT tokens, including sampling)
+#   post_decode  : end of generation up to the start of the expert (anchor search, KV truncation, position/mask creation)
+#   expert       : _sample_actions (Euler loop of flow matching, 10 steps by default)
+#   traj         : action_space.action_to_traj (acceleration, curvature → trajectory integration)
+#   tail         : the rest (text decoding, etc.)
 #
-# 時計: 各境界で CUDA イベントを記録。--sync-stages 1(既定)なら境界ごとに synchronize してから
-# 記録する(Thor レシピの run.py と同じく「段階の境界で同期」)。e2e は前後で synchronize した壁時計。
+# Clock: a CUDA event is recorded at each boundary. With --sync-stages 1 (default), synchronize at each boundary before
+# recording (same as run.py in the Thor recipe: "synchronize at stage boundaries"). e2e is wall-clock time with synchronize before and after.
 
 import argparse
 import contextlib
@@ -50,19 +50,19 @@ def gpu_temp() -> int | None:
 def thermal_gate(log, hot=84, cool=60, rest_s=180):
     t = gpu_temp()
     if t is not None and t >= hot:
-        log(f"[thermal] GPU {t}C >= {hot}C: {rest_s}s 休止")
+        log(f"[thermal] GPU {t}C >= {hot}C: pause {rest_s}s")
         time.sleep(rest_s)
         while True:
             t = gpu_temp()
             if t is None or t <= cool:
                 break
             time.sleep(10)
-        log(f"[thermal] GPU {t}C で再開")
+        log(f"[thermal] GPU {t}C: resume")
     return t
 
 
 class Marks:
-    """名前付きの境界(CUDA イベント + perf_counter)を順に記録する。"""
+    """Records named boundaries (CUDA event + perf_counter) in order."""
 
     def __init__(self, sync: bool):
         self.sync = sync
@@ -111,8 +111,8 @@ def wrap(obj, attr, marks: Marks, start: str, end: str, rf_name: str | None = No
 
 
 class ForceAnchorFirst:
-    """「判断理由を省く」擬似条件: 最初の生成トークンをアンカー <|traj_future_start|> に固定する。
-    公式コードに NOMINAL の分岐は無いので、CoT 0 トークンで expert に進む状態をこれで作る。"""
+    """Pseudo-condition "omit reasoning": forces the first generated token to the anchor <|traj_future_start|>.
+    The official code has no NOMINAL branch, so this produces the state of going to the expert with 0 CoT tokens."""
 
     def __init__(self, anchor: int, prompt_len: int):
         self.anchor, self.prompt_len = anchor, prompt_len
@@ -126,8 +126,8 @@ class ForceAnchorFirst:
 
 
 class BanFirst:
-    """「判断理由を出させる」擬似条件: 最初の生成トークンで <NOMINAL> の先頭とアンカーを禁止する。
-    合成入力ではモデルが毎回 <NOMINAL> を出すため、判断理由を生成する時間を測るときに使う。"""
+    """Pseudo-condition "produce reasoning": bans the first token of <NOMINAL> and the anchor at the first generated token.
+    On synthetic input the model outputs <NOMINAL> every time, so this is used to measure the time spent generating reasoning."""
 
     def __init__(self, ids: list[int], prompt_len: int):
         self.ids, self.prompt_len = ids, prompt_len
@@ -139,7 +139,7 @@ class BanFirst:
 
 
 def synthetic_sample(nav_text: str, h: int = 1080, w: int = 1920, seed: int = 0) -> dict:
-    """公式ローダ(load_physical_aiavdataset)と同じ形の合成入力。画像は滑らかな模様 + 弱いノイズ。"""
+    """Synthetic input in the same form as the official loader (load_physical_aiavdataset). Images are a smooth pattern + weak noise."""
     from alpamayo2_edge.sample import CAMERA_FRAME_COUNTS, CAMERA_PIXEL_BOUNDS, validate_sample
 
     g = torch.Generator().manual_seed(seed)
@@ -163,7 +163,7 @@ def synthetic_sample(nav_text: str, h: int = 1080, w: int = 1920, seed: int = 0)
             ts.append(t0 + o)
     tt = torch.arange(-19, 1, dtype=torch.float32) * 0.1
     xyz = torch.zeros(1, 20, 3)
-    xyz[0, :, 0] = 10.0 * tt  # 10 m/s 直進
+    xyz[0, :, 0] = 10.0 * tt  # 10 m/s straight ahead
     rot = torch.eye(3).expand(1, 20, 3, 3).contiguous()
     data = {
         "image_frames": torch.stack(frames).contiguous(),
@@ -233,7 +233,7 @@ def main():
     ap.add_argument("--accel", choices=["off", "compile", "tuned"], default="off")
     ap.add_argument("--attn", choices=["sdpa", "flash_attention_2"], default="sdpa")
     ap.add_argument("--cot", choices=["free", "none", "reason"], default="free",
-                    help="free=モデル任せ / none=アンカー強制(CoT 0) / reason=<NOMINAL> 先頭を禁止")
+                    help="free=left to the model / none=force the anchor (CoT 0) / reason=ban the first token of <NOMINAL>")
     ap.add_argument("--num-traj-sets", type=int, default=1)
     ap.add_argument("--num-traj-samples", type=int, default=1)
     ap.add_argument("--max-gen", type=int, default=256)
@@ -242,10 +242,10 @@ def main():
     ap.add_argument("--seed-mode", choices=["fixed", "vary"], default="fixed")
     ap.add_argument("--runs", type=int, default=20)
     ap.add_argument("--sync-stages", type=int, default=1)
-    ap.add_argument("--rest-every", type=int, default=0, help="N 回ごとに温度ゲートを見る(0=毎回)")
+    ap.add_argument("--rest-every", type=int, default=0, help="check the temperature gate every N runs (0=every run)")
     ap.add_argument("--cache-processor", type=int, default=0,
-                    help="1=プロセッサを1回だけ読む(上流 PR #11 相当)。既定 0 は公式どおり毎回読む")
-    ap.add_argument("--torch-profile", help="最後の1回を torch.profiler で取り、このディレクトリに保存")
+                    help="1=load the processor once (equivalent to upstream PR #11). Default 0 loads it every time, as in the official code")
+    ap.add_argument("--torch-profile", help="capture the last run with torch.profiler and save it to this directory")
     ap.add_argument("--out", required=True, help="jsonl")
     ap.add_argument("--label", default="")
     args = ap.parse_args()
@@ -383,7 +383,7 @@ def main():
         cot = cot.reshape(-1).tolist() if cot is not None else None
         return e2e, st, n_tok, cot, xyz
 
-    # 1回目(初回): コンパイル・キャッシュ・CUDA グラフの取得を含む
+    # 1st run (first run): includes compilation, caches and CUDA graph capture
     temp = gpu_temp()
     e2e, st, n_tok, cot, xyz = one_call(args.seed)
     rec = {"kind": "run", "label": args.label, "idx": 0, "phase": "first", "e2e_ms": e2e,

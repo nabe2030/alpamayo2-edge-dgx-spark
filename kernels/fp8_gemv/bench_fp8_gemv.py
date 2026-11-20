@@ -3,21 +3,21 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # bench_fp8_gemv.py <fp8_gemv.so> [--iters 200] [--out result.json]
-# データセットもモデルも使わない単体のベンチ(合成データ)。
-#   Alpamayo 2 Edge の言語モデル(Cosmos3-Edge のテキスト側: 隠れ 2048、MLP 9216、注意 16+8+8 ヘッド × 128、
-#   語彙 135168)のデコード 1 トークンぶんの行列×ベクトル積の形で、
-#   1. 正しさ: 同じ FP8 の重みを FP32 に戻して PyTorch で計算した値と比べる(相対誤差)
-#   2. 速さ: カーネル / PyTorch の BF16 の F.linear / 同じ量を読むだけのカーネル(帯域の目安)。CUDA イベントで測る
-#   重みは正規分布の乱数(seed 0)。行ごとのスケールは max|w| / 448(E4M3 の最大値)。
-#   実際のデコードでは 1 トークンごとに全層の重み(約 1.5 GB)を 1 回ずつ読むので、重みはキャッシュに残らない。
-#   同じ重みを何度も読むと L2 に載って速く見えるため、合計が 512 MB を超えるまで重みの写しを作り、順に回して読む。
+# Standalone benchmark that uses neither the dataset nor the model (synthetic data).
+#   In the matrix-vector product shapes of one decode token of the Alpamayo 2 Edge language model (text side of Cosmos3-Edge: hidden 2048, MLP 9216, attention 16+8+8 heads × 128,
+#   vocabulary 135168), measures
+#   1. correctness: compared with values computed in PyTorch from the same FP8 weights converted back to FP32 (relative error)
+#   2. speed: the kernel / PyTorch BF16 F.linear / a kernel that only reads the same amount (bandwidth reference). Measured with CUDA events
+#   Weights are normal random numbers (seed 0). Per-row scale is max|w| / 448 (the E4M3 maximum).
+#   In real decoding the weights of all layers (about 1.5 GB) are read once per token, so weights do not stay in cache.
+#   Reading the same weights repeatedly would put them in L2 and look faster, so weight copies are made until the total exceeds 512 MB and read in rotation.
 import argparse
 import json
 
 import torch
 import torch.nn.functional as F
 
-SHAPES = {  # 名前: (N, K, act)  act 0 = なし、1 = relu²
+SHAPES = {  # name: (N, K, act)  act 0 = none, 1 = relu²
     "qkv": (2048 + 1024 + 1024, 2048, 0),
     "o": (2048, 2048, 0),
     "fc1": (9216, 2048, 1),
@@ -33,7 +33,7 @@ def quantize_rowwise(w):
 
 
 def timed(fn, iters):
-    """fn(i) を i = 0, 1, … で呼ぶ(写しを順に回す)。"""
+    """Call fn(i) with i = 0, 1, … (rotating through the copies)."""
     for i in range(10):
         fn(i)
     a, b = torch.cuda.Event(enable_timing=True), torch.cuda.Event(enable_timing=True)
@@ -60,9 +60,9 @@ def main():
         x = torch.randn(1, k, device="cuda", generator=g, dtype=torch.float32).to(torch.bfloat16)
         q, s = quantize_rowwise(w)
         y = torch.ops.a2e.fp8_gemv(x, q, s, act, 1)
-        nc = max(1, -(-512 * 2**20 // (n * k)))  # FP8 の重みが合計 512 MB を超える写しの数
+        nc = max(1, -(-512 * 2**20 // (n * k)))  # number of copies for the FP8 weights to exceed 512 MB in total
         qs = [q.clone() for _ in range(nc)]
-        ws = [w.clone() for _ in range(max(1, nc // 2))]  # BF16 は 2 倍の大きさなので半分の数
+        ws = [w.clone() for _ in range(max(1, nc // 2))]  # BF16 is twice the size, so half as many
         ref = F.linear(x.float(), q.view(torch.float8_e4m3fn).float() * s[:, None])
         if act == 1:
             ref = torch.relu(ref) ** 2

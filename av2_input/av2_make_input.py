@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_make_input.py <log_dir> <t0_rel_s> <out.pt> [config] [nav]
-# 1 回だけの測定(a2e_bench2.py --mode single --input pt:<out.pt>)に渡す AV2 の入力を作って保存する。
-# 中身は公式ローダと同じ形の dict(validate_sample に通る)。描き直しにかかった時間も、横に .json で残す。
+# Builds and saves AV2 input for a single-input measurement (a2e_bench2.py --mode single --input pt:<out.pt>).
+# The content is a dict of the same form as the official loader's (passes validate_sample). The re-rendering time is also saved alongside as .json.
 import json
 import sys
 import time

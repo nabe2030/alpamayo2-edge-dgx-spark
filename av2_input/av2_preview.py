@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_preview.py <log_dir> <t0_rel_s> <out_png> [config ...]
-# 組み立てたスロットの t0 のコマ(6 枚)を、組み立て方ごとに 1 行に並べた確認用の絵を作る。時刻のずれも表示する。
+# Makes a check image with the t0 frames of the built slots (6 images) in one row per layout. Also shows time offsets.
 import sys
 from pathlib import Path
 
@@ -28,4 +28,4 @@ for r, cfg in enumerate(configs):
         lag = max((t0 - t) / 1e6 for t in stamps.values())
         ImageDraw.Draw(canvas).text((k * TW + 4, r * (TH + 22) + 2), f"{cfg} | {names[cam]} | lag<= {lag:.1f}ms", fill="black", font=font)
 canvas.save(sys.argv[3])
-print("保存", sys.argv[3], canvas.size)
+print("saved", sys.argv[3], canvas.size)

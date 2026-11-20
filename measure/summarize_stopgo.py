@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # summarize_stopgo.py <stopgo.jsonl> <out.md> <out.json>
-#  の集計。分け方は av2_stopgo_common.py(軌跡: 3.0 s で 2.0 m 以上 = 進む。文: 頭の動詞句)。
-#   集合: A = 記録された走行が 3.0 s で 1.0 m 未満しか動かない(止まるべき場面)、B = 判断理由に「止まる」が出た場面(A を除く)
-#   1. 変種ごと・集合ごとの「進む」の割合(軌跡/文/両方)。区間は場面ごとに引き直すブートストラップ(B=2000)の 95%
-#   2. 同じ (場面, seed) で対にした差(FP8 − BF16)と、食い違いの向き(BF16 止まる & FP8 進む / その逆)
-#   3. 文が BF16 で stop、FP8 で go に分かれた対で、どこで分かれたか(単語の位置と語)
-#   4. 場面ごと: BF16 では一度も「進む」が出ないのに FP8 で出た場面
+#  summary. Classification is from av2_stopgo_common.py (trajectory: ≥ 2.0 m in 3.0 s = go. text: leading verb phrase).
+#   Sets: A = the recorded drive moves less than 1.0 m in 3.0 s (stopped scenes), B = scenes where the reasoning says "stop" (excluding A)
+#   1. Share of "go" per variant and set (trajectory / text / both). Intervals: 95% from a scene-level bootstrap (B=2000)
+#   2. Paired difference on the same (scene, seed) (FP8 − BF16) and direction of disagreement (BF16 stop & FP8 go / the reverse)
+#   3. For pairs whose text is stop in BF16 and go in FP8: where they diverged (word position and word)
+#   4. Per scene: scenes where BF16 never produced "go" but FP8 did
 import collections
 import json
 import statistics as stt
@@ -21,11 +21,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from av2_stopgo_common import cot_class, traj_class  # noqa: E402
 
 VARS = ("base", "fp8body", "fp8all")
-NAME = {"base": "BF16", "fp8body": "本体だけ FP8", "fp8all": "本体 + 出力層 FP8"}
+NAME = {"base": "BF16", "fp8body": "FP8 body only", "fp8all": "FP8 body + output layer"}
 
 
 def boot(scene_vals, fn, B=2000, seed=0):
-    """scene_vals: {scene: [値...]}。場面を引き直して fn(全値) の 95% 区間。"""
+    """scene_vals: {scene: [values...]}. 95% interval of fn(all values) by resampling scenes."""
     rng = np.random.default_rng(seed)
     keys = list(scene_vals)
     out = []
@@ -49,7 +49,7 @@ def main(inp, out_md, out_json):
             o["cc"] = cot_class(o["cot"])
     J, L = {"n_records": len(recs), "sets": {}}, []
     sets = {"A": [r for r in recs if r["tier"] == "A"], "B": [r for r in recs if r["tier"] == "B"], "A+B": recs}
-    L.append(f"記録 {len(recs)} 件(場面 × seed)。各件で BF16・本体だけ FP8・本体 + 出力層 FP8 を同じ seed で回した。\n")
+    L.append(f"{len(recs)} records (scene × seed). Each record ran BF16, FP8 body only and FP8 body + output layer with the same seed.\n")
     for sname, rs in sets.items():
         if not rs:
             continue
@@ -57,8 +57,8 @@ def main(inp, out_md, out_json):
         for r in rs:
             by_scene[r["scene"]].append(r)
         S = {"n": len(rs), "n_scenes": len(by_scene), "rates": {}, "paired": {}, "cot_dist": {}}
-        L.append(f"## 集合 {sname}(場面 {len(by_scene)}、件数 {len(rs)})\n")
-        L.append("| 変種 | 軌跡で進む [95%] | 文で go [95%] | 文 go かつ軌跡で進む [95%] | 文の分類(stop/go/creep/slow/nominal/other) |")
+        L.append(f"## Set {sname} ({len(by_scene)} scenes, {len(rs)} records)\n")
+        L.append("| Variant | Trajectory go [95%] | Text go [95%] | Text go and trajectory go [95%] | Text class (stop/go/creep/slow/nominal/other) |")
         L.append("|---|---|---|---|---|")
         for v in VARS:
             def rate(key, val, v=v):
@@ -74,8 +74,8 @@ def main(inp, out_md, out_json):
             L.append(f"| {NAME[v]} | {pct(tg[0])} [{pct(tg[1][0])}, {pct(tg[1][1])}] | {pct(cg[0])} [{pct(cg[1][0])}, {pct(cg[1][1])}] | "
                      f"{pct(both[0])} [{pct(both[1][0])}, {pct(both[1][1])}] | "
                      + " / ".join(str(dist.get(k, 0)) for k in ("stop", "go", "creep", "slow", "nominal", "other")) + " |")
-        L.append("\n対にした差(同じ場面・同じ seed。FP8 − BF16、ポイント)と、食い違いの向き:\n")
-        L.append("| 変種 | 軌跡で進む の差 [95%] | BF16 止まる→FP8 進む | BF16 進む→FP8 止まる | 文 go の差 [95%] | 文 stop→go | 文 go→stop |")
+        L.append("\nPaired difference (same scene and seed; FP8 − BF16, points) and direction of disagreement:\n")
+        L.append("| Variant | Trajectory go difference [95%] | BF16 stop→FP8 go | BF16 go→FP8 stop | Text go difference [95%] | Text stop→go | Text go→stop |")
         L.append("|---|---|---|---|---|---|---|")
         for v in VARS[1:]:
             res = {}
@@ -91,8 +91,8 @@ def main(inp, out_md, out_json):
                      f"{100 * c['diff']:+.1f} [{100 * c['ci'][0]:+.1f}, {100 * c['ci'][1]:+.1f}] | {c['stop_to_go']} | {c['go_to_stop']} |")
         L.append("")
         J["sets"][sname] = S
-    # 3. 分かれた位置
-    L.append("## 文が BF16 で stop、FP8 で go に分かれた対の、分かれた位置\n")
+    # 3. divergence position
+    L.append("## Divergence position for pairs whose text is stop in BF16 and go in FP8\n")
     J["splits"] = {}
     for v in VARS[1:]:
         sp = []
@@ -108,12 +108,12 @@ def main(inp, out_md, out_json):
         J["splits"][v] = sp
         pos = collections.Counter(s["token_pos"] for s in sp)
         words = collections.Counter((s["base_word"], s["fp8_word"]) for s in sp)
-        L.append(f"- **{NAME[v]}**: {len(sp)} 対。分かれたトークンの位置 {dict(sorted(pos.items(), key=lambda x: (x[0] is None, x[0])))}。"
-                 f"語の入れ替わり(上位): " + "、".join(f"{a}→{b} {n}" for (a, b), n in words.most_common(6)))
+        L.append(f"- **{NAME[v]}**: {len(sp)} pairs. Divergent token position {dict(sorted(pos.items(), key=lambda x: (x[0] is None, x[0])))}. "
+                 f"Word swaps (top): " + ", ".join(f"{a}→{b} {n}" for (a, b), n in words.most_common(6)))
         for s in sp[:4]:
-            L.append(f"  - {s['scene']} s{s['seed']}: 「{s['base'][:90]}」→「{s['fp8'][:90]}」(軌跡 {s['traj_base']}→{s['traj_fp8']})")
-    # 4. 場面ごと
-    L.append("\n## BF16 では「進む」が一度も出ないのに FP8 で出た場面(軌跡で。文で go の回数も併記)\n")
+            L.append(f"  - {s['scene']} s{s['seed']}: \"{s['base'][:90]}\" → \"{s['fp8'][:90]}\" (trajectory {s['traj_base']}→{s['traj_fp8']})")
+    # 4. per scene
+    L.append("\n## Scenes where BF16 never produced \"go\" but FP8 did (by trajectory; text go counts also shown)\n")
     by_scene = collections.defaultdict(list)
     for r in recs:
         by_scene[r["scene"]].append(r)
@@ -125,17 +125,17 @@ def main(inp, out_md, out_json):
         J["scenes"][s] = {"tier": g[0]["tier"], "n": len(g), "traj_go": c, "cot_go": cc}
         if c["base"] == 0 and (c["fp8body"] > 0 or c["fp8all"] > 0):
             rows.append((s, g[0]["tier"], len(g), c, cc))
-    L.append("| 場面 | 集合 | seed 数 | 軌跡で進む BF16 / 本体 / 本体+出力層 | 文で go BF16 / 本体 / 本体+出力層 |")
+    L.append("| Scene | Set | Seeds | Trajectory go BF16 / body / body+output layer | Text go BF16 / body / body+output layer |")
     L.append("|---|---|---|---|---|")
     for s, t, n, c, cc in rows:
         L.append(f"| {s} | {t} | {n} | {c['base']} / {c['fp8body']} / {c['fp8all']} | {cc['base']} / {cc['fp8body']} / {cc['fp8all']} |")
     rows2 = [(s, x) for s, x in J["scenes"].items() if x["traj_go"]["base"] > 0 and x["traj_go"]["fp8body"] == 0 and x["traj_go"]["fp8all"] == 0]
-    L.append(f"\n(逆向き: BF16 だけで「進む」が出た場面は {len(rows2)}。)")
-    # 5. 1 トークン目の分布(teacher forcing、乱数なし)
+    L.append(f"\n(Reverse direction: scenes where only BF16 produced \"go\": {len(rows2)}.)")
+    # 5. first-token distribution (teacher forcing, no sampling)
     tfp = Path(inp).with_name(Path(inp).stem + "_tf.jsonl")
     if tfp.exists():
         T = [json.loads(l) for l in tfp.read_text().splitlines()]
-        # 1 トークン目は単語より細かいトークン(Pro = Proceed、Rem = Remain、Y = Yield など)。出てきたトークンを全部見て分けた
+        # The first token is a sub-word token (Pro = Proceed, Rem = Remain, Y = Yield, etc.). Classified by inspecting every token that appeared
         GO = {"Pro", "Turn", "Acc", "Adv", "Enter", "Ste", "Change", "Move", "Execute", "Take", "Complete", "Follow",
               "Pull", "Finish", "Appro", "Merge", "Go", "Res"}
         STOP = {"Rem", "Wait", "Stop", "Y", "Hold", "Stay", "Come", "Bring"}
@@ -143,11 +143,11 @@ def main(inp, out_md, out_json):
 
         def mass(top, S_):
             return sum(p_ for t, _, p_ in top if t.lstrip("Ġ") in S_)
-        L.append("\n## 1 トークン目の確率(teacher forcing。BF16 の最初の seed の判断理由を流し、位置 0 の分布を温度 0.6 で)\n")
-        L.append("「進む」系の頭のトークン: " + "、".join(sorted(GO)) + "。「止まる」系: " + "、".join(sorted(STOP)) +
-                 "。Dec(Decelerate)は止まる/ゆるめるの両方に使われ、Cre(Creep)はゆっくり前に出るので、どちらにも入れない。"
-                 "上位 30 トークンの中の確率の和。\n")
-        L.append("| 集合 | 場面 | 変種 | 進む系 平均 | 止まる系 平均 | Decelerate 平均 | 進む系の差(FP8 − BF16)[95%] |")
+        L.append("\n## First-token probability (teacher forcing: feed the reasoning of the first BF16 seed, distribution at position 0 at temperature 0.6)\n")
+        L.append("\"Go\" leading tokens: " + ", ".join(sorted(GO)) + ". \"Stop\" tokens: " + ", ".join(sorted(STOP)) +
+                 ". Dec (Decelerate) is used both for stopping and slowing down, and Cre (Creep) means moving forward slowly, so neither is counted in either group. "
+                 "Sum of probabilities within the top 30 tokens.\n")
+        L.append("| Set | Scenes | Variant | Go mean | Stop mean | Decelerate mean | Go difference (FP8 − BF16) [95%] |")
         L.append("|---|---|---|---|---|---|---|")
         J["first_token"] = {}
         for sname, sel in (("A", lambda t: t["tier"] == "A"), ("B", lambda t: t["tier"] == "B"), ("A+B", lambda t: True)):
@@ -167,12 +167,12 @@ def main(inp, out_md, out_json):
                     ci = boot(dv, np.mean)
                     diff = f"{100 * m:+.2f} [{100 * ci[0]:+.2f}, {100 * ci[1]:+.2f}] pt"
                     dj = {"diff": m, "ci": ci, "n_up": sum(x[0] > 0 for x in dv.values()), "n_down": sum(x[0] < 0 for x in dv.values())}
-                    diff += f"(上がった場面 {dj['n_up']} / 下がった場面 {dj['n_down']})"
+                    diff += f" (scenes up {dj['n_up']} / scenes down {dj['n_down']})"
                 J["first_token"].setdefault(sname, {})[v] = {"go": float(np.mean(g)), "stop": float(np.mean(st_)),
                                                              "decel": float(np.mean(de)), "diff_go": dj}
                 L.append(f"| {sname} | {len(ts)} | {NAME[v]} | {pct(np.mean(g))} | {pct(np.mean(st_))} | {pct(np.mean(de))} | {diff} |")
         big = sorted(T, key=lambda t: -(mass(t["top"]["fp8all"], GO) - mass(t["top"]["base"], GO)))[:5]
-        L.append("\n進む系の確率が最も上がった場面(本体 + 出力層 FP8): " + "; ".join(
+        L.append("\nScenes with the largest rise in go probability (FP8 body + output layer): " + "; ".join(
             f"{t['scene']} {pct(mass(t['top']['base'], GO))}→{pct(mass(t['top']['fp8all'], GO))}" for t in big))
     Path(out_md).write_text("\n".join(L) + "\n")
     Path(out_json).write_text(json.dumps(J, indent=1, ensure_ascii=False))

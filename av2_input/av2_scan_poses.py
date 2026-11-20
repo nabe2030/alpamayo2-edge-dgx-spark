@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_scan_poses.py <split> <out_dir>
-# split の全ログについて、姿勢(city_SE3_egovehicle.feather、約 0.2 MB)と地図のファイル名だけを取り、
-# 走り方(速さ、向きの変わり方、止まっている時間)と都市を一覧にする。場面選びの材料(カメラは取らない)。
+# For every log in the split, fetch only the poses (city_SE3_egovehicle.feather, about 0.2 MB) and the map file name,
+# and list the driving behavior (speed, heading change, stopped time) and city. Material for scene selection (cameras are not fetched).
 import concurrent.futures as cf
 import json
 import sys
@@ -29,7 +29,7 @@ def one(split, log, out):
     t = (d.timestamp_ns.values - d.timestamp_ns.values[0]) / 1e9
     xy = d[["tx_m", "ty_m"]].values
     yaw = np.unwrap(R.from_quat(d[["qx", "qy", "qz", "qw"]].values).as_euler("zyx")[:, 0])
-    # 0.1 s きざみに並べ直して速さと向きの変わり方を出す
+    # resample to 0.1 s steps and compute speed and heading change
     g = np.arange(0, t[-1], 0.1)
     gx, gy, gyaw = (np.interp(g, t, v) for v in (xy[:, 0], xy[:, 1], yaw))
     v = np.hypot(np.diff(gx), np.diff(gy)) / 0.1

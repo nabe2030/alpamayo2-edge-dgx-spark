@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_fetch.py <split> <dest_root> <log_id> [<log_id> ...]
-# AV2 Sensor の公開バケット(匿名の HTTPS)から、入力の組み立てに要るものだけを取る:
-#   リングカメラ 7 台(sensors/cameras/ring_*)、calibration/、city_SE3_egovehicle.feather、map/、annotations.feather
-#   (LiDAR とステレオカメラは取らない)
-# <dest_root>/<log_id>.partial に書いてから名前を変える。ファイルごとの sha256 と元の URL を manifest.json に残す。
+# Fetch from the public AV2 Sensor bucket (anonymous HTTPS) only what is needed to build the input:
+#   the 7 ring cameras (sensors/cameras/ring_*), calibration/, city_SE3_egovehicle.feather, map/, annotations.feather
+#   (LiDAR and stereo cameras are not fetched)
+# Writes to <dest_root>/<log_id>.partial, then renames. Per-file sha256 and source URL are recorded in manifest.json.
 import concurrent.futures as cf
 import hashlib
 import json
@@ -32,23 +32,23 @@ def get(url, path, tries=4):
                     f.write(chunk)
             tmp.rename(path)
             return h.hexdigest()
-        except Exception as e:  # 一時的な失敗はやり直す
+        except Exception as e:  # retry transient failures
             if i == tries - 1:
                 raise
-            print(f"  やり直し {i + 1}: {url} {type(e).__name__}", flush=True)
+            print(f"  retry {i + 1}: {url} {type(e).__name__}", flush=True)
             time.sleep(10 * (i + 1))
 
 
 def fetch_log(split, root, log):
     final = root / log
     if final.exists():
-        print(f"{log}: 取得済み", flush=True)
+        print(f"{log}: already fetched", flush=True)
         return 0
     part = root / f"{log}.partial"
     keys, _ = list_objects(f"datasets/av2/sensor/{split}/{log}/")
     todo = [(k, s) for k, s in keys if k.split(f"{log}/", 1)[1].startswith(WANT)]
     total = sum(s for _, s in todo)
-    print(f"{log}: {len(todo)} 件 {total / 1e9:.3f} GB", flush=True)
+    print(f"{log}: {len(todo)} files {total / 1e9:.3f} GB", flush=True)
     t = time.time()
     files = {}
     with cf.ThreadPoolExecutor(16) as ex:
@@ -63,7 +63,7 @@ def fetch_log(split, root, log):
         for f in cf.as_completed(futs):
             rel, s = futs[f]
             files[rel] = {"bytes": s, "sha256": f.result()}
-    for k, s in todo:  # 前回の途中から再開した分も含め、全件を照合
+    for k, s in todo:  # verify all files, including those resumed from a previous interrupted run
         rel = k.split(f"{log}/", 1)[1]
         p = part / rel
         assert p.stat().st_size == s, rel
@@ -74,7 +74,7 @@ def fetch_log(split, root, log):
         "source": f"{BASE}datasets/av2/sensor/{split}/{log}/", "fetched": time.strftime("%Y-%m-%d %H:%M:%S %Z"),
         "bytes": total, "files": files}, indent=1))
     part.rename(final)
-    print(f"{log}: 完了 {time.time() - t:.0f}s", flush=True)
+    print(f"{log}: done {time.time() - t:.0f}s", flush=True)
     return total
 
 
@@ -82,4 +82,4 @@ if __name__ == "__main__":
     split, root = sys.argv[1], Path(sys.argv[2])
     root.mkdir(parents=True, exist_ok=True)
     tot = sum(fetch_log(split, root, log) for log in sys.argv[3:])
-    print(f"合計 {tot / 1e9:.3f} GB")
+    print(f"total {tot / 1e9:.3f} GB")

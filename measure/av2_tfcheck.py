@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_tfcheck.py <scenes_t0.csv> <n> <out.jsonl>
-# teacher forcing の経路の確かめ(wide_eval.py の「BF16、同じ CoT・拡散の乱数だけ違う」の幅が、seed 違いの幅より大きく出たため)。
-#   1. ふつうのサンプリング(seed s)の CoT を固定して、拡散の乱数も同じ s にすると、軌跡が元と一致するか(経路が正しいか)
-#   2. 同じ CoT で拡散の乱数だけを変えた幅(s と s+1、1000 と 1001)と、seed 違い(s と s+1 のふつうのサンプリング)の幅
-# 組み立てと推論の設定は wide_eval.py と同じ(tuned + 4 つの手、BF16、温度 0.6、top_p 0.98、拡散 10 ステップ)。
+# Check of the teacher forcing path (because the width of wide_eval.py's "BF16, same CoT, only the diffusion RNG differs" came out larger than the seed-to-seed width).
+#   1. With the CoT of normal sampling (seed s) fixed and the diffusion RNG also set to the same s, does the trajectory match the original (is the path correct)
+#   2. The width when only the diffusion RNG is changed with the same CoT (s vs s+1, 1000 vs 1001), and the seed-to-seed width (normal sampling with s vs s+1)
+# Input assembly and inference settings are the same as wide_eval.py (tuned + the four optimizations, BF16, temperature 0.6, top_p 0.98, 10 diffusion steps).
 import os
 import json
 import math
@@ -66,8 +66,8 @@ def main():
         data, _, _ = av2_scene(r, "wide_ft")
         ids43, x43 = call(data, 43)
         ids44, x44 = call(data, 44)
-        _, f43 = call(data, 43, noise=43, ids=ids43)        # 1. 元の再現
-        _, f44n = call(data, 43, noise=44, ids=ids43)       # 2. 同じ CoT、拡散の乱数だけ 44
+        _, f43 = call(data, 43, noise=43, ids=ids43)        # 1. reproduce the original
+        _, f44n = call(data, 43, noise=44, ids=ids43)       # 2. same CoT, only the diffusion RNG is 44
         _, f1000 = call(data, 43, noise=1000, ids=ids43)
         _, f1001 = call(data, 43, noise=1001, ids=ids43)
         rec = {"scene": r.scene_id, "reproduce_ade": ade(f43, x43), "seed_diff_ade": ade(x43, x44),

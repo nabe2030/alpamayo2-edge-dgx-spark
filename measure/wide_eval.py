@@ -2,25 +2,25 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# wide_eval.py — 広いデータで、デコードの実装(重みの形式)ごとの出力を同じ場面・同じ seed でペアにして記録する
+# wide_eval.py — on wide data, records the outputs of each decode implementation (weight format), paired by the same scene and the same seed
 #
-# 1 つのプロセスで、デコードの実装(変種)を切り替えながら同じ入力を流す。前処理・ViT・プリフィル・expert は共通(BF16)。
-# 変種は VARIANTS に名前と作り方を足すだけで増やせる(--variant-module で外のファイルから足すこともできる)。
-#   base    : 公式 tuned(BF16)+ 加速の 4 つの手。比べる基準
-#   eager   : 同じ BF16 の DecodeStep を compile せずに動かす(BF16 の丸めの揺れの幅。teacher forcing の物差し用)
-#   fp8body : 本体 28 層を FP8
-#   fp8all  : 本体 + 出力層を FP8( からの出発点)
+# In one process, feeds the same input while switching between decode implementations (variants). Preprocessing, ViT, prefill and expert are shared (BF16).
+# Variants can be added just by adding a name and a builder to VARIANTS (they can also be added from an external file with --variant-module).
+#   base    : official tuned (BF16) + the four optimizations. The reference for comparison
+#   eager   : runs the same BF16 DecodeStep without compile (width of BF16 rounding jitter; the yardstick for teacher forcing)
+#   fp8body : body 28 layers in FP8
+#   fp8all  : body + output layer in FP8 (starting point)
 #
-# 1 件(clip, t0)ごとに記録するもの:
-#  S. 公式のサンプリング(温度 0.6、top_p 0.98、1 候補、拡散 10 ステップ)を、--sample-variants × seeds で。
-#     CoT(文とトークン)、軌跡(64 点)、時間(1 回だけの測り方: 毎回 ViT のキャッシュを空にする)、デコードの時間とトークン数。
-#     拡散の乱数は seed と同じ値(公式の推論と同じ)。BF16 同士の seed の幅も、この base の seed 違いで測る。
-#  T. teacher forcing: base の seed[0] の CoT を固定の入力にして、各変種の 1 トークンずつの分布を base と比べる
-#     (KL(base‖変種) の温度 1 と 0.6、上位 1 位の一致)。同じ CoT・同じ拡散の乱数で expert まで回したときの軌跡の差と、
-#     base で拡散の乱数だけを変えたときの軌跡の差(物差し)。
-#  G. 記録された未来の自車軌跡(egomotion、t0 の自車座標、0.1〜6.4 s の 64 点)。モデルには見せない。
+# Recorded per item (clip, t0):
+#  S. Official sampling (temperature 0.6, top_p 0.98, 1 candidate, 10 diffusion steps), over --sample-variants × seeds.
+#     CoT (text and tokens), trajectory (64 points), time (single-run measurement: the ViT cache is cleared every time), decode time and token count.
+#     The diffusion RNG uses the same value as the seed (same as official inference). The seed-to-seed width within BF16 is also measured with the different seeds of this base.
+#  T. teacher forcing: with base's seed[0] CoT as fixed input, compares each variant's token-by-token distribution with base
+#     (KL(base‖variant) at temperature 1 and 0.6, top-1 agreement). The trajectory difference when running through the expert with the same CoT and the same diffusion RNG, and
+#     the trajectory difference on base when only the diffusion RNG is changed (yardstick).
+#  G. Recorded future ego trajectory (egomotion, ego coordinates at t0, 64 points from 0.1 to 6.4 s). Not shown to the model.
 #
-# 途中で止まっても、--out にある sample_id は飛ばして続きから回せる。
+# If interrupted, it can resume from where it left off, skipping sample_ids already in --out.
 import argparse
 import importlib.util
 import json
@@ -41,7 +41,7 @@ import a2e_stagea as S  # noqa: E402
 from qcheck import ForcedSampler, dist_metrics  # noqa: E402
 
 
-# ---------------------------------------------------------------- 変種(デコードの実装)の一覧
+# ---------------------------------------------------------------- list of variants (decode implementations)
 def _v_eager(vlm, handle):
     from alpamayo2_edge.accel.decode import DecodeStep
 
@@ -64,15 +64,15 @@ VARIANTS = {
 
 
 def load_variant_module(path):
-    """外のファイルの VARIANTS(名前 → (vlm, handle) を受けて compiled_step を返す関数)を足す。4 ビットなどの追加用。"""
+    """Adds VARIANTS from an external file (functions taking name → (vlm, handle) and returning compiled_step). For additions such as 4-bit."""
     spec = importlib.util.spec_from_file_location("extra_variants", path)
     mod = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = mod  # torch.compile(dynamo)がモジュールを名前で探すため(無いと ModuleNotFoundError)
+    sys.modules[spec.name] = mod  # because torch.compile (dynamo) looks up the module by name (ModuleNotFoundError without it)
     spec.loader.exec_module(mod)
     VARIANTS.update(mod.VARIANTS)
 
 
-# ---------------------------------------------------------------- 補助
+# ---------------------------------------------------------------- helpers
 def ade(a, b):
     d = [math.dist(p, r) for p, r in zip(a, b)]
     return sum(d) / len(d)
@@ -89,16 +89,16 @@ def gpu_temp():
 def thermal_gate(log, hot=84, resume=60, pause=180):
     t = gpu_temp()
     if t is not None and t >= hot:
-        log(f"GPU {t}℃ → {pause}s 休止、{resume}℃ まで待つ")
+        log(f"GPU {t}°C → pause {pause}s, wait until {resume}°C")
         time.sleep(pause)
         while (t := gpu_temp()) is not None and t > resume:
             time.sleep(10)
-        log(f"再開 {t}℃")
+        log(f"resume {t}°C")
     return t
 
 
 def gt_future(avdi, clip, t0):
-    """記録された未来の自車軌跡(t0 の自車座標、0.1〜6.4 s の 64 点)。範囲外なら None。"""
+    """Recorded future ego trajectory (ego coordinates at t0, 64 points from 0.1 to 6.4 s). None if out of range."""
     ego = avdi.get_clip_feature(clip, avdi.features.LABELS.EGOMOTION)
     ts = t0 + np.arange(0, 6_400_001, 100_000, dtype=np.int64)
     lo, hi = ego.time_range
@@ -124,7 +124,7 @@ def graph_count(handle):
 
 
 class DecodeTimer:
-    """vlm.generate(CoT のデコード)の前後に CUDA イベントを打つ。"""
+    """Places CUDA events before and after vlm.generate (CoT decode)."""
 
     def __init__(self, vlm):
         self.vlm, self.orig = vlm, vlm.generate
@@ -144,9 +144,9 @@ class DecodeTimer:
         return None if self.ev is None else self.ev[0].elapsed_time(self.ev[1])
 
 
-# ---------------------------------------------------------------- AV2: 入力と正解
+# ---------------------------------------------------------------- AV2: input and ground truth
 def av2_scene(row, config):
-    """scenes_t0.csv の 1 行 → (公式ローダと同じ形の入力, ナビ文の情報, 正解の軌跡)。"""
+    """One row of scenes_t0.csv → (input in the same form as the official loader, navigation text info, ground-truth trajectory)."""
     import av2_build as B
     import av2_nav as N
 
@@ -158,23 +158,23 @@ def av2_scene(row, config):
     return data, info, np.round(B.gt_future(lg, t0), 4).tolist()
 
 
-# ---------------------------------------------------------------- 本体
+# ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--model", required=True)
-    ap.add_argument("--scenes", required=True, help="select_scenes.py の scenes.csv")
-    ap.add_argument("--data-dir", default="", help="(AV2: 使わない。場所は scenes の data_dir 列)")
-    ap.add_argument("--variants", default="base,fp8body,fp8all", help="サンプリングで比べる変種(先頭は base)")
-    ap.add_argument("--tf-variants", default="eager,fp8body,fp8all", help="teacher forcing で base と比べる変種")
-    ap.add_argument("--variant-module", default="", help="VARIANTS を足す Python ファイル")
+    ap.add_argument("--scenes", required=True, help="scenes.csv from select_scenes.py")
+    ap.add_argument("--data-dir", default="", help="(AV2: unused. The location is the data_dir column of scenes)")
+    ap.add_argument("--variants", default="base,fp8body,fp8all", help="variants compared by sampling (first one is base)")
+    ap.add_argument("--tf-variants", default="eager,fp8body,fp8all", help="variants compared with base by teacher forcing")
+    ap.add_argument("--variant-module", default="", help="Python file that adds VARIANTS")
     ap.add_argument("--seeds", default="43,44,45")
     ap.add_argument("--noise-seed", type=int, default=1000)
-    ap.add_argument("--limit", type=int, default=0, help="先頭から n 件だけ(試運転用)")
+    ap.add_argument("--limit", type=int, default=0, help="only the first n items (for trial runs)")
     ap.add_argument("--so", default="")
     ap.add_argument("--out", required=True)
-    # AV2: 入力の組み立て方と、参考の「いつも直進」のナビ文で BF16 だけ回す seed
+    # AV2: how the input is assembled, and the seeds run with BF16 only for the reference "always straight" navigation text
     ap.add_argument("--av2-config", default="wide_ft")
-    ap.add_argument("--straight-seeds", default="43,44,45,46,47", help="空なら回さない")
+    ap.add_argument("--straight-seeds", default="43,44,45,46,47", help="not run if empty")
     args = ap.parse_args()
     if args.variant_module:
         load_variant_module(args.variant_module)
@@ -191,7 +191,7 @@ def main():
     import pandas as pd
 
     scenes = pd.read_csv(args.scenes)
-    scenes["sample_id"] = scenes["scene_id"]  # AV2: 場面の ID
+    scenes["sample_id"] = scenes["scene_id"]  # AV2: scene ID
     scenes["clip_id"] = scenes["log_id"]
     if args.limit:
         scenes = scenes.head(args.limit)
@@ -229,7 +229,7 @@ def main():
 
     def call(data, seed, *, noise=None, use_forced=None, timed=False):
         if timed:
-            vcache.clear()  # 1 回だけの測り方: ViT を毎回計算する
+            vcache.clear()  # single-run measurement: compute the ViT every time
         g0 = graph_count(handle)
         torch.cuda.synchronize()
         t = time.perf_counter()
@@ -261,7 +261,7 @@ def main():
                      new_graphs=graph_count(handle) - g0)
         return r
 
-    # ウォームアップ: 変種ごとに 1 回(コンパイルとグラフの取得。記録しない)
+    # warm-up: once per variant (compilation and graph capture; not recorded)
     first = scenes.iloc[0]
     d0, _, _ = av2_scene(first, args.av2_config)  # AV2
     tw = time.perf_counter()
@@ -271,7 +271,7 @@ def main():
         if v in tf_variants or v == "base":
             ref = call(d0, seeds[0])["gen_ids"]
             call(d0, seeds[0], noise=args.noise_seed, use_forced=ref)
-    log(f"ウォームアップ {time.perf_counter() - tw:.0f}s")
+    log(f"warm-up {time.perf_counter() - tw:.0f}s")
     del d0
 
     tstart = time.perf_counter()
@@ -283,24 +283,24 @@ def main():
         straight_seeds = [int(x) for x in args.straight_seeds.split(",") if x]
         for r in todo:
             tl = time.perf_counter()
-            data, info, gt = av2_scene(r, args.av2_config)  # AV2: 描き直しは時間に含めない
+            data, info, gt = av2_scene(r, args.av2_config)  # AV2: re-rendering is not included in the time
             load_s = time.perf_counter() - tl
             rec = {"kind": "sample", "sample_id": r.sample_id, "clip_id": clip, "split": r.split, "t0_ns": int(r.t0_ns),
                    "t0_us": int(data["t0_us"]), "motion": r.kind, "city": r.city, "nav_text": info["text"],
                    "nav_info": info, "gt_xyz": gt, "clip_load_s": round(load_s, 2), "sampled": {}, "tf": {}}
             temps = []
-            # S. サンプリング(seed ごとに、変種を続けて回す: 温度の条件を変種どうしでそろえる)
+            # S. sampling (per seed, run the variants back to back: keeps the temperature conditions the same across variants)
             for s in seeds:
                 for v in variants:
                     temps.append(thermal_gate(log))
                     V.use(v)
                     rec["sampled"].setdefault(v, {})[str(s)] = call(data, s, timed=True)
-            # T. teacher forcing(base の seed[0] の CoT を固定)
+            # T. teacher forcing (base's seed[0] CoT is fixed)
             ids = rec["sampled"]["base"][str(seeds[0])]["gen_ids"]
             V.use("base")
             rb = call(data, seeds[0], noise=args.noise_seed, use_forced=ids)
             sb = forced.scores
-            assert rb["gen_ids"] == ids, "forced の結果が固定した CoT と違う"
+            assert rb["gen_ids"] == ids, "forced result differs from the fixed CoT"
             rb2 = call(data, seeds[0], noise=args.noise_seed + 1, use_forced=ids)
             rec["tf"] = {"ref": f"base/s{seeds[0]}", "n_tok": len(ids),
                          "base_noise_alt_ade": ade(rb2["xyz"], rb["xyz"]), "vs": {}}
@@ -310,7 +310,7 @@ def main():
                 m = dist_metrics(sb, forced.scores, ids)
                 m["traj_ade_vs_base"] = ade(rv["xyz"], rb["xyz"])
                 rec["tf"]["vs"][v] = m
-            # 参考(AV2): BF16 で、ナビ文をいつも "Continue straight" にしたとき
+            # reference (AV2): BF16 with the navigation text always set to "Continue straight"
             if straight_seeds:
                 V.use("base")
                 d2 = dict(data, nav_text=["Continue straight"])
@@ -324,9 +324,9 @@ def main():
                 same = sum(rec["sampled"][v][str(s)]["gen_ids"] == b[str(s)]["gen_ids"] for s in seeds)
                 d = [ade(rec["sampled"][v][str(s)]["xyz"], b[str(s)]["xyz"]) for s in seeds]
                 kl = rec["tf"]["vs"].get(v, {}).get("kl_t1")
-                line.append(f"{v}: CoT同={same}/{len(seeds)} 軌跡差={np.median(d):.3f}m"
+                line.append(f"{v}: same CoT={same}/{len(seeds)} traj diff={np.median(d):.3f}m"
                             + (f" KL={np.mean(kl):.1e}" if kl else ""))
-            log(" | ".join(line) + f" {rec['temp_max']}℃ ({time.perf_counter() - tstart:.0f}s)")
+            log(" | ".join(line) + f" {rec['temp_max']}°C ({time.perf_counter() - tstart:.0f}s)")
     emit({"kind": "summary", "seconds": time.perf_counter() - tstart, "n_new": n_new,
           "accel": json.loads(json.dumps(handle.describe(), default=str)),
           "max_mem_gb": torch.cuda.max_memory_allocated() / 2**30})

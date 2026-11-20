@@ -5,21 +5,19 @@
 # This file contains code modified from NVlabs/alpamayo2-edge (https://github.com/NVlabs/alpamayo2-edge,
 # commit 02f55a7), licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt).
 # Modified in 2026: DecodeStepQ.forward follows the CoT decode step of alpamayo2_edge/accel/decode.py; its linear layers call an FP8 (E4M3) GEMV kernel instead of BF16 weights.
-# このファイルは、NVlabs/alpamayo2-edge(コミット 02f55a7、Apache License 2.0)のコードを変更したものを含む。
-# 変更(2026 年): DecodeStepQ.forward は alpamayo2_edge/accel/decode.py の CoT デコードの 1 ステップを写し、線形層を FP8(E4M3)の GEMV カーネルに差し替えた。
 #
-# a2e_fp8.py — CoT デコードで重みを FP8 で読む差し替え
+# a2e_fp8.py — replacement that reads weights in FP8 during CoT decoding
 #
-# 本家 alpamayo2-edge のファイルは変えない。公式の加速(enable_acceleration)が作った DecodeAccelerator の
-# compiled_step(decode.py:563)を、最初の呼び出しより前に、量子化済みの重みを読む DecodeStepQ に入れ替える。
-# プリフィル・expert・ViT は同じ nn.Linear を共有しているので、元の重みは書き換えず、FP8 の写しを別に持つ。
+# Upstream alpamayo2-edge files are not modified. The compiled_step (decode.py:563) of the DecodeAccelerator built by the official
+# acceleration (enable_acceleration) is swapped, before the first call, for DecodeStepQ, which reads quantized weights.
+# Prefill, expert and ViT share the same nn.Linear, so the original weights are not rewritten; a separate FP8 copy is kept.
 #
 #   import a2e_fp8 as Q
 #   handle = enable_acceleration(model, AccelConfig(mode="tuned"))
-#   Q.install(handle, body=True, head=True)     # 本体 28 層と出力層を FP8 に
+#   Q.install(handle, body=True, head=True)     # body (28 layers) and output layer in FP8
 #
-# 量子化: 出力チャネル(行)ごとに scale = max|W[n,:]| / 448、W8 = E4M3(W / scale)(最近接丸め)。活性化は BF16 のまま。
-# 融合: q・k・v を 1 本の [4096, 2048] にまとめる。fc1 の後ろの relu² はカーネルの出口で FP32 のまま計算する。
+# Quantization: per output channel (row) scale = max|W[n,:]| / 448, W8 = E4M3(W / scale) (round to nearest). Activations stay BF16.
+# Fusion: q, k, v are merged into one [4096, 2048]. The relu² after fc1 is computed in FP32 at the kernel's exit.
 from pathlib import Path
 
 import os
@@ -28,13 +26,13 @@ import torch
 P = Path(os.environ.get("A2E_ROOT", "."))
 DEFAULT_SO = os.environ.get("A2E_FP8_SO", str(P / "build/fp8_gemv/v1/fp8_gemv.so"))
 FP8_MAX = 448.0
-# 形ごとの 1 ワープあたりの行数(bench_gemv.py の結果で決める)
+# rows per warp for each shape (chosen from the bench_gemv.py results)
 DEFAULT_ROWS = {"qkv": 1, "o": 1, "fc1": 1, "fc2": 1, "head": 1}
 _loaded: dict[str, str] = {}
 
 
 def load_ops(so: str | Path | None = None):
-    """ビルド済みの .so を読み、torch.compile 用の fake(出力の形と dtype だけを返す)を登録する。"""
+    """Load the built .so and register the fake for torch.compile (returns only the output shape and dtype)."""
     so = str(so or DEFAULT_SO)
     if not _loaded:
         torch.ops.load_library(so)
@@ -46,14 +44,14 @@ def load_ops(so: str | Path | None = None):
 
         _loaded["so"] = so
     elif _loaded["so"] != so:
-        raise RuntimeError(f"別の .so がすでに読まれている: {_loaded['so']}")
+        raise RuntimeError(f"a different .so is already loaded: {_loaded['so']}")
     return torch.ops.a2e
 
 
 def quantize_rowwise(weight: torch.Tensor, chunk: int = 8192) -> tuple[torch.Tensor, torch.Tensor]:
-    """[N, K] の重みを、行ごとのスケールの E4M3 にする。戻り値は (uint8 [N, K], FP32 [N])。
+    """Convert [N, K] weights to E4M3 with per-row scales. Returns (uint8 [N, K], FP32 [N]).
 
-    行ごとに独立な計算なので、FP32 の一時領域を小さくするために chunk 行ずつ処理する(結果は一度に処理したときと同じ)。
+    Rows are independent, so they are processed chunk rows at a time to keep the FP32 scratch small (same result as processing all at once).
     """
     w = weight.detach()
     q = torch.empty(w.shape, dtype=torch.uint8, device=w.device)
@@ -71,7 +69,7 @@ def dequantize(q: torch.Tensor, scale: torch.Tensor) -> torch.Tensor:
 
 
 class QLinear(torch.nn.Module):
-    """FP8 の重みを読む、バイアスなしの線形層(元の重みは触らない)。"""
+    """Bias-free linear layer that reads FP8 weights (the original weights are not touched)."""
 
     def __init__(self, weight: torch.Tensor, rows: int, act: int = 0) -> None:
         super().__init__()
@@ -89,16 +87,16 @@ class QLinear(torch.nn.Module):
 
 
 class QLayer(torch.nn.Module):
-    """1 層ぶんの FP8 の射影: qkv(融合)、o、fc1(+relu²)、fc2。"""
+    """FP8 projections for one layer: qkv (fused), o, fc1 (+relu²), fc2."""
 
     def __init__(self, layer, rows: dict[str, int]) -> None:
         super().__init__()
         attn, mlp = layer.self_attn, layer.mlp
         if getattr(mlp.activation_fn, "__class__", None).__name__ != "ReLUSquaredActivation":
-            raise RuntimeError(f"想定外の活性化関数: {mlp.activation_fn!r}")
+            raise RuntimeError(f"unexpected activation function: {mlp.activation_fn!r}")
         for lin in (attn.q_proj, attn.k_proj, attn.v_proj, attn.o_proj, mlp.fc1, mlp.fc2):
             if lin.bias is not None:
-                raise RuntimeError("バイアス付きの射影は想定していない")
+                raise RuntimeError("projections with bias are not supported")
         qkv = torch.cat([attn.q_proj.weight, attn.k_proj.weight, attn.v_proj.weight], dim=0)
         self.nq, self.nkv = attn.q_proj.out_features, attn.k_proj.out_features
         self.qkv = QLinear(qkv, rows["qkv"])
@@ -108,7 +106,7 @@ class QLayer(torch.nn.Module):
 
 
 def decoder_block_q(layer, ql: QLayer, hidden, cos, sin, k_cache, v_cache, seqlens, causal: bool):
-    """本家 decode.decoder_block(decode.py:194-221)と同じ計算を、射影だけ FP8 の重みで行う。"""
+    """Same computation as upstream decode.decoder_block (decode.py:194-221), with only the projections using FP8 weights."""
     from alpamayo2_edge.accel.decode import apply_rotary_pos_emb, kvcache_attention
 
     attn = layer.self_attn
@@ -129,7 +127,7 @@ def decoder_block_q(layer, ql: QLayer, hidden, cos, sin, k_cache, v_cache, seqle
 
 
 class DecodeStepQ(torch.nn.Module):
-    """本家 DecodeStep(decode.py:257-281)の差し替え。qlayers / qhead が None の部分は BF16 のまま。"""
+    """Replacement for upstream DecodeStep (decode.py:257-281). Parts where qlayers / qhead is None stay BF16."""
 
     def __init__(self, vlm, qlayers: torch.nn.ModuleList | None, qhead: QLinear | None) -> None:
         super().__init__()
@@ -176,7 +174,7 @@ def decode_accelerator(handle):
     for acc in handle.accelerators:
         if isinstance(acc, DecodeAccelerator):
             return acc
-    raise RuntimeError("DecodeAccelerator が見つからない(decode の加速が入っていない)")
+    raise RuntimeError("DecodeAccelerator not found (decode acceleration is not installed)")
 
 
 def compiled(step, handle):
@@ -187,10 +185,10 @@ def compiled(step, handle):
 
 
 def install(handle, body: bool = True, head: bool = True, rows: dict[str, int] | None = None) -> DecodeStepQ:
-    """公式の DecodeAccelerator の compiled_step を FP8 版に入れ替える。CUDA グラフを作る前に呼ぶ。"""
+    """Swap the official DecodeAccelerator's compiled_step for the FP8 version. Call before CUDA graphs are built."""
     dec = decode_accelerator(handle)
     if dec.step_graphs or dec.sampler.graphs:
-        raise RuntimeError("デコードのグラフを作った後には入れ替えられない(最初の呼び出しより前に install する)")
+        raise RuntimeError("cannot swap after the decode graphs are built (install before the first call)")
     step = build_step(dec.vlm, body, head, rows)
     dec.compiled_step = compiled(step, handle)
     dec._a2e_fp8 = {"body": body, "head": head, "rows": {**DEFAULT_ROWS, **(rows or {})}, "so": _loaded.get("so")}
@@ -198,10 +196,10 @@ def install(handle, body: bool = True, head: bool = True, rows: dict[str, int] |
 
 
 class DecodeVariants:
-    """1 つのプロセスの中で、デコードの実装(BF16 / FP8 など)を切り替える(品質の確認用)。
+    """Switch the decode implementation (BF16 / FP8, etc.) within one process (for quality checks).
 
-    変種ごとに compiled_step、デコード 1 歩のグラフ(step_graphs)、サンプラー(GraphSampler と、その中のグラフ)を持ち、
-    use() で DecodeAccelerator の 3 つの属性をまとめて差し替える。プリフィルと expert のグラフは共有する。
+    Keeps per variant a compiled_step, the one-step decode graphs (step_graphs) and a sampler (GraphSampler and its graphs);
+    use() swaps those 3 attributes of DecodeAccelerator together. Prefill and expert graphs are shared.
     """
 
     def __init__(self, handle) -> None:
@@ -212,13 +210,13 @@ class DecodeVariants:
         self.handle = handle
         self.items: dict[str, dict] = {}
         self.current = None
-        self.add("base", self.dec.compiled_step)  # 公式の tuned(BF16)
+        self.add("base", self.dec.compiled_step)  # official tuned (BF16)
 
     def add(self, name: str, compiled_step) -> None:
         dec = self.dec
         saved = (dec.compiled_step, dec.step_graphs, dec.sampler)
         dec.compiled_step = compiled_step
-        sampler = self._GraphSampler(dec)  # GraphSampler はグラフを作るときに dec.compiled_step を読む
+        sampler = self._GraphSampler(dec)  # GraphSampler reads dec.compiled_step when it builds graphs
         dec.compiled_step, dec.step_graphs, dec.sampler = saved
         self.items[name] = {"compiled_step": compiled_step, "step_graphs": {}, "sampler": sampler}
 

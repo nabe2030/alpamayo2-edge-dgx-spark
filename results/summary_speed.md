@@ -1,11 +1,11 @@
-#  速さの集計(AV2、ログ 9e9bcfb7、wide_ft、BF16 / FP8)
+#  Speed summary (AV2, log 9e9bcfb7, wide_ft, BF16 / FP8)
 
-- 時間はすべて ms。e2e は前処理込みの壁時計(前後で同期)。段階は境界で同期した CUDA イベント。
-- 仮想カメラへの描き直しは入力の準備で済ませてあり、e2e に入っていない(下の「描き直し」の節)。
+- All times in ms. e2e is wall-clock time including preprocessing (synchronized before and after). Stages are CUDA events synchronized at the boundaries.
+- Re-rendering to the virtual cameras is done during input preparation and is not included in e2e (see the "Re-rendering" section below).
 
-## 1 回だけ(t0 = 8.5 s、初回 1 + 安定 20 回)
+## Single input (t0 = 8.5 s, 1 first run + 20 steady-state runs)
 
-| 条件 | seed | トークン | e2e 中央値 | 四分位 | 最小〜最大 | 初回 | preprocess | vision | prefill_llm | decode | expert | traj | ms/トークン |
+| Condition | seed | Tokens | e2e median | Quartiles | Min–max | First run | preprocess | vision | prefill_llm | decode | expert | traj | ms per token |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | A_compile_s43 | 43 | 18 | **2010.6** | 1974.9–2174.1 | 1899.7–2295.2 | 31472.5 | 1075.4 | 315.4 | 176.0 | 388.9 | 52.4 | 1.3 | 21.61 |
 | A_compile_s45 | 45 | 19 | **2027.6** | 1963.4–2082.1 | 1932.2–2197.0 | 9209.7 | 1067.7 | 315.7 | 176.0 | 410.8 | 52.8 | 1.3 | 21.62 |
@@ -30,9 +30,9 @@
 | C_head_s43 | 43 | 18 | **770.5** | 768.2–771.7 | 765.4–773.2 | 24613.5 | 17.7 | 241.0 | 177.3 | 277.9 | 52.2 | 1.3 | 15.44 |
 | C_head_s45 | 45 | 19 | **782.8** | 780.7–784.4 | 777.8–795.6 | 17415.4 | 17.5 | 241.0 | 176.3 | 292.9 | 51.2 | 1.3 | 15.42 |
 
-## 連続(計測に数える歩 = t0 ≥ 4.0 s)
+## Continuous (steps counted = t0 ≥ 4.0 s)
 
-| 条件 | 歩数 | ViT に通した枚数(中央値) | e2e 中央値 | p10 | p90 | 最大 | 1 秒を超えた割合 | 理由あり: 中央値 / 超え | NOMINAL: 中央値 / 超え(歩数) | 冷えた初歩 | トークン 中央値 / p90 / 最大 |
+| Condition | Steps | Images through ViT (median) | e2e median | p10 | p90 | Max | Share over 1 s | With reasoning: median / over | NOMINAL: median / over (steps) | Cold first step | Tokens median / p90 / max |
 |---|---|---|---|---|---|---|---|---|---|---|---|
 | S10_all | 595 | 6 | **484.2** | 364.3 | 519.2 | 591.7 | **0.0%** | 487.7 / 0.0% | 364.9 / 0.0% (168) | 567.2 | 19 / 23 / 30 |
 | S10_body | 595 | 6 | **503.9** | 373.1 | 539.5 | 624.6 | **0.0%** | 508.5 / 0.0% | 373.8 / 0.0% (170) | 576.7 | 19 / 22 / 30 |
@@ -47,9 +47,9 @@
 | S1_pgcv | 60 | 14 | **697.6** | 504.0 | 766.1 | 877.9 | **0.0%** | 707.3 / 0.0% | 505.4 / 0.0% (17) | 601.9 | 18 / 23 / 30 |
 | S1_pgv | 60 | 22 | **795.6** | 602.1 | 864.8 | 976.7 | **0.0%** | 805.8 / 0.0% | 602.9 / 0.0% (17) | 602.1 | 18 / 23 / 30 |
 
-### 連続の歩の段階ごとの中央値
+### Per-stage medians of continuous steps
 
-| 条件 | preprocess | vision | prefill_llm | decode | expert | traj |
+| Condition | preprocess | vision | prefill_llm | decode | expert | traj |
 |---|---|---|---|---|---|---|
 | S10_all | 8.8 | 51.7 | 179.6 | 188.0 | 53.5 | 1.3 |
 | S10_body | 8.8 | 51.7 | 180.7 | 207.5 | 53.5 | 1.3 |
@@ -64,9 +64,9 @@
 | S1_pgcv | 13.0 | 148.7 | 176.1 | 305.0 | 52.0 | 1.3 |
 | S1_pgv | 17.5 | 241.6 | 175.8 | 306.3 | 52.2 | 1.3 |
 
-### トークン数への当てはめ(連続の歩)
+### Fit against token count (continuous steps)
 
-| 条件 | e2e ≈ a + b × トークン | 1000 ms に収まるトークン数の上限 | 残差の標準偏差 | decode の傾き(ms/トークン) |
+| Condition | e2e ≈ a + b × tokens | Max tokens within 1000 ms | Residual SD | Decode slope (ms per token) |
 |---|---|---|---|---|
 | S10_all | 309.2 + 9.37 × n | 73.8 | 2.0 | 9.36 |
 | S10_body | 312.1 + 10.33 × n | 66.6 | 2.1 | 10.34 |
@@ -81,17 +81,17 @@
 | S1_pgcv | 412.6 + 15.48 × n | 37.9 | 2.4 | 15.44 |
 | S1_pgv | 509.9 + 15.51 × n | 31.6 | 2.8 | 15.46 |
 
-## 連続 10Hz での出力の一致(同じ t0・同じ seed で BF16 と比べる)
+## Output agreement at continuous 10Hz (compared with BF16 at the same t0 and seed)
 
-| 比べる組 | 組の数 | CoT が同じ | 軌跡の差 ADE 中央値 / p90 / 最大(m) |
+| Pair compared | Pairs | Same CoT | Trajectory difference ADE median / p90 / max (m) |
 |---|---|---|---|
-| BF16 対 S10_body | 595 | 96.0% | 0.009 / 0.023 / 0.637 |
-| BF16 対 S10_all | 595 | 93.1% | 0.009 / 0.025 / 0.640 |
-| (幅)BF16 どうしで seed 違い | 476 | 26.3% | 1.718 / 3.446 / 5.364 |
+| BF16 vs S10_body | 595 | 96.0% | 0.009 / 0.023 / 0.637 |
+| BF16 vs S10_all | 595 | 93.1% | 0.009 / 0.025 / 0.640 |
+| (spread) BF16 vs BF16, different seed | 476 | 26.3% | 1.718 / 3.446 / 5.364 |
 
-## 描き直し(仮想カメラへの写し替え。推論の時間には入れていない)
+## Re-rendering (remapping to the virtual cameras; not included in inference time)
 
-- 写し方の表を作る(キャリブレーションごとに 1 回): 2.37 s
-- 22 枚を全部描く: 中央値 565.3 ms(最大 573.9)。そのうち JPEG の読み込み 186.2 ms(27 枚)
-- 連続 10Hz で増える分だけ描く: 中央値 176.3 ms(最大 417.4、新しく描く枚数 6)
-- 連続 1Hz で増える分だけ描く: 中央値 369.1 ms(最大 385.6、新しく描く枚数 14)
+- Build the remap tables (once per calibration): 2.37 s
+- Render all 22 images: median 565.3 ms (max 573.9). Of this, JPEG decoding 186.2 ms (27 images)
+- Continuous 10Hz, render only the new images: median 176.3 ms (max 417.4, new images rendered 6)
+- Continuous 1Hz, render only the new images: median 369.1 ms (max 385.6, new images rendered 14)

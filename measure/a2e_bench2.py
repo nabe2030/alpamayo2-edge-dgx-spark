@@ -2,17 +2,17 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# a2e_bench2.py — の測定。a2e_bench.pyと同じ段階の区切り・同じ時計で、
-# 4 つの手(a2e_stagea.py)を --feat で積み上げて測る。
+# a2e_bench2.py — measurement. With the same stage boundaries and the same clock as a2e_bench.py,
+# stacks up the four optimizations (a2e_stagea.py) with --feat and measures them.
 #
-#   --feat   空 = 公式どおり / p = #1 プロセッサを1回だけ読む(PR #11)/ g = #9 GPU で縮小
-#            v = #3 ViT を compile + CUDA グラフ / c = #2 ViT の結果を画像ごとに使い回す
-#   --mode single : 1 回だけ動かす測り方。毎回 ViT のキャッシュを空にして、同じサンプルを入れる
-#   --mode stream : 連続して動かす測り方。同じクリップの t0 を --stride ずつ進めたサンプルを順に入れる。
-#                   パスの始めにキャッシュを空にする(パスの最初の 1 歩は「冷えた」状態として別に数える)。
+#   --feat   empty = as official / p = #1 load the processor once (PR #11) / g = #9 resize images on the GPU
+#            v = #3 compile the ViT too + CUDA graphs / c = #2 reuse ViT results per image
+#   --mode single : single-run measurement. Clears the ViT cache every time and feeds the same sample
+#   --mode stream : continuous measurement. Feeds, in order, samples whose t0 advances by --stride within the same clip.
+#                   Clears the cache at the start of each pass (the first step of a pass is counted separately as the "cold" state).
 #
-# 各呼び出しの記録: e2e(前処理込み、前後で同期した壁時計)、段階別(境界で同期した CUDA イベント)、
-# CoT のトークン列と文、軌跡(候補 0 の xyz 64 点)、ViT に通した画像の枚数。
+# Recorded per call: e2e (including preprocessing, wall clock synchronized before and after), per stage (CUDA events synchronized at boundaries),
+# CoT token sequence and text, trajectory (xyz of candidate 0, 64 points), number of images passed through the ViT.
 import argparse
 import contextlib
 import json
@@ -34,22 +34,22 @@ def main():
     ap.add_argument("--mode", choices=["single", "stream"], default="single")
     ap.add_argument("--input", default="", help="single: pt:<path>")
     ap.add_argument("--clip-dir", default="")
-    # AV2: 連続入力の入力源を AV2 のログにする(av2_stream.AV2StreamSource)。t0 はログ先頭からの µs
+    # AV2: the source of continuous input is an AV2 log (av2_stream.AV2StreamSource). t0 is in µs from the start of the log
     ap.add_argument("--av2-log", default="")
     ap.add_argument("--av2-config", default="wide_ft")
     ap.add_argument("--av2-nav", default="gt")
-    # inline = 描き直し(JPEG の読み込みから)を各歩の中で行い、推論と合わせた時間も記録する
+    # inline = do the re-rendering (from JPEG loading) inside each step, and also record the time combined with inference
     ap.add_argument("--av2-render", choices=["pre", "inline"], default="pre")
-    ap.add_argument("--av2-decode", default="pil_threads", help="inline の JPEG の読み方(av2_render_fast)")
-    ap.add_argument("--av2-out", default="pinned", help="inline の描いた絵の持ち方(av2_render_fast の out_mode: cpu / pinned)")
-    ap.add_argument("--t0-start", type=int, default=2_000_000, help="stream: 始める t0(公式ローダの下限 2.0 s)")
+    ap.add_argument("--av2-decode", default="pil_threads", help="how inline reads JPEGs (av2_render_fast)")
+    ap.add_argument("--av2-out", default="pinned", help="how inline holds the rendered images (out_mode of av2_render_fast: cpu / pinned)")
+    ap.add_argument("--t0-start", type=int, default=2_000_000, help="stream: starting t0 (lower bound of the official loader: 2.0 s)")
     ap.add_argument("--measure-from", type=int, default=4_000_000,
-                    help="stream: この t0 から計測に数える(それより前はキャッシュを満たす期間)")
+                    help="stream: count toward measurement from this t0 (before that is the period that fills the cache)")
     ap.add_argument("--t0-stop", type=int, default=19_900_000)
-    ap.add_argument("--prep-steps", type=int, default=30, help="stream: 準備のパスで回す歩数")
-    ap.add_argument("--prep-steps-next", type=int, default=5, help="stream: 2 本目からのログの準備のパスの歩数")
+    ap.add_argument("--prep-steps", type=int, default=30, help="stream: number of steps in the warm-up pass")
+    ap.add_argument("--prep-steps-next", type=int, default=5, help="stream: number of steps in the warm-up pass for the 2nd and later logs")
     ap.add_argument("--stride", type=int, default=100_000)
-    ap.add_argument("--passes", type=int, default=2, help="stream: 計測するパス数(このほかに準備のパスを 1 回)")
+    ap.add_argument("--passes", type=int, default=2, help="stream: number of measured passes (plus one warm-up pass)")
     ap.add_argument("--nav-text", default="Turn right in 30m")
     ap.add_argument("--seed", type=int, default=43)
     ap.add_argument("--seed-mode", choices=["fixed", "vary"], default="fixed")
@@ -57,12 +57,12 @@ def main():
     ap.add_argument("--steps", type=int, default=10)
     ap.add_argument("--max-gen", type=int, default=256)
     ap.add_argument("--sync-stages", type=int, default=1)
-    ap.add_argument("--vit-mode", default="default", help="#3 の inductor モード")
-    ap.add_argument("--pin", type=int, default=0, help="#9: 転送前に pinned メモリへ写す")
+    ap.add_argument("--vit-mode", default="default", help="inductor mode for #3")
+    ap.add_argument("--pin", type=int, default=0, help="#9: copy into pinned memory before the transfer")
     ap.add_argument("--torch-profile", default="")
     ap.add_argument("--q", choices=["none", "body", "head", "all", "fp4h8"], default="none",
-                    help="CoT デコードの重みを FP8 で読む範囲(本体 28 層 / 出力層 / 両方)")
-    ap.add_argument("--q-rows", default="", help="例 qkv=1,head=1(a2e_fp8.DEFAULT_ROWS を上書き)")
+                    help="which CoT-decode weights are read in FP8 (body 28 layers / output layer / both)")
+    ap.add_argument("--q-rows", default="", help="e.g. qkv=1,head=1 (overrides a2e_fp8.DEFAULT_ROWS)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--label", default="")
     args = ap.parse_args()
@@ -93,17 +93,17 @@ def main():
             "versions": versions(args), "temp_start": gpu_temp()}
     log(json.dumps(meta, ensure_ascii=False))
 
-    # 入力
+    # input
     t = time.perf_counter()
     if args.mode == "single":
         samples = [torch.load(args.input[3:], weights_only=False)]
     else:
         t0s = list(range(args.t0_start, args.t0_stop + 1, args.stride))
-        if args.av2_log:  # AV2: 描き直しはここ(測る区間の外)で全部済ませる
+        if args.av2_log:  # AV2: all re-rendering is done here (outside the measured interval)
             from av2_stream import AV2StreamSource
 
-            # --av2-log はカンマ区切りで複数のログを取れる。ログごとに入力源を作り直す
-            # (1 本ぶんの描き直しの結果だけを持つ。2 本目からは計測のパスの前に作る。どれも測る区間の外)
+            # --av2-log accepts multiple comma-separated logs. The input source is rebuilt for each log
+            # (it holds only one log's re-rendering results. From the 2nd log on, it is built before the measured passes. All outside the measured interval)
             av2_logs = [x for x in args.av2_log.split(",") if x]
 
             def make_src(path):
@@ -119,7 +119,7 @@ def main():
 
             src = make_src(av2_logs[0])
         else:
-            raise SystemExit("公開版の連続入力は --av2-log だけ")
+            raise SystemExit("the public version supports continuous input only via --av2-log")
         samples = t0s
     log(f"input ready: {len(samples)} samples, {time.perf_counter() - t:.1f}s")
 
@@ -140,14 +140,14 @@ def main():
         import a2e_fp8 as Q
 
         if accel is None:
-            raise SystemExit("--q は公式の加速(--accel compile/tuned)の上で使う")
+            raise SystemExit("--q is used on top of the official acceleration (--accel compile/tuned)")
         rows = {k: int(v) for k, v in (kv.split("=") for kv in args.q_rows.split(",") if kv)}
-        if args.q == "fp4h8":  # 本体 28 層を FP4(a2e_fp4)、出力層を FP8
+        if args.q == "fp4h8":  # body 28 layers in FP4 (a2e_fp4), output layer in FP8
             import a2e_fp4 as Q4
 
             dec = Q.decode_accelerator(accel)
             if dec.step_graphs or dec.sampler.graphs:
-                raise RuntimeError("デコードのグラフを作った後には入れ替えられない")
+                raise RuntimeError("cannot be swapped after the decode graphs have been built")
             qstep = Q4.build_step4(dec.vlm, head="fp8")
             dec.compiled_step = Q.compiled(qstep, accel)
             qinfo = {"q": args.q, "so4": Q4.SO4,
@@ -156,12 +156,12 @@ def main():
         else:
             qstep = Q.install(accel, body=args.q in ("body", "all"), head=args.q in ("head", "all"), rows=rows)
             qinfo = {"q": args.q, **Q.decode_accelerator(accel)._a2e_fp8, **qstep.weight_bytes()}
-        log(f"FP8 デコード: {qinfo}")
+        log(f"FP8 decode: {qinfo}")
     vlm = model.vlm
     vacc = S.VisionAccel(vlm.model, mode=args.vit_mode) if "v" in feat else None
     cache = S.VitFeatureCache(vlm.model) if "c" in feat else None
     if cache is not None and "g" not in feat:
-        raise SystemExit("c (ViT cache) は g (GPU 前処理) と組で使う")
+        raise SystemExit("c (ViT cache) must be used together with g (GPU preprocessing)")
     gprep = S.GpuPrep(model, cache=cache, pin=bool(args.pin)) if "g" in feat else None
 
     marks = Marks(sync=bool(args.sync_stages))
@@ -266,8 +266,8 @@ def main():
                 (pdir / f"{args.label}_kernels.txt").write_text(
                     prof.key_averages().table(sort_by="cuda_time_total", row_limit=60))
     else:
-        # 準備のパス(コンパイルとグラフの取得、形ごと)+ 計測のパス。複数のログなら、ログごとにこれを繰り返す
-        # (2 本目からの準備のパスは --prep-steps-next 歩。コンパイルは 1 本目で済んでいるので、ViT のキャッシュを満たすだけ)
+        # warm-up pass (compilation and graph capture, per shape) + measured passes. With multiple logs, this is repeated per log
+        # (the warm-up pass from the 2nd log on is --prep-steps-next steps. Compilation is done with the 1st log, so it only fills the ViT cache)
         logs_iter = av2_logs if args.av2_log else [None]
         for li, lpath in enumerate(logs_iter):
           if li > 0:
@@ -286,7 +286,7 @@ def main():
             for k, t0 in enumerate(samples):
                 if p == 0 and k >= prep_n:
                     break
-                if inline:  # 描き直しも測る: 温度の確認のあと、描き直し → 推論を続けて動かす
+                if inline:  # also measure re-rendering: after the temperature check, run re-rendering → inference back to back
                     temp = thermal_gate(log)
                     st0 = dict(src.r.stats)
                     torch.cuda.synchronize()
@@ -294,14 +294,14 @@ def main():
                     data = src.sample(t0)
                     torch.cuda.synchronize()
                     render_ms = (time.perf_counter() - tr) * 1000
-                    # 内訳(JPEG を読んで GPU に載せるまで / 写し替えを出すまで。写し替えは非同期なので目安)
+                    # breakdown (until JPEGs are read and loaded onto the GPU / until the remap is issued. The remap is asynchronous, so this is approximate)
                     rdet = {k: round(src.r.stats[k] - st0[k], 2) for k in st0}
                     r = one_call(data, seed)
                     r["render_ms"] = round(render_ms, 2)
                     r["render_detail"] = rdet
                     r["total_ms"] = round(render_ms + r["e2e_ms"], 2)
                 else:
-                    data = src.sample(t0)  # 時間に含めない(センサからの入力に当たる)
+                    data = src.sample(t0)  # not included in the time (corresponds to input from the sensors)
                     temp = thermal_gate(log)
                     r = one_call(data, seed)
                 if p == 0:

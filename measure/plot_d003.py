@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # plot_d003.py <multi.json> <e2e.json|-> <stopgo.json|-> <out_dir>
-#  の図(図用の venv: matplotlib + japanize-matplotlib)。体裁と色は plot_results.py にそろえる。
-#   fig_multi_stream.png : ログごとの連続の時間(中央値の点と最大の線)。10Hz / 1Hz × 4 つの手 / + FP8。1 秒の線つき
-#   fig_e2e.png          : 描き直し込みの 1 歩の時間(描き直し + 推論の中央値を積み、最大を線で)。1 秒の線つき
-#   fig_stopgo.png       : 止まる場面での「進む」の割合(変種ごと、95% 区間)と、1 トークン目の「進む」系の確率の差
+#  figures (plotting venv: matplotlib + japanize-matplotlib). Layout and colors match plot_results.py.
+#   fig_multi_stream.png : continuous time per log (dot = median, line = max). 10Hz / 1Hz × the four optimizations / + FP8. With a 1 s line
+#   fig_e2e.png          : per-step time including re-rendering (medians of re-rendering + inference stacked, max as a line). With a 1 s line
+#   fig_stopgo.png       : share of "go" in stopped scenes (per variant, 95% intervals), and the difference in first-token "go" probability
 import json
 import sys
 from pathlib import Path
@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from plot_results import GRID, INK, INK2, PAL, SURF, VAR, save, style  # noqa: E402
 
-COND = {"pgcv": ("4 つの手(BF16)", PAL[0]), "all": ("+ 本体+出力層 FP8", PAL[2])}
+COND = {"pgcv": ("Four optimizations (BF16)", PAL[0]), "all": ("+ FP8 body + output layer", PAL[2])}
 
 
 def multi(M, out):
@@ -41,13 +41,13 @@ def multi(M, out):
                 ax.plot([p["median"], p["max"]], [y, y], color=col, linewidth=2, solid_capstyle="round")
                 ax.plot(p["median"], y, "o", color=col, markersize=7, markeredgecolor=SURF, markeredgewidth=1.5,
                         label=name if i == 0 else None)
-            ax.text(0.99, -0.13 - 0.06 * j, f"{name}: 全 {c['n']} 歩 中央値 {c['median']:.0f} / 最大 {c['max']:.0f} ms、"
-                    f"1 秒超え {100 * c['over_1s']:.1f}%", transform=ax.transAxes, ha="right", fontsize=8, color=INK2)
+            ax.text(0.99, -0.13 - 0.06 * j, f"{name}: {c['n']} steps, median {c['median']:.0f} / max {c['max']:.0f} ms, "
+                    f"over 1 s {100 * c['over_1s']:.1f}%", transform=ax.transAxes, ha="right", fontsize=8, color=INK2)
         ax.axvline(1000, color=INK2, linestyle="--", linewidth=1)
-        ax.text(1000, len(logs) - 0.3, " 1 秒", color=INK2, fontsize=8, va="bottom")
+        ax.text(1000, len(logs) - 0.3, " 1 s", color=INK2, fontsize=8, va="bottom")
         ax.set_xlim(0, 1150)
-        ax.set_title(f"連続 {hz}Hz の間隔(推論だけ。描き直しは除く)", fontsize=10.5, color=INK, loc="left")
-        ax.set_xlabel("1 歩の時間 ms(点 = 中央値、線の右端 = 最大)", fontsize=9, color=INK2)
+        ax.set_title(f"Continuous {hz}Hz (inference only, no re-rendering)", fontsize=10.5, color=INK, loc="left")
+        ax.set_xlabel("Time per step, ms (dot = median, right end of line = max)", fontsize=9, color=INK2)
     axes[0].set_yticks(range(len(logs)), [l[:8] for l in logs])
     axes[0].invert_yaxis()
     axes[0].legend(loc="lower left", fontsize=8.5, frameon=False)
@@ -66,23 +66,23 @@ def e2e(E, out):
     style(ax)
     for i, (k, c) in enumerate(rows):
         r, e = c["render_ms"]["median"], c["e2e_ms"]["median"]
-        ax.barh(i, r, height=0.6, color=PAL[3], edgecolor=SURF, linewidth=1.5, label="描き直し(JPEG の読み込みから)" if i == 0 else None)
-        ax.barh(i, e, left=r, height=0.6, color=PAL[0], edgecolor=SURF, linewidth=1.5, label="推論" if i == 0 else None)
+        ax.barh(i, r, height=0.6, color=PAL[3], edgecolor=SURF, linewidth=1.5, label="Re-rendering (from JPEG decode)" if i == 0 else None)
+        ax.barh(i, e, left=r, height=0.6, color=PAL[0], edgecolor=SURF, linewidth=1.5, label="Inference" if i == 0 else None)
         ax.plot([c["max"], c["max"]], [i - 0.3, i + 0.3], color=INK, linewidth=2)
-        ax.text(c["max"] + 12, i, f"中央値 {c['median']:.0f} / 最大 {c['max']:.0f} ms、1 秒超え {100 * c['over_1s']:.1f}%",
+        ax.text(c["max"] + 12, i, f"median {c['median']:.0f} / max {c['max']:.0f} ms, over 1 s {100 * c['over_1s']:.1f}%",
                 va="center", fontsize=8, color=INK)
     names = {"E1": "1Hz", "E10": "10Hz"}
 
     def label(k):
         hz, cond = names.get(k.split("_")[0], k), COND.get(k.split("_")[1], (k,))[0]
-        how = "1 枚ずつ .cpu()(最初の版)" if k.endswith("_cpu") else "pinned にまとめて写す"
-        return f"{hz} {cond}\n描き直し: {how}"
+        how = "per-image .cpu() (v1)" if k.endswith("_cpu") else "pinned batch copy"
+        return f"{hz} {cond}\nre-rendering: {how}"
     ax.set_yticks(range(len(rows)), [label(k) for k, _ in rows], fontsize=8.5)
     ax.invert_yaxis()
     ax.axvline(1000, color=INK2, linestyle="--", linewidth=1)
     ax.set_xlim(0, max(1500, max(c["max"] for _, c in rows) + 420))
-    ax.set_xlabel("1 歩の時間 ms(棒 = 中央値の内訳、縦線 = 合計の最大)", fontsize=9, color=INK2)
-    ax.set_title("描き直し込みの連続の時間(同じ GPU で続けて動かす)", fontsize=10.5, color=INK, loc="left")
+    ax.set_xlabel("Time per step, ms (bars = median breakdown, vertical line = max of total)", fontsize=9, color=INK2)
+    ax.set_title("Continuous time incl. re-rendering (back to back on the same GPU)", fontsize=10.5, color=INK, loc="left")
     ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.09), ncol=2, fontsize=8.5, frameon=False)
     fig.tight_layout(rect=(0, 0.03, 1, 1))
     save(fig, out / "fig_e2e.png")
@@ -93,8 +93,8 @@ def stopgo(G, out):
     fig, axes = plt.subplots(1, 2, figsize=(11, 3.4))
     ax = axes[0]
     style(ax)
-    sets = [("A", "A: 記録で止まっている場面\n(軌跡が 3 s で 2 m 以上 = 進む)", "traj_go"),
-            ("B", "B: 判断理由に「止まる」が出る場面\n(判断理由が go の割合)", "cot_go")]
+    sets = [("A", "A: stopped in the recorded drive\n(go = trajectory moves 2 m+ in 3 s)", "traj_go"),
+            ("B", "B: reasoning says \"stop\"\n(share of reasoning = go)", "cot_go")]
     for i, (s, label, key) in enumerate(sets):
         if s not in S:
             continue
@@ -108,8 +108,8 @@ def stopgo(G, out):
     ax.set_yticks(range(len(sets)), [l for _, l, _ in sets], fontsize=8.5)
     ax.invert_yaxis()
     ax.set_xlim(0, max(10.0, ax.get_xlim()[1] + 6))
-    ax.set_xlabel("「進む」の割合 %(点 = 全体、線 = 場面を引き直した 95% 区間)", fontsize=9, color=INK2)
-    ax.set_title("止まる場面で「進む」が出る割合", fontsize=10.5, color=INK, loc="left")
+    ax.set_xlabel("Share of \"go\", % (dot = overall, line = scene-resampled 95% interval)", fontsize=9, color=INK2)
+    ax.set_title("Share of \"go\" in stopped scenes", fontsize=10.5, color=INK, loc="left")
     ax.legend(loc="lower right", fontsize=8, frameon=False)
     ax = axes[1]
     style(ax)
@@ -129,8 +129,8 @@ def stopgo(G, out):
     ax.axvline(0, color=INK2, linewidth=1)
     ax.set_yticks(range(len(labels)), labels, fontsize=8.5)
     ax.invert_yaxis()
-    ax.set_xlabel("1 トークン目が「進む」系の語になる確率の差(FP8 − BF16、ポイント)", fontsize=9, color=INK2)
-    ax.set_title("1 トークン目の確率(teacher forcing、乱数なし)", fontsize=10.5, color=INK, loc="left")
+    ax.set_xlabel("Difference in P(first token is a \"go\" word) (FP8 − BF16, points)", fontsize=9, color=INK2)
+    ax.set_title("First-token probability (teacher forcing, no sampling)", fontsize=10.5, color=INK, loc="left")
     fig.tight_layout(rect=(0, 0.04, 1, 1))
     save(fig, out / "fig_stopgo.png")
 

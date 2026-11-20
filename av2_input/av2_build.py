@@ -2,20 +2,20 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# av2_build.py — Argoverse 2 Sensor のログから、Alpamayo 2 Edge の入力(公式ローダと同じ形の dict)を組み立てる。
+# av2_build.py — builds Alpamayo 2 Edge input (a dict of the same form as the official loader's) from an Argoverse 2 Sensor log.
 #
-# 公式ローダ(alpamayo2_edge/load_physical_aiavdataset.py)と同じ決まり:
-#   - カメラ ID 0,1,2,3,5,6(sample.py の CAMERA_FRAME_COUNTS)。1(前方)と 6(前方望遠)は −2/−1/−0.5/−0.1/0 s の 5 枚、
-#     ほかは −1/−0.1/0 s の 3 枚。各コマは「求めた時刻と同じか、それより前の最も近いコマ」(公式の検査と同じ向き)。
-#   - image_frames は [22,1,3,H,W] の uint8 の 1 つのテンソル(全部同じ縦横でなければならない)。
-#   - 自車の履歴は t0−1.9 〜 t0 の 0.1 s きざみ 20 点を、t0 の姿勢の逆変換で t0 の自車座標へ(xyz と 3x3 回転)。
-#   - 時刻は整数マイクロ秒。モデルが使うのは最後のコマとの差だけ(chat_template.relative_time_labels)。
+# Same conventions as the official loader (alpamayo2_edge/load_physical_aiavdataset.py):
+#   - Camera IDs 0,1,2,3,5,6 (CAMERA_FRAME_COUNTS in sample.py). 1 (front) and 6 (front telephoto) get 5 frames at −2/−1/−0.5/−0.1/0 s,
+#     the others 3 frames at −1/−0.1/0 s. Each frame is "the nearest frame at or before the requested time" (same direction as the official check).
+#   - image_frames is a single uint8 tensor [22,1,3,H,W] (all images must have the same width and height).
+#   - Ego history: 20 points from t0−1.9 to t0 in 0.1 s steps, into the t0 ego frame via the inverse of the t0 pose (xyz and 3x3 rotation).
+#   - Times are integer microseconds. The model uses only the difference from the last frame (chat_template.relative_time_labels).
 #
-# AV2 のカメラは向きと画角が NVIDIA の構成と違い、前方中央は縦長(1550x2048)なので、どのスロットも
-# 「仮想カメラ」(向き yaw、水平の画角 hfov、射影 pinhole / ftheta、1920x1080)として、
-# キャリブレーション(内部パラメータ・歪み・取り付け姿勢)を使ってリングカメラ 7 台から描き直す。
-# 1 つの仮想カメラが複数の元カメラにまたがるときは、画素ごとに光軸に最も近い元カメラを使う(つなぎ目はそのまま)。
-# 元カメラで覆えない部分は黒。
+# AV2 cameras differ from the NVIDIA setup in orientation and field of view, and the front center is portrait (1550x2048), so every slot
+# is re-rendered as a "virtual camera" (orientation yaw, horizontal field of view hfov, projection pinhole / ftheta, 1920x1080)
+# from the 7 ring cameras using the calibration (intrinsics, distortion, mounting pose).
+# When one virtual camera spans several source cameras, each pixel uses the source camera closest to its optical axis (seams are left as is).
+# Areas no source camera covers are black.
 from __future__ import annotations
 
 import json
@@ -35,27 +35,27 @@ RING = ("ring_front_center", "ring_front_left", "ring_front_right", "ring_side_l
         "ring_side_right", "ring_rear_left", "ring_rear_right")
 FRONT_OFFSETS_US = (-2_000_000, -1_000_000, -500_000, -100_000, 0)
 OTHER_OFFSETS_US = (-1_000_000, -100_000, 0)
-OUT_W, OUT_H = 1920, 1080  # 公式の例と同じ 1080x1920(README の image_frames の説明)
+OUT_W, OUT_H = 1920, 1080  # 1080x1920, same as the official example (image_frames description in the README)
 
-# スロットの組み立て方の候補。値は {カメラID: 仮想カメラの指定}。
-#   yaw: 光軸の向き(度、左が正。自車座標の x 前・y 左)、hfov: 水平の画角(度)、model: pinhole / ftheta
-#   src: 使ってよい元カメラ(省略時は全リング)
+# Candidate slot layouts. Values are {camera ID: virtual camera spec}.
+#   yaw: optical axis direction (degrees, left positive; ego frame x forward, y left), hfov: horizontal field of view (degrees), model: pinhole / ftheta
+#   src: source cameras allowed (all ring cameras if omitted)
 CONFIGS = {
-    # 貼り合わせない: AV2 のカメラ 1 台ずつを歪みだけ直して 16:9 に切る
+    # no stitching: each AV2 camera, with only distortion corrected, cropped to 16:9
     "nat": {1: dict(yaw=0, hfov=47, model="pinhole", src=("ring_front_center",)),
             6: dict(yaw=0, hfov=30, model="pinhole", src=("ring_front_center",)),
             0: dict(yaw=45, hfov=62, model="pinhole", src=("ring_front_left",)),
             2: dict(yaw=-45, hfov=62, model="pinhole", src=("ring_front_right",)),
             3: dict(yaw=153, hfov=62, model="pinhole", src=("ring_rear_left",)),
             5: dict(yaw=-153, hfov=62, model="pinhole", src=("ring_rear_right",))},
-    # 120 度・70 度の画角に合わせて貼り合わせる(射影はピンホール)
+    # stitched to match 120-degree and 70-degree fields of view (pinhole projection)
     "wide_pin": {1: dict(yaw=0, hfov=120, model="pinhole"),
                  6: dict(yaw=0, hfov=30, model="pinhole", src=("ring_front_center",)),
                  0: dict(yaw=90, hfov=120, model="pinhole"),
                  2: dict(yaw=-90, hfov=120, model="pinhole"),
                  3: dict(yaw=150, hfov=70, model="pinhole"),
                  5: dict(yaw=-150, hfov=70, model="pinhole")},
-    # 同じく、広角は等距離射影(f-theta、r = f·θ)。望遠はピンホール
+    # likewise, but wide uses equidistant projection (f-theta, r = f·θ). Telephoto is pinhole
     "wide_ft": {1: dict(yaw=0, hfov=120, model="ftheta"),
                 6: dict(yaw=0, hfov=30, model="pinhole", src=("ring_front_center",)),
                 0: dict(yaw=90, hfov=120, model="ftheta"),
@@ -66,18 +66,18 @@ CONFIGS = {
 
 
 def derive_config(base: str, **slot_overrides) -> dict:
-    """CONFIGS[base] の一部のスロットだけを差し替えた組み立て方を作る(例: 望遠を前方と同じにする)。"""
+    """Build a layout that replaces only some slots of CONFIGS[base] (e.g. make telephoto the same as front)."""
     cfg = {k: dict(v) for k, v in CONFIGS[base].items()}
     for cam, spec in slot_overrides.items():
         cfg[int(cam.lstrip("c"))] = dict(spec)
     return cfg
 
 
-CONFIGS["nat_notele"] = derive_config("nat", c6=CONFIGS["nat"][1])          # 望遠のスロットに前方と同じ絵
+CONFIGS["nat_notele"] = derive_config("nat", c6=CONFIGS["nat"][1])          # same image as front in the telephoto slot
 CONFIGS["nat_side"] = derive_config("nat", c0=dict(yaw=99, hfov=62, model="pinhole", src=("ring_side_left",)),
                                     c2=dict(yaw=-99, hfov=62, model="pinhole", src=("ring_side_right",)))
 CONFIGS["wide_ft_notele"] = derive_config("wide_ft", c6=CONFIGS["wide_ft"][1])
-# -2: 覆えない部分の埋め方の比較(fill: black = 0 のまま / gray = 128 / edge = 最も近い写っている画素を引き伸ばす)
+# -2: comparison of how to fill uncovered areas (fill: black = leave 0 / gray = 128 / edge = stretch the nearest visible pixel)
 CONFIGS["wide_ft_gray"] = {k: dict(v, fill="gray") for k, v in CONFIGS["wide_ft"].items()}
 CONFIGS["wide_ft_edge"] = {k: dict(v, fill="edge") for k, v in CONFIGS["wide_ft"].items()}
 CONFIGS["wide_ft_cross60"] = derive_config("wide_ft", c0=dict(yaw=60, hfov=120, model="ftheta"),
@@ -85,7 +85,7 @@ CONFIGS["wide_ft_cross60"] = derive_config("wide_ft", c0=dict(yaw=60, hfov=120, 
 
 
 class AV2Log:
-    """1 本のログ(av2_fetch.py で取ったディレクトリ)。"""
+    """One log (a directory fetched with av2_fetch.py)."""
 
     def __init__(self, root: str | Path):
         self.root = Path(root)
@@ -98,67 +98,67 @@ class AV2Log:
             ts = np.array(sorted(int(p.stem) for p in (self.root / "sensors/cameras" / c).glob("*.jpg")), dtype=np.int64)
             self.cams[c] = dict(fx=float(i.fx_px), fy=float(i.fy_px), cx=float(i.cx_px), cy=float(i.cy_px),
                                 k=(float(i.k1), float(i.k2), float(i.k3)), W=int(i.width_px), H=int(i.height_px),
-                                R=R.from_quat([e.qx, e.qy, e.qz, e.qw]).as_matrix(),  # カメラ → 自車
+                                R=R.from_quat([e.qx, e.qy, e.qz, e.qw]).as_matrix(),  # camera → ego
                                 t=np.array([e.tx_m, e.ty_m, e.tz_m]), ts=ts)
         p = pd.read_feather(self.root / "city_SE3_egovehicle.feather").sort_values("timestamp_ns")
-        # 1 µs 未満しか離れていない重なり(センサーごとの記録が同じ瞬間に並ぶ)は先の 1 つだけ残す
+        # overlaps less than 1 µs apart (per-sensor records at the same instant) keep only the first one
         keep = np.concatenate([[True], np.diff(p.timestamp_ns.values) >= 1000])
         p = p[keep]
         self.pose_ts = p.timestamp_ns.values.astype(np.int64)
-        self._pose_t0 = int(self.pose_ts[0])  # float64 に直すと ns の桁が落ちるので、先頭からの差で持つ
+        self._pose_t0 = int(self.pose_ts[0])  # converting to float64 loses ns digits, so keep offsets from the first time
         self.pose_xyz = p[["tx_m", "ty_m", "tz_m"]].values.astype(np.float64)
         self.pose_rot = R.from_quat(p[["qx", "qy", "qz", "qw"]].values)
         self._slerp = Slerp((self.pose_ts - self._pose_t0).astype(np.float64), self.pose_rot)
-        # 時刻の原点(absolute_timestamps と t0_us をマイクロ秒の相対時刻にする): 姿勢の最初の時刻。
-        # 姿勢のファイルは要るコマだけ取ったログでも丸ごとあるので、取り方によらず同じ値になる(モデルは差しか使わない)。
+        # time origin (to make absolute_timestamps and t0_us relative times in microseconds): the first pose time.
+        # The pose file is complete even in logs where only the needed frames were fetched, so this is the same regardless of how it was fetched (the model uses only differences).
         self.t_origin_ns = int(self.pose_ts[0])
-        # t0_from_rel の「ログ先頭からの秒」の原点は、 と同じ前方中央の最初のコマ(丸ごと取ったログで使う)
+        # the origin of "seconds from log start" in t0_from_rel is, as before, the first front-center frame (used with fully fetched logs)
         self.t_rel_origin_ns = int(self.cams["ring_front_center"]["ts"][0])
 
-    # ---- 時刻 ----
+    # ---- time ----
     def t0_from_rel(self, t0_rel_s: float) -> int:
-        """ログ先頭からの秒に最も近い、前方中央のコマの時刻(ns)を t0 にする。"""
+        """Set t0 to the time (ns) of the front-center frame closest to the given seconds from log start."""
         ts = self.cams["ring_front_center"]["ts"]
         target = self.t_rel_origin_ns + int(round(t0_rel_s * 1e9))
-        # どのカメラにも 2 s 前のコマがあり、姿勢が 6.4 s 先まである範囲に収める(場面選びは姿勢の先頭から数えているため)
+        # keep within the range where every camera has a frame 2 s earlier and poses extend 6.4 s ahead (scene selection counts from the first pose)
         lo = max(c["ts"][0] for c in self.cams.values()) + 2_000_000_000
         hi = int(self.pose_ts[-1]) - 6_400_000_000
         ok = ts[(ts >= lo) & (ts <= hi)]
         return int(ok[np.argmin(np.abs(ok - target))])
 
     def frame_at_or_before(self, cam: str, t_ns: int, tol_ns: int = 1_000_000) -> int:
-        """求めた時刻と同じかそれより前の、最も近いコマ。AV2 のコマの時刻は 50 ms きざみから ±数 ns 揺れるので、
-        1 ms までは「同じ時刻」とみなす(揺れで 1 つ前のコマ = 50 ms 前に落ちるのを防ぐ)。"""
+        """The nearest frame at or before the requested time. AV2 frame times jitter by ±a few ns around 50 ms steps, so
+        up to 1 ms counts as "the same time" (prevents jitter from dropping to the previous frame = 50 ms earlier)."""
         ts = self.cams[cam]["ts"]
         i = np.searchsorted(ts, t_ns + tol_ns, side="right") - 1
         if i < 0:
-            raise ValueError(f"{cam}: {t_ns} より前のコマが無い")
+            raise ValueError(f"{cam}: no frame before {t_ns}")
         return int(ts[i])
 
-    # ---- 姿勢 ----
+    # ---- pose ----
     def poses(self, t_ns: np.ndarray):
         t_ns = np.asarray(t_ns, dtype=np.int64)
         if t_ns.min() < self.pose_ts[0] or t_ns.max() > self.pose_ts[-1]:
-            raise ValueError("姿勢の範囲の外")
+            raise ValueError("outside the pose range")
         rel = (t_ns - self._pose_t0).astype(np.float64)
         prel = (self.pose_ts - self._pose_t0).astype(np.float64)
         xyz = np.stack([np.interp(rel, prel, self.pose_xyz[:, j]) for j in range(3)], -1)
         return xyz, self._slerp(rel)
 
     def local_traj(self, t0_ns: int, offsets_us: np.ndarray):
-        """t0 の自車座標での位置と回転(公式ローダと同じ変換: t0 の姿勢の逆変換)。"""
+        """Position and rotation in the t0 ego frame (same transform as the official loader: inverse of the t0 pose)."""
         xyz, rot = self.poses(t0_ns + np.asarray(offsets_us, dtype=np.int64) * 1000)
         xyz0, rot0 = self.poses(np.array([t0_ns]))
         inv = rot0[0].inv()
         return inv.apply(xyz - xyz0[0]), (inv * rot).as_matrix()
 
-    # ---- 画像 ----
+    # ---- images ----
     def image(self, cam: str, t_ns: int) -> np.ndarray:
         return np.asarray(Image.open(self.root / "sensors/cameras" / cam / f"{t_ns}.jpg").convert("RGB"))
 
 
 def _undistorted_rmax(k, rd_max):
-    """歪みの多項式が単調な範囲で、画像の隅に写る歪みのない半径(正規化座標)を求める。"""
+    """Find the undistorted radius (normalized coordinates) at the image corner, within the range where the distortion polynomial is monotonic."""
     r = np.linspace(0, 3, 30001)
     rd = r * (1 + k[0] * r**2 + k[1] * r**4 + k[2] * r**6)
     mono = np.argmax(np.diff(rd) <= 0) if np.any(np.diff(rd) <= 0) else len(r) - 1
@@ -168,7 +168,7 @@ def _undistorted_rmax(k, rd_max):
 
 
 def ray_dirs(spec: dict, W: int = OUT_W, H: int = OUT_H) -> np.ndarray:
-    """仮想カメラの画素ごとの光線の向き(自車座標、[H,W,3])。カメラ座標は x 右・y 下・z 前。"""
+    """Ray direction for each virtual camera pixel (ego frame, [H,W,3]). Camera frame is x right, y down, z forward."""
     hf = math.radians(spec["hfov"])
     u = np.arange(W) + 0.5 - W / 2
     v = np.arange(H) + 0.5 - H / 2
@@ -177,7 +177,7 @@ def ray_dirs(spec: dict, W: int = OUT_W, H: int = OUT_H) -> np.ndarray:
         f = (W / 2) / math.tan(hf / 2)
         d = np.stack([uu / f, vv / f, np.ones_like(uu)], -1)
     elif spec["model"] == "ftheta":
-        f = (W / 2) / (hf / 2)  # 等距離射影: 中心からの画素距離 = f·θ
+        f = (W / 2) / (hf / 2)  # equidistant projection: pixel distance from center = f·θ
         th = np.hypot(uu, vv) / f
         ph = np.arctan2(vv, uu)
         d = np.stack([np.sin(th) * np.cos(ph), np.sin(th) * np.sin(ph), np.cos(th)], -1)
@@ -191,7 +191,7 @@ def ray_dirs(spec: dict, W: int = OUT_W, H: int = OUT_H) -> np.ndarray:
 
 
 def build_maps(log: AV2Log, spec: dict):
-    """仮想カメラの各画素が、どの元カメラのどの画素を読むか。返り値: [(cam, grid[H,W,2] (−1〜1), mask[H,W])]"""
+    """Which pixel of which source camera each virtual camera pixel reads. Returns: [(cam, grid[H,W,2] (−1 to 1), mask[H,W])]"""
     d = ray_dirs(spec)
     best = np.full(d.shape[:2], np.inf)
     owner = np.full(d.shape[:2], -1)
@@ -199,7 +199,7 @@ def build_maps(log: AV2Log, spec: dict):
     srcs = spec.get("src", RING)
     for j, c in enumerate(srcs):
         cm = log.cams[c]
-        dc = d @ cm["R"]  # 自車 → カメラ(R はカメラ → 自車なので転置を右から掛ける)
+        dc = d @ cm["R"]  # ego → camera (R is camera → ego, so multiply by its transpose from the right)
         z = dc[..., 2]
         with np.errstate(divide="ignore", invalid="ignore"):
             xn, yn = dc[..., 0] / z, dc[..., 1] / z
@@ -223,7 +223,7 @@ def build_maps(log: AV2Log, spec: dict):
         cm = log.cams[c]
         uu, vv = uvs[j]
         grid = np.stack([uu / (cm["W"] - 1) * 2 - 1, vv / (cm["H"] - 1) * 2 - 1], -1)
-        grid[~m] = -2  # 範囲外(使わない)
+        grid[~m] = -2  # out of range (unused)
         out.append((c, torch.from_numpy(grid).float(), torch.from_numpy(m)))
     return out
 
@@ -232,7 +232,7 @@ _MAP_CACHE: dict = {}
 
 
 def maps_for(log: AV2Log, spec: dict):
-    geo = {k: v for k, v in spec.items() if k != "fill"}  # 埋め方は写し方に関係しない
+    geo = {k: v for k, v in spec.items() if k != "fill"}  # the fill method does not affect the mapping
     key = (log.log_id, json.dumps(geo, sort_keys=True))
     if key not in _MAP_CACHE:
         _MAP_CACHE[key] = build_maps(log, geo)
@@ -243,7 +243,7 @@ _FILL_CACHE: dict = {}
 
 
 def fill_index(log: AV2Log, spec: dict):
-    """覆えない画素ごとの、最も近い覆っている画素の位置(flat な添字)。edge の埋め方で使う。"""
+    """For each uncovered pixel, the position (flat index) of the nearest covered pixel. Used by the edge fill."""
     from scipy.ndimage import distance_transform_edt
 
     geo = {k: v for k, v in spec.items() if k != "fill"}
@@ -258,7 +258,7 @@ def fill_index(log: AV2Log, spec: dict):
 
 
 def render(log: AV2Log, spec: dict, t_req_ns: int, device: str = "cuda"):
-    """仮想カメラの 1 枚(uint8 [3,H,W])と、その時刻(主な元カメラ = 画面の中央を写すカメラのコマの時刻)。"""
+    """One virtual camera image (uint8 [3,H,W]) and its time (the frame time of the main source camera = the camera covering the image center)."""
     maps = maps_for(log, spec)
     out = torch.zeros(3, OUT_H, OUT_W, device=device)
     center_cam, stamps = None, {}
@@ -287,19 +287,19 @@ def render(log: AV2Log, spec: dict, t_req_ns: int, device: str = "cuda"):
 
 def build_sample(log: AV2Log, t0_ns: int, config: str | dict, nav_text: str, device: str = "cuda",
                  render_fn=None) -> dict:
-    """公式ローダと同じ形の入力 dict を作る(validate_sample に通る)。付帯情報は 'av2' に入れる。"""
+    """Build an input dict of the same form as the official loader (passes validate_sample). Extra info goes in 'av2'."""
     from alpamayo2_edge.sample import CAMERA_PIXEL_BOUNDS, validate_sample
 
     cfg = CONFIGS[config] if isinstance(config, str) else config
     imgs, cams, stamps, detail = [], [], [], []
-    for cam_id in (0, 1, 2, 3, 5, 6):  # 公式ローダの _CAMERAS と同じ順
+    for cam_id in (0, 1, 2, 3, 5, 6):  # same order as _CAMERAS in the official loader
         offs = FRONT_OFFSETS_US if cam_id in (1, 6) else OTHER_OFFSETS_US
         for off in offs:
             req = t0_ns + off * 1000
             img, t_used, src_stamps = (render_fn or render)(log, cfg[cam_id], req, device)
             imgs.append(img[None])
             cams.append(cam_id)
-            stamps.append((t_used - log.t_origin_ns) // 1000)  # マイクロ秒
+            stamps.append((t_used - log.t_origin_ns) // 1000)  # microseconds
             detail.append({"cam": cam_id, "req_us": (req - log.t_origin_ns) // 1000,
                            "lag_ms": {c: round((req - t) / 1e6, 1) for c, t in src_stamps.items()}})
     hxyz, hrot = log.local_traj(t0_ns, np.arange(-1_900_000, 1, 100_000))
@@ -326,6 +326,6 @@ def build_sample(log: AV2Log, t0_ns: int, config: str | dict, nav_text: str, dev
 
 
 def gt_future(log: AV2Log, t0_ns: int) -> np.ndarray:
-    """記録された未来の軌跡 0.1〜6.4 s(64 点、t0 の自車座標)。モデルには見せない。"""
+    """Recorded future trajectory 0.1 to 6.4 s (64 points, t0 ego frame). Not shown to the model."""
     xyz, _ = log.local_traj(t0_ns, np.arange(100_000, 6_400_001, 100_000))
     return xyz

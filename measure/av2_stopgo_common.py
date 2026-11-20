@@ -2,26 +2,26 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# av2_stopgo_common.py —  の「進む/止まる」の分け方(機械で一貫して付ける基準)。
+# av2_stopgo_common.py — the "go/stop" classification (a criterion applied mechanically and consistently).
 #
-# 1. 軌跡での分け方(主): 出力の軌跡(0.1 s きざみ 64 点、自車の座標)を原点から 3.0 s(30 点目)までたどった
-#    道のりが 2.0 m 以上なら「進む」、未満なら「止まる」。2.0 m / 3 s は平均 0.67 m/s(止まった状態から
-#    0.44 m/s² で動き出したときの距離にあたる)。じわじわ前に出る(クリープ)は「止まる」に入る。
-# 2. 判断理由の文での分け方(副): 文の頭の動詞句で分ける。
+# 1. Classification by trajectory (primary): follow the output trajectory (64 points at 0.1 s intervals, ego coordinates) from the origin up to 3.0 s (the 30th point);
+#    if the distance traveled is 2.0 m or more it is "go", otherwise "stop". 2.0 m / 3 s is an average of 0.67 m/s (corresponds to the distance
+#    when starting from standstill at 0.44 m/s²). Edging forward slowly (creep) counts as "stop".
+# 2. Classification by reasoning text (secondary): classified by the verb phrase at the head of the text.
 #    stop  : wait / remain (stopped) / stay / stop / yield / hold / decelerate (and|to) (come to a)? stop / decelerate to yield /
 #            brake to (a) stop / keep stopped
 #    go    : proceed / steer / turn / accelerate / advance / continue / resume / go / move / merge / change lanes / nudge / keep /
-#            "the traffic light has turned green, so proceed" のように理由が先で動詞があとの文は、
-#            ", so " のあとの動詞句で分ける
-#    slow  : 上の stop 以外の decelerate / slow(前の車との間をあける など)
-#    (例外)continue/keep slowing・decelerating・to stop など: 最初の節に stop/wait/yield があれば stop、なければ slow
-#    creep : creep / inch(ゆっくり前に出る。止まる・進むのどちらにも入れず、別に数える)
-#    nominal: <NOMINAL>(判断理由を出さない)
-#    other : どれにも当たらない
+#            sentences where the reason comes first and the verb after, like "the traffic light has turned green, so proceed",
+#            are classified by the verb phrase after ", so "
+#    slow  : decelerate / slow other than the stop cases above (e.g. leave a gap to the vehicle ahead)
+#    (exception) continue/keep slowing, decelerating, to stop, etc.: stop if the first clause contains stop/wait/yield, otherwise slow
+#    creep : creep / inch (edging forward slowly; counted separately, in neither stop nor go)
+#    nominal: <NOMINAL> (no reasoning output)
+#    other : matches none of these
 import math
 import re
 
-GO_M, GO_T = 2.0, 30  # 3.0 s で 2.0 m
+GO_M, GO_T = 2.0, 30  # 2.0 m in 3.0 s
 
 
 def travel(xyz, n=GO_T):
@@ -50,12 +50,12 @@ def cot_class(cot: str) -> str:
     m = re.search(r",\s*so\s+(.*)$", s)
     if m and not (_STOP.match(s) or _GO.match(s) or _SLOW.match(s)):
         s = m.group(1)
-    m2 = _CONT_SLOW.match(s)  # "continue slowing to stop" などは continue でも go にしない
+    m2 = _CONT_SLOW.match(s)  # "continue slowing to stop" etc. is not go even though it starts with continue
     if m2:
         return "stop" if re.search(r"\bstop\b|\bwait\b|\byield\b", s.split(",")[0]) else "slow"
     if _STOP.match(s):
         return "stop"
-    if re.match(r"^(creep|inch)\b", s):  # ゆっくり前に出る(止まる・進むのどちらでもないので分ける)
+    if re.match(r"^(creep|inch)\b", s):  # edging forward slowly (neither stop nor go, so kept separate)
         return "creep"
     if _GO.match(s):
         return "go"

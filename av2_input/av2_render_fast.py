@@ -2,22 +2,22 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# av2_render_fast.py — 仮想カメラへの描き直しを速くした版。
+# av2_render_fast.py — faster version of re-rendering to the virtual cameras.
 #
-# av2_build.render と同じ計算(同じ写し方の表、同じ grid_sample・torch.where・丸め)で、出力の画素は一致する
-# (decode="pil" / "pil_threads" のとき。確かめ方は av2_render_check.py)。速くしたところ:
-#   1. 写し方の表(grid と mask)を GPU に置いたままにする(これまでは 1 枚ごとに 1920x1080x2 の float を転送していた)
-#   2. 元カメラの 1 コマの JPEG は 1 回だけ読む(同じコマを複数のスロットが使う: 前方中央は広角と望遠、
-#      横のカメラは前と横の 2 スロット)。読んだコマは GPU に置き、2.2 s より古いものから捨てる
-#   3. 新しく要るコマの JPEG を、スレッドで並べて読む(PIL の読み込みは GIL を外す)
-#   4. 公式の validate_sample は「連続した CPU の uint8」を求める(GPU に置いたまま渡すと止まる)。描いた絵は GPU に置き、
-#      歩ごとに 22 枚を使い回しの pinned メモリ 1 つへまとめて写す(out_mode="pinned"、既定)。
-#      最初の版(out_mode="cpu")は 1 枚ずつ .cpu で写して持っていたが、推論と交互に動かすと .cpu() の所で跳ねが出た。
-#   5. 同じ絵になる要求(スロット × 元カメラごとのコマの時刻)は 1 回だけ描く(av2_stream と同じ考え)
-# 速いが同じにならない選択肢(既定では使わない):
-#   decode="pil_draft": JPEG を 1/2 の大きさで読む(PIL の draft。DCT の段階で縮める)。写し方の表は元の画素座標の
-#   まま(grid は −1〜1 なので大きさによらない)。出力の差は av2_render_check.py で測る。
-#   decode="nvjpeg": torchvision.io.decode_jpeg(device="cuda")。使えるかどうかは環境しだい。
+# Same computation as av2_build.render (same mapping tables, same grid_sample, torch.where and rounding); output pixels match
+# (with decode="pil" / "pil_threads"; checked with av2_render_check.py). What was made faster:
+#   1. keep the mapping tables (grid and mask) on the GPU (previously a 1920x1080x2 float was transferred per image)
+#   2. read the JPEG of each source camera frame only once (several slots use the same frame: front center for wide and telephoto,
+#      side cameras for the front and side slots). Frames read are kept on the GPU and dropped once older than 2.2 s
+#   3. read the newly needed JPEG frames in parallel with threads (PIL decoding releases the GIL)
+#   4. the official validate_sample requires "contiguous CPU uint8" (passing GPU tensors stops it). Rendered images stay on the GPU,
+#      and each step copies the 22 images together into one reused pinned buffer (out_mode="pinned", default).
+#      The first version (out_mode="cpu") copied each image with .cpu and kept it, but interleaved with inference it caused spikes at .cpu().
+#   5. requests that give the same image (slot × frame time per source camera) are rendered only once (same idea as av2_stream)
+# Faster options that do not give identical output (not used by default):
+#   decode="pil_draft": read JPEGs at 1/2 size (PIL draft; shrinks at the DCT stage). The mapping tables stay in the original pixel
+#   coordinates (grid is −1 to 1, so independent of size). The output difference is measured with av2_render_check.py.
+#   decode="nvjpeg": torchvision.io.decode_jpeg(device="cuda"). Availability depends on the environment.
 from __future__ import annotations
 
 import io
@@ -36,9 +36,9 @@ class FastRenderer:
     def __init__(self, log: B.AV2Log, config: str | dict = "wide_ft", device: str = "cuda",
                  decode: str = "pil_threads", threads: int = 8, keep_s: float = 2.2, out_mode: str = "pinned"):
         self.log, self.device, self.decode = log, device, decode
-        # out_mode: "cpu" = 描いた絵を 1 枚ずつ .cpu で写して持つ(最初の版)、
-        #           "pinned" = 描いた絵は GPU に置き、歩ごとに 22 枚を使い回しの pinned メモリ 1 つへまとめて写す
-        #           (歩ごとのメモリ確保をなくす。描き直し込みの測定で、.cpu の所で 100〜1000 ms の跳ねが出たため)
+        # out_mode: "cpu" = copy each rendered image with .cpu and keep it (first version),
+        #           "pinned" = keep rendered images on the GPU and copy the 22 images per step together into one reused pinned buffer
+        #           (removes per-step memory allocation; in measurements including re-rendering, spikes of 100 to 1000 ms appeared at .cpu)
         self.out_mode = out_mode
         self._buf = None
         self.cfg = B.CONFIGS[config] if isinstance(config, str) else config
@@ -50,8 +50,8 @@ class FastRenderer:
             self.maps[cid] = [(c, g[None].to(device), m.to(device)[None], bool(m[B.OUT_H // 2, B.OUT_W // 2]))
                               for c, g, m in ms]
             if spec.get("fill", "black") != "black":
-                raise ValueError("FastRenderer は黒の埋め方(wide_ft)だけ")
-        self.frames: dict = {}  # (cam, t_ns) → GPU uint8 [1,3,H,W](float にするのは使うとき。メモリを 1/4 にする)
+                raise ValueError("FastRenderer supports only the black fill (wide_ft)")
+        self.frames: dict = {}  # (cam, t_ns) → GPU uint8 [1,3,H,W] (converted to float only when used; 1/4 the memory)
         self.out: dict = {}  # (cam_id, stamps) → (GPU uint8 [3,H,W], t_center)
         self.stats = {"decoded": 0, "rendered": 0, "decode_ms": 0.0, "warp_ms": 0.0}
 
@@ -93,7 +93,7 @@ class FastRenderer:
         for k in [k for k, v in self.out.items() if max(k[1]) < t_now - self.keep_ns]:
             del self.out[k]
 
-    # ---- 描き直し ----
+    # ---- re-rendering ----
     def _warp(self, cid, stamps):
         out = torch.zeros(3, B.OUT_H, B.OUT_W, device=self.device)
         center = None
@@ -107,7 +107,7 @@ class FastRenderer:
         return (u8.cpu() if self.out_mode == "cpu" else u8), center
 
     def frames_for(self, t0_ns):
-        """t0 の 22 枚(公式ローダの順)。返り値: (CPU uint8 [22,1,3,H,W]、連続, カメラ ID の並び, 時刻(µs)の並び)"""
+        """The 22 images at t0 (official loader order). Returns: (CPU uint8 [22,1,3,H,W], contiguous, camera ID list, time (µs) list)"""
         reqs = []
         for cid in (0, 1, 2, 3, 5, 6):
             offs = B.FRONT_OFFSETS_US if cid in (1, 6) else B.OTHER_OFFSETS_US
@@ -121,7 +121,7 @@ class FastRenderer:
         for r in todo:
             self.out[r] = self._warp(*r)
         self.stats["rendered"] += len(todo)
-        self.stats["warp_ms"] += (time.perf_counter() - t) * 1000  # 非同期なので目安(合計は呼び出し側で同期して測る)
+        self.stats["warp_ms"] += (time.perf_counter() - t) * 1000  # asynchronous, so approximate (the caller synchronizes to measure the total)
         self._evict(t0_ns - 2_000_000_000)
         if self.out_mode == "cpu":
             imgs = torch.stack([self.out[r][0] for r in reqs])[:, None].contiguous()
@@ -131,12 +131,12 @@ class FastRenderer:
             for i, r in enumerate(reqs):
                 self._buf[i, 0].copy_(self.out[r][0], non_blocking=True)
             torch.cuda.synchronize()
-            imgs = self._buf  # 次の歩で上書きする(呼び出し側は 1 歩ずつ使い終える)
+            imgs = self._buf  # overwritten on the next step (the caller finishes using it one step at a time)
         stamps_us = [(self.out[r][1] - self.log.t_origin_ns) // 1000 for r in reqs]
         return imgs, [r[0] for r in reqs], stamps_us
 
     def sample(self, t0_ns, nav_text):
-        """build_sample と同じ形の dict。"""
+        """A dict of the same form as build_sample."""
         from alpamayo2_edge.sample import CAMERA_PIXEL_BOUNDS
 
         imgs, cams, stamps = self.frames_for(t0_ns)
@@ -159,9 +159,9 @@ class FastRenderer:
 
 
 class AV2InlineSource:
-    """連続の測定で、描き直しを推論と同じ流れの中で行う入力源(a2e_bench2 --av2-render inline)。
-    sample(t0_us) を呼ぶたびに、その t0 で新しく要るコマだけを読み、描き直す(前の t0 の絵は使い回す)。
-    ナビ文(記録された走行から作る)と t0 の対応は、測る区間の外で先に作っておく(経路の計画にあたる部分は測らない)。"""
+    """Input source for continuous measurement that re-renders within the same flow as inference (a2e_bench2 --av2-render inline).
+    Each call to sample(t0_us) reads and re-renders only the frames newly needed at that t0 (images from the previous t0 are reused).
+    The mapping from t0 to navigation text (built from the recorded drive) is built beforehand, outside the measured interval (the route-planning part is not measured)."""
 
     def __init__(self, log_dir, t0_list_us, config="wide_ft", nav="gt", device="cuda", decode="pil_threads",
                  out_mode="pinned"):
@@ -179,7 +179,7 @@ class AV2InlineSource:
         self.config, self.nav, self.decode = config, nav, decode
 
     def reset(self):
-        """パスの始めに、読んだコマと描いた絵を捨てる(パスごとに同じ条件で始める)。"""
+        """At the start of a pass, drop the frames read and images rendered (each pass starts under the same conditions)."""
         self.r.frames.clear()
         self.r.out.clear()
 

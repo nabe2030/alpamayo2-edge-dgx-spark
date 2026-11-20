@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_seedsweep.py <scenes_t0.csv> <scene_id> <seed_from> <n> <out.jsonl> [variant]
-# 1 場面で seed を多く回し、判断理由の出方を数える(FP8 だけが出した判断が、BF16 でも別の seed で出るかを見るため)。
-# 設定は wide_eval.py と同じ(tuned + 4 つの手、温度 0.6、top_p 0.98、拡散 10 ステップ)。variant は base / fp8all / fp8body。
+# Runs many seeds on one scene and counts how the reasoning comes out (to see whether a decision that only FP8 produced also appears with BF16 at another seed).
+# Settings are the same as wide_eval.py (tuned + the four optimizations, temperature 0.6, top_p 0.98, 10 diffusion steps). variant is base / fp8all / fp8body.
 import os
 import json
 import sys

@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_select_wide.py <val_poses_dir> <train_poses_dir> <out_csv> [n_train_per_turn] [seed]
-#  の広い場面(約 400)を、姿勢だけから選ぶ。
-#   val: 150 本すべてから最大 2 場面ずつ。1 つ目は曲がる t0 があればその中で向きの変化が最大の t0、
-#        無ければ候補からランダム。2 つ目は 1 つ目から 3 s 以上離れ、なるべく別の走り方の t0(ランダム)。
-#   train: 曲がる場面を増やすため、left の t0 があるログから n 本、right の t0 があるログから n 本
-#          (ログは重ならない)。t0 は向きの変化が最大の t0。
-# 走り方の分け方は av2_select.py と同じ(t0 の先 6.4 s: left/right は 30 度超、straight は 10 度未満で 3 m/s 以上、
-# stop は平均 0.5 m/s 未満、other はそれ以外)。t0 の候補はログの先頭から 2.5 s 〜 末尾の 6.5 s 前、0.5 s きざみ
-# (カメラの始まりが姿勢より遅れても 2 s の履歴が取れるよう、 より 0.5 s 内側から)。
+# Selects the wide set of scenes (about 400) from poses only.
+#   val: up to 2 scenes from each of all 150 logs. The first is the t0 with the largest heading change among turning t0s if any,
+#        otherwise random among candidates. The second is at least 3 s from the first, preferably a t0 with a different behavior (random).
+#   train: to add more turning scenes, n logs that have a left t0 and n logs that have a right t0
+#          (logs do not overlap). t0 is the one with the largest heading change.
+# Behavior classes are the same as av2_select.py (6.4 s after t0: left/right over 30 degrees, straight under 10 degrees and 3 m/s or more,
+# stop mean under 0.5 m/s, other otherwise). t0 candidates run from 2.5 s after log start to 6.5 s before the end, in 0.5 s steps
+# (0.5 s further inside than before, so that 2 s of history is available even if the cameras start later than the poses).
 import sys
 from pathlib import Path
 
@@ -65,7 +65,7 @@ def main():
     sel = pd.DataFrame(picked).reset_index(drop=True)
     sel.insert(0, "scene_id", [f"{r.split[0]}_{r.log_id[:8]}_{r.t0_rel_s:.1f}" for r in sel.itertuples()])
     sel.to_csv(out, index=False)
-    print(len(sel), "場面")
+    print(len(sel), "scenes")
     print(sel.groupby(["split", "kind"]).size().unstack(fill_value=0).to_string())
     print(sel.city.value_counts().to_string())
 

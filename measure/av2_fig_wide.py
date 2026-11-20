@@ -3,10 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_fig_wide.py <wide.jsonl> <scenes_t0.csv> <scene_id> <variant> <out.png>
-# 広い場面の比較で差が大きかった場面の図(・§3.3)。
-#   左上: t0 の前方スロット(wide_ft)に、記録(緑)、BF16(青)、FP8(橙/青緑)の 5 seed の軌跡を重ねる
-#   右上: 上から見た図。下: seed ごとの判断理由(BF16 と FP8、同じなら「同じ」)と記録との ADE
-#   帰属: AV2 の画像(CC BY-NC-SA 4.0、© 2021 Argo AI, LLC)
+# Figure of a scene with a large difference in the wide scene comparison (§3.3).
+#   Top left: front slot at t0 (wide_ft), overlaid with the recorded drive (green), BF16 (blue) and FP8 (orange/teal) trajectories for 5 seeds
+#   Top right: top view. Bottom: reasoning per seed (BF16 and FP8; "same" if identical) and ADE vs. the recorded drive
+#   Attribution: AV2 images (CC BY-NC-SA 4.0, © 2021 Argo AI, LLC)
 import json
 import math
 import sys
@@ -21,7 +21,7 @@ import av2_build as B  # noqa: E402
 from av2_fig import ORIGIN_H, project  # noqa: E402
 
 COL = {"gt": (0, 131, 0), "base": (42, 120, 214), "fp8body": (235, 104, 52), "fp8all": (27, 175, 122)}
-NAME = {"base": "BF16", "fp8body": "本体だけ FP8", "fp8all": "本体+出力層 FP8"}
+NAME = {"base": "BF16", "fp8body": "FP8 body only", "fp8all": "FP8 body + output layer"}
 FONT = "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf"
 
 
@@ -60,8 +60,8 @@ def main():
     canvas = Image.new("RGB", (W + 560, H + 70 + 22 * (2 * len(seeds) + 2)), (252, 252, 251))
     dr = ImageDraw.Draw(canvas)
     canvas.paste(front, (0, 0))
-    dr.text((6, 4), "前方スロット(t0)", fill="yellow", font=f18)
-    # 上から見た図
+    dr.text((6, 4), "Front slot (t0)", fill="yellow", font=f18)
+    # top view
     cx, cy = W + 280, 470
     allp = np.concatenate([gt[:, :2]] + [np.array(x["xyz"])[:, :2] for x in list(b.values()) + list(d.values())])
     sc = 250 / max(10.0, float(np.abs(allp).max()) * 1.1)
@@ -72,24 +72,24 @@ def main():
     for s in seeds:
         dr.line(bev(d[s]["xyz"]), fill=COL[var], width=2)
     dr.line(bev(gt), fill=COL["gt"], width=4)
-    dr.text((W + 16, 6), "■ 記録", fill=COL["gt"], font=f15)
-    dr.text((W + 90, 6), f"■ {NAME['base']}(5 seed)", fill=COL["base"], font=f15)
-    dr.text((W + 260, 6), f"■ {NAME[var]}(5 seed)", fill=COL[var], font=f15)
-    dr.text((W + 16, H - 22), f"上から見た図(端まで {250 / sc:.0f} m)", fill=(82, 81, 78), font=f15)
+    dr.text((W + 16, 6), "■ GT", fill=COL["gt"], font=f15)
+    dr.text((W + 90, 6), f"■ {NAME['base']} (5 seeds)", fill=COL["base"], font=f15)
+    dr.text((W + 260, 6), f"■ {NAME[var]} (5 seeds)", fill=COL[var], font=f15)
+    dr.text((W + 16, H - 22), f"Top view ({250 / sc:.0f} m to edge)", fill=(82, 81, 78), font=f15)
     y = H + 8
-    dr.text((6, y), f"{sid}  走り方 {rec['motion']}  {rec['city']}  ナビ文 \"{rec['nav_text']}\"", fill=(11, 11, 11), font=f18)
+    dr.text((6, y), f"{sid}  motion {rec['motion']}  {rec['city']}  nav text \"{rec['nav_text']}\"", fill=(11, 11, 11), font=f18)
     y += 28
     for s in seeds:
         dr.text((6, y), f"[BF16 s{s} ADE {ade(b[s]['xyz'], gt):.2f}] {b[s]['cot']}", fill=COL["base"], font=f15)
         y += 22
         same = d[s]["gen_ids"] == b[s]["gen_ids"]
-        dr.text((6, y), f"[{NAME[var]} s{s} ADE {ade(d[s]['xyz'], gt):.2f}] {'(BF16 と同じ判断理由)' if same else d[s]['cot']}",
+        dr.text((6, y), f"[{NAME[var]} s{s} ADE {ade(d[s]['xyz'], gt):.2f}] {'(same reasoning as BF16)' if same else d[s]['cot']}",
                 fill=COL[var], font=f15)
         y += 22
-    dr.text((W + 560 - 6, y + 4), "画像: Argoverse 2 (CC BY-NC-SA 4.0, © 2021 Argo AI, LLC)", fill=(82, 81, 78), font=font(13), anchor="ra")
+    dr.text((W + 560 - 6, y + 4), "Images: Argoverse 2 (CC BY-NC-SA 4.0, © 2021 Argo AI, LLC)", fill=(82, 81, 78), font=font(13), anchor="ra")
     canvas = canvas.crop((0, 0, canvas.width, y + 26))
     canvas.save(out)
-    print("保存", out, canvas.size)
+    print("saved", out, canvas.size)
 
 
 if __name__ == "__main__":

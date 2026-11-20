@@ -2,23 +2,23 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# qcheck.py — デコードの実装を差し替えたときの品質を、サンプリングの影響を受けない見方で数分で確かめる
+# qcheck.py — checks, in a few minutes and in a way unaffected by sampling, the quality after swapping the decode implementation
 #
-# 1 つのプロセスで、デコードの実装(変種)を切り替えながら同じ入力を流す。前処理・ViT・プリフィル・expert は共通。
-#   base    : 公式 tuned の BF16 デコード(出発点。比べる基準)
-#   eager   : 同じ BF16 の DecodeStep を compile せずに動かす(行列積の分け方と融合が変わるだけ = BF16 の丸めの揺れの幅)
-#   fp8body : 本体 28 層の射影と MLP だけ FP8
-#   fp8all  : 本体 + 出力層を FP8
+# In one process, feeds the same input while switching between decode implementations (variants). Preprocessing, ViT, prefill and expert are shared.
+#   base    : official tuned BF16 decode (starting point; the reference for comparison)
+#   eager   : runs the same BF16 DecodeStep without compile (only the matmul splitting and fusion change = width of BF16 rounding jitter)
+#   fp8body : only the projections and MLP of the body 28 layers in FP8
+#   fp8all  : body + output layer in FP8
 #
-# 見るもの(どれも同じ入力で、変種と base を比べる):
-#  A. teacher forcing: base が seed 43〜47 で出した判断理由(CoT)を固定の入力として 1 トークンずつ流し、各位置の
-#     次トークンの分布を比べる(KL(base‖変種) を温度 1 と 0.6 で、上位 1 位の一致、固定トークンの対数確率の差)。
-#     マスク(軌跡トークン・EOS)は公式と同じものを掛ける。top-p は掛けない(KL が無限大になるため)。
-#     さらに同じ CoT・同じ拡散の乱数(seed 1000)で expert まで回し、軌跡の差を見る。
-#     比べる幅: base で拡散の乱数だけを 1001 に変えたときの軌跡の差。
-#  B. greedy(top_k=1): 何トークン目から base と分かれるか、軌跡の差(拡散の乱数は seed 43 に固定)。
-#  C. 公式のサンプリング(温度 0.6、top_p 0.98)を seed 43〜47 で: 同じ seed で base と CoT が同じか(診断用)、
-#     軌跡の差。比べる幅は base 同士で seed だけ違うときの差。
+# What is checked (all with the same input, comparing each variant with base):
+#  A. teacher forcing: feeds the reasoning (CoT) that base produced with seeds 43-47 as fixed input one token at a time, and compares the
+#     next-token distribution at each position (KL(base‖variant) at temperature 1 and 0.6, top-1 agreement, difference in log-prob of the fixed token).
+#     The same masks as official (trajectory tokens, EOS) are applied. top-p is not applied (it would make KL infinite).
+#     Then runs through the expert with the same CoT and the same diffusion RNG (seed 1000) and checks the trajectory difference.
+#     Yardstick: the trajectory difference on base when only the diffusion RNG is changed to 1001.
+#  B. greedy (top_k=1): at which token it diverges from base, and the trajectory difference (diffusion RNG fixed to seed 43).
+#  C. official sampling (temperature 0.6, top_p 0.98) with seeds 43-47: whether the CoT matches base for the same seed (diagnostic),
+#     and the trajectory difference. Yardstick: the difference between base runs that differ only in seed.
 import argparse
 import json
 import math
@@ -40,11 +40,11 @@ def ade(a, b):
 
 
 class ForcedSampler:
-    """generate(custom_generate=...) の代わりに、決めたトークン列を流して KV を書き、各位置の logits を集める。
+    """Instead of generate(custom_generate=...), feeds a given token sequence, writes the KV, and collects the logits at each position.
 
-    公式の forward(decode.py:755-772)と同じく、DecodeAccelerator._step_graph(compiled_step の CUDA グラフ)を
-    1 トークンずつ再生する。最後のプロンプトトークン → CoT の各トークン(アンカー <|traj_future_start|> まで)の順に流すので、
-    expert が読む KV は公式のサンプリングで同じ CoT が出たときと同じ位置に書かれる。乱数は使わない。
+    Like the official forward (decode.py:755-772), replays DecodeAccelerator._step_graph (the CUDA graph of compiled_step)
+    one token at a time. Feeds the last prompt token → each CoT token (up to the anchor <|traj_future_start|>) in order, so
+    the KV read by the expert is written at the same positions as when official sampling produces the same CoT. No RNG is used.
     """
 
     def __init__(self, dec, keep):
@@ -73,14 +73,14 @@ class ForcedSampler:
             for p in masks:
                 scores = p(input_ids, scores)
             out.append(scores[0])
-        self.scores = torch.stack(out[:-1])  # 位置 i の分布が CoT の i 番目のトークンを予測する
+        self.scores = torch.stack(out[:-1])  # the distribution at position i predicts the i-th CoT token
         pad = torch.full((1, 1), model.generation_config.pad_token_id or 0, dtype=torch.long, device=input_ids.device)
         seq = torch.cat([input_ids, forced, pad], dim=1)
         return GenerateDecoderOnlyOutput(sequences=seq, past_key_values=cache)
 
 
 def dist_metrics(sb, sv, tokens):
-    """sb, sv: [L, V] のマスク済み logits(FP32)。KL(base‖変種) ほか。"""
+    """sb, sv: masked logits [L, V] (FP32). KL(base‖variant), etc."""
     fin = torch.isfinite(sb)
     out = {}
     for T, tag in ((1.0, "t1"), (0.6, "t06")):

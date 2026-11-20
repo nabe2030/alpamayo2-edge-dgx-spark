@@ -3,11 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # summarize_multi.py <dir> <out.md> <out.json>
-# ・§3.3 の連続の測定(複数のログ)の集計。<dir> の *.jsonl(M10_* / M1_* / E10_* / E1_*)を読む。
-#   - 条件ごと: 計測の歩(phase = stream)の中央値・p90・最大・1 秒を超えた割合、最も遅い 5 回(ログ・t0・トークン数・段の内訳)
-#   - ログごと: 中央値・最大・1 秒を超えた割合・トークン数の中央値と最大
-#   - 遅い回の原因: 時間 = a + b × トークン数 の当てはめ(条件ごと)と、当てはめから最も上に外れた回(トークン数以外の要因)
-#   - 描き直し込み(E*): 描き直し・推論・合計それぞれの中央値・p90・最大・1 秒を超えた割合
+# - Summary of the continuous measurements (multiple logs) for §3.3. Reads *.jsonl in <dir> (M10_* / M1_* / E10_* / E1_*).
+#   - Per condition: median, p90, max and share over 1 s of the measured steps (phase = stream); the 5 slowest runs (log, t0, token count, stage breakdown)
+#   - Per log: median, max, share over 1 s, median and max token count
+#   - Cause of slow runs: fit time = a + b × token count (per condition), and the runs furthest above the fit (factors other than token count)
+#   - Including re-rendering (E*): median, p90, max and share over 1 s for re-rendering, inference and total
 import json
 import statistics as st
 import sys
@@ -71,23 +71,23 @@ def main(d, out_md, out_json):
                                       "residual_ms": res_, "tokens": r["cot_tokens"], "images_vit": r["images_vit"],
                                       "stages_ms": r["stages_ms"]})
         J["conditions"][name] = C
-    # ---- 表
-    L.append("## 条件ごと(計測の歩。1 秒を超えた割合は推論だけ、E* は描き直し込みの合計)\n")
-    L.append("| 条件 | 済み | 歩数 | ログ | 中央値 ms | p90 | 最大 | 1 秒超え | トークン 中央値/最大 | 当てはめ ms + ms/トークン |")
+    # ---- tables
+    L.append("## Per condition (measured steps; share over 1 s is inference only, for E* it is the total including re-rendering)\n")
+    L.append("| Condition | Done | Steps | Logs | Median ms | p90 | Max | Over 1 s | Tokens median/max | Fit ms + ms per token |")
     L.append("|---|---|---|---|---|---|---|---|---|---|")
     for n, C in J["conditions"].items():
-        L.append(f"| {n} | {'済' if C['complete'] else '途中'} | {C['n']} | {C['n_logs']} | **{f(C['median'])}** | {f(C['p90'])} | "
+        L.append(f"| {n} | {'done' if C['complete'] else 'partial'} | {C['n']} | {C['n_logs']} | **{f(C['median'])}** | {f(C['p90'])} | "
                  f"{f(C['max'])} | **{100 * C['over_1s']:.1f}%** | {f(C['tokens_median'])} / {C['tokens_max']} | "
                  f"{f(C['fit_intercept_ms'])} + {f(C['fit_ms_per_token'], 2)} |")
     for n, C in J["conditions"].items():
         if C["metric"] == "total_ms":
-            L.append(f"\n- {n}: 描き直し 中央値 {f(C['render_ms']['median'], 1)} / p90 {f(C['render_ms']['p90'], 1)} / 最大 "
-                     f"{f(C['render_ms']['max'], 1)} ms、推論 中央値 {f(C['e2e_ms']['median'])} / 最大 {f(C['e2e_ms']['max'])} ms、"
-                     f"合計 中央値 {f(C['median'])} / 最大 {f(C['max'])} ms(1 秒超え {100 * C['over_1s']:.1f}%)")
-    L.append("\n## ログごと(中央値 / 最大 / 1 秒超え、トークン数の中央値/最大)\n")
+            L.append(f"\n- {n}: re-rendering median {f(C['render_ms']['median'], 1)} / p90 {f(C['render_ms']['p90'], 1)} / max "
+                     f"{f(C['render_ms']['max'], 1)} ms, inference median {f(C['e2e_ms']['median'])} / max {f(C['e2e_ms']['max'])} ms, "
+                     f"total median {f(C['median'])} / max {f(C['max'])} ms (over 1 s {100 * C['over_1s']:.1f}%)")
+    L.append("\n## Per log (median / max / over 1 s, token count median/max)\n")
     names = list(J["conditions"])
     logs = list(dict.fromkeys(l for C in J["conditions"].values() for l in C["per_log"]))
-    L.append("| ログ | " + " | ".join(names) + " |")
+    L.append("| Log | " + " | ".join(names) + " |")
     L.append("|---|" + "---|" * len(names))
     for lid in logs:
         cells = []
@@ -95,15 +95,15 @@ def main(d, out_md, out_json):
             p = J["conditions"][n]["per_log"].get(lid)
             cells.append("—" if p is None else f"{f(p['median'])} / {f(p['max'])} / {100 * p['over_1s']:.0f}% ({f(p['tokens_median'])}/{p['tokens_max']})")
         L.append(f"| {lid[:8]} | " + " | ".join(cells) + " |")
-    L.append("\n## 最も遅い回(条件ごとに 5 回)\n")
+    L.append("\n## Slowest runs (5 per condition)\n")
     for n, C in J["conditions"].items():
         L.append(f"- **{n}**")
         for s in C["slowest"]:
             L.append(f"  - {s['log_id'][:8]} t0={s['t0_us'] / 1e6:.1f}s pass{s['pass']}: {f(s[C['metric']])} ms"
-                     f"{'(描き直し ' + f(s['render_ms']) + ')' if s.get('render_ms') is not None else ''}、"
-                     f"{s['tokens']} トークン、ViT {s['images_vit']} 枚、{s['temp_before']}℃、{stages({'stages_ms': s['stages_ms']})}")
-        L.append(f"  - 当てはめから最も上に外れた回(トークン数で説明できない分): " + "; ".join(
-            f"{x['log_id'][:8]} t0={x['t0_us'] / 1e6:.1f}s +{f(x['residual_ms'])} ms({x['tokens']} トークン、{stages(x)})"
+                     f"{' (re-rendering ' + f(s['render_ms']) + ')' if s.get('render_ms') is not None else ''}, "
+                     f"{s['tokens']} tokens, ViT {s['images_vit']} images, {s['temp_before']}°C, {stages({'stages_ms': s['stages_ms']})}")
+        L.append(f"  - Runs furthest above the fit (the part not explained by token count): " + "; ".join(
+            f"{x['log_id'][:8]} t0={x['t0_us'] / 1e6:.1f}s +{f(x['residual_ms'])} ms ({x['tokens']} tokens, {stages(x)})"
             for x in C["top_residual"][:3]))
     Path(out_md).write_text("\n".join(L) + "\n")
     Path(out_json).write_text(json.dumps(J, indent=1, ensure_ascii=False, default=float))

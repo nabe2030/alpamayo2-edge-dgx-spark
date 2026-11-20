@@ -1,6 +1,6 @@
-# 1 トークン目の確率(変種を足したもの、139 場面)
+# First-token probabilities (with additional variants, 139 scenes)
 
-| 集合 | 場面 | 変種 | 進む系 | 止まる系 | Dec | 進む系の差(変種 − BF16)[95%] | 上がった / 下がった |
+| Set | Scenes | Variant | Proceed-type | Stop-type | Dec | Proceed-type difference (variant − BF16) [95%] | Up / down |
 |---|---|---|---|---|---|---|---|
 | A | 22 | base | 14.5% | 61.7% | 18.2% | — | — |
 | A | 22 | fp8body | 14.8% | 61.5% | 17.9% | +0.37 [+0.03, +0.73] pt | 15 / 7 |

@@ -2,16 +2,16 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# av2_nav.py — AV2 にはナビ文が無いので、記録された走行(t0 からログの終わりまで)からナビ文を作る。
+# av2_nav.py — AV2 has no navigation text, so build it from the recorded drive (from t0 to the end of the log).
 #
-# 書式は NVIDIA のデータセットの公開の説明(HF のデータセットカード「Navigation Labels」)に合わせる:
-#   "<maneuver> in Nm"(N m 先の操作、250 m 以内)、"<maneuver>"(操作の地点にいる間)、"Continue straight"(250 m 以内に操作なし)
-# 使う操作は公開の例にある Turn left / Turn right だけ。
+# The format follows NVIDIA's public dataset description (the HF dataset card "Navigation Labels"):
+#   "<maneuver> in Nm" (maneuver N m ahead, within 250 m), "<maneuver>" (while at the maneuver point), "Continue straight" (no maneuver within 250 m)
+# Only the maneuvers in the public examples are used: Turn left / Turn right.
 #
-# 作り方: t0 の向きからの向きの変化が 30 度を超えた所を「曲がった」とし、そこから戻って 10 度未満だった最後の点を
-# 曲がり始めとする。曲がり始めまでの道のりが 5 m 以下なら距離なし、それより先なら "in Nm"(整数 m)。
-# AV2 の地図(lane segment の is_intersection)で、曲がり始め〜曲がった所のどこかが交差点の中かも記録する。
-# 弱点: ログが短い(t0 から先は長くて 14 s ほど)ので、その先の曲がり角は分からない(「Continue straight」に寄る)。
+# Method: the point where the heading change from t0 exceeds 30 degrees is "turned"; going back from there, the last point under 10 degrees is
+# the turn start. If the distance to the turn start is 5 m or less, no distance is given; beyond that, "in Nm" (integer m).
+# Also records whether any point from turn start to "turned" lies inside an intersection on the AV2 map (is_intersection of lane segments).
+# Weakness: logs are short (at most about 14 s after t0), so turns beyond that are unknown (biased toward "Continue straight").
 import json
 
 import numpy as np
@@ -21,7 +21,7 @@ TURN_DEG, ONSET_DEG, AT_M = 30.0, 10.0, 5.0
 
 
 def _intersection_polys(log):
-    """地図の交差点の中のレーンの多角形(city 座標の xy)。"""
+    """Polygons of lanes inside map intersections (xy in city coordinates)."""
     if hasattr(log, "_ipolys"):
         return log._ipolys
     path = next((log.root / "map").glob("log_map_archive_*.json"))
@@ -64,7 +64,7 @@ def nav_from_future(log, t0_ns: int) -> dict:
     dist = float(s[i_start])
     man = "Turn left" if left else "Turn right"
     text = man if dist <= AT_M else f"{man} in {int(round(dist))}m"
-    # 交差点の中か(曲がり始め〜曲がった所の点を city 座標に戻して調べる)
+    # inside an intersection? (check points from turn start to "turned" converted back to city coordinates)
     cxyz, _ = log.poses(t0_ns + offs[i_start: i_turn + 1] * 1000)
     polys = _intersection_polys(log)
     in_x = any(_inside(p[:2], poly) for p in cxyz[::3] for poly in polys
@@ -75,11 +75,11 @@ def nav_from_future(log, t0_ns: int) -> dict:
 
 
 def variant(info: dict, nav: str) -> str:
-    """ナビ文の作り方の候補。
-    gt:       記録された走行から(上の作り方)
-    map:      gt と同じだが、曲がる所が地図の交差点の外なら道なりのカーブとみなして "Continue straight"
-    straight: いつも "Continue straight"(ナビの情報なし)
-    flip:     左右を入れ替えた文(直進の場面では "Turn left in 30m")。ナビ文が効いているかの確かめ
+    """Candidate ways to build navigation text.
+    gt:       from the recorded drive (method above)
+    map:      same as gt, but if the turn is outside a map intersection it is treated as a curve in the road: "Continue straight"
+    straight: always "Continue straight" (no navigation information)
+    flip:     text with left and right swapped ("Turn left in 30m" in straight scenes). Checks whether the navigation text has an effect
     """
     if nav == "gt":
         return info["text"]

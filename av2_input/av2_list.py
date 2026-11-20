@@ -2,10 +2,10 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# av2_list.py — AV2 の公開バケット(s3://argoverse、匿名で読める)を HTTPS の一覧 API で数える。中身は取らない。
-#   av2_list.py logs <split> [<n>]        … split のログ ID を n 本(省略時は全部)
-#   av2_list.py sizes <split> <log_id>    … 1 本のログのファイルを種類ごとに数え、容量を出す
-#   av2_list.py splitsize <split> [<n>]   … split のログを先頭から n 本測り、合計と 1 本あたりを出す
+# av2_list.py — counts the public AV2 bucket (s3://argoverse, anonymously readable) with the HTTPS listing API. Does not fetch contents.
+#   av2_list.py logs <split> [<n>]        … n log IDs of the split (all if omitted)
+#   av2_list.py sizes <split> <log_id>    … counts the files of one log by type and prints their sizes
+#   av2_list.py splitsize <split> [<n>]   … measures the first n logs of the split and prints the total and per-log size
 import sys
 import urllib.parse
 import urllib.request
@@ -17,7 +17,7 @@ NS = {"s": "http://s3.amazonaws.com/doc/2006-03-01/"}
 
 
 def list_objects(prefix, delimiter=None):
-    """一覧 API を続きのトークンでたどり、(キー, サイズ) と共通の接頭辞を返す。"""
+    """Follow the listing API with continuation tokens and return (key, size) pairs and common prefixes."""
     token, keys, prefixes = None, [], []
     while True:
         q = {"list-type": "2", "prefix": prefix}
@@ -59,15 +59,15 @@ if __name__ == "__main__":
     if cmd == "logs":
         ids = log_ids(sys.argv[2])
         n = int(sys.argv[3]) if len(sys.argv) > 3 else len(ids)
-        print(len(ids), "本")
+        print(len(ids), "logs")
         print("\n".join(ids[:n]))
     elif cmd == "sizes":
         g = sizes(sys.argv[2], sys.argv[3])
         tot = 0
         for k in sorted(g):
-            print(f"{k:60s} {g[k][0]:6d} 件 {g[k][1]/1e6:10.1f} MB")
+            print(f"{k:60s} {g[k][0]:6d} files {g[k][1]/1e6:10.1f} MB")
             tot += g[k][1]
-        print(f"合計 {tot/1e9:.3f} GB")
+        print(f"total {tot/1e9:.3f} GB")
     elif cmd == "splitsize":
         ids = log_ids(sys.argv[2])
         n = int(sys.argv[3]) if len(sys.argv) > 3 else len(ids)
@@ -78,11 +78,11 @@ if __name__ == "__main__":
             c = sum(v[1] for k, v in g.items() if k.startswith("sensors/cameras/ring_"))
             tot += t
             cam += c
-        print(f"{sys.argv[2]}: 全 {len(ids)} 本、先頭 {n} 本の平均 全体 {tot/n/1e9:.3f} GB/本、リングカメラ {cam/n/1e9:.3f} GB/本")
+        print(f"{sys.argv[2]}: {len(ids)} logs in all; average of the first {n}: total {tot/n/1e9:.3f} GB/log, ring cameras {cam/n/1e9:.3f} GB/log")
 
 
 def list_ids_and_map(split):
-    """ログ ID と、地図のファイル名から読める都市の略号(PIT、MIA など)の組を返す。"""
+    """Return pairs of log ID and city code read from the map file name (PIT, MIA, etc.)."""
     out = []
     for log in log_ids(split):
         keys, _ = list_objects(f"datasets/av2/sensor/{split}/{log}/map/")

@@ -2,16 +2,16 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# run_stream_multi.sh —  連続の測定を複数のログで(GPU のマシン の tmux で実行)
-# 測り方は run_speed.shの S10_* / S1_* と同じ。違いは、1 つのプロセス(= 1 条件)の中で
-# 12 本のログを順に回すこと(ログごとに入力源を作り直し、準備のパスを 5 歩回してから計測のパス)。
-#   ログの選び方: 丸ごとある val 31 本から、都市(PIT/DTW/MIA/PAO/ATX/WDC)、走り方(左折・右折・直進・停止)を散らし、
-#    の広い場面の比較で判断理由が長かった場面(30 トークン前後)を含むログを入れた。
-#   d46ff5df は  で FP8 が「進む」と出した停止の場面のログ。9e9bcfb7 は  で測ったので入れない。
-# 条件: 4 つの手(BF16)と + FP8(本体 + 出力層)。10Hz(0.1 s きざみ、計測 1 パス)と 1Hz(1 s きざみ、計測 3 パス)。
+# run_stream_multi.sh — continuous measurement over multiple logs (run in tmux on the GPU machine)
+# Measured the same way as S10_* / S1_* in run_speed.sh. The difference is that, within one process (= 1 condition),
+# it runs 12 logs in order (the input source is rebuilt per log, and a 5-step warm-up pass is run before the measured passes).
+#   How the logs were chosen: from the 31 complete val logs, spread across cities (PIT/DTW/MIA/PAO/ATX/WDC) and driving (left turn, right turn, straight, stop),
+#   and included logs containing scenes where the reasoning was long (around 30 tokens) in the wide-scene comparison.
+#   d46ff5df is the log of a stop scene where FP8 output "go". 9e9bcfb7 is not included since it was measured separately.
+# Conditions: the four optimizations (BF16) and + FP8 (FP8 body + output layer). 10Hz (0.1 s intervals, 1 measured pass) and 1Hz (1 s intervals, 3 measured passes).
 set -u
-O=${A2E_ROOT:?A2E_ROOT を設定する(モデル・venv・ビルドの置き場所)}
-N=${A2E_WORK:?A2E_WORK を設定する(データ・記録の置き場所)}
+O=${A2E_ROOT:?set A2E_ROOT (location of models, venv and builds)}
+N=${A2E_WORK:?set A2E_WORK (location of data and records)}
 source "${A2E_ENV:-$(dirname "$0")/../env.sh}"
 OUT=$N/raw/speed_multi; mkdir -p $OUT
 V=$N/data/av2/val

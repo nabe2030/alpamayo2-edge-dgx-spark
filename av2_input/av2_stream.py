@@ -2,17 +2,17 @@
 # SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030
 # SPDX-License-Identifier: Apache-2.0
 #
-# av2_stream.py — 速さの測定(a2e_bench2.py)に AV2 の入力を渡すための入力源。
+# av2_stream.py — input source that feeds AV2 input to the speed measurement (a2e_bench2.py).
 #
 #   AV2StreamSource(log_dir, t0_list_us, config="wide_ft", nav="gt")
-#     .sample(t0_us) → 公式ローダと同じ形の dict(validate_sample に通る)
+#     .sample(t0_us) → a dict of the same form as the official loader's (passes validate_sample)
 #
-# t0 ごとのサンプルは表引きで組み立てる。仮想カメラへの描き直し(JPEG の読み込み + GPU での写し替え)は
-# この準備の中で行い、推論の時間には入れない。描き直しにかかった時間は self.render_ms に残す。
+# Samples per t0 are assembled by table lookup. Re-rendering to the virtual cameras (JPEG loading + remapping on the GPU) is
+# done in this preparation and is not counted in inference time. The re-rendering time is kept in self.render_ms.
 #
-# t0_list_us はログの先頭(前方中央の最初のコマ)からのマイクロ秒。前方中央のコマの時刻に合わせ(±1 ms の揺れを吸収)、
-# どのカメラにも 2 s 前のコマがある範囲に限る。速さの測定は正解の軌跡を使わないので、ログの終わり近くまで使える。
-# ナビ文は t0 ごとに av2_nav.nav_from_future(記録された走行から。ログの終わり近くでは先が短い)。
+# t0_list_us is microseconds from the log start (the first front-center frame). Aligned to front-center frame times (absorbing ±1 ms jitter),
+# and limited to the range where every camera has a frame 2 s earlier. Speed measurement does not use the GT trajectory, so it can run to near the end of the log.
+# Navigation text per t0 comes from av2_nav.nav_from_future (from the recorded drive; shorter lookahead near the end of the log).
 import json
 import sys
 import time
@@ -39,10 +39,10 @@ class AV2StreamSource:
             target = self.log.t_rel_origin_ns + int(t) * 1000
             j = int(np.argmin(np.abs(fc - target)))
             if abs(int(fc[j]) - target) > 1_000_000 or fc[j] < lo:
-                raise ValueError(f"t0={t} µs に前方中央のコマが無いか、2 s の履歴が取れない")
+                raise ValueError(f"t0={t} µs: no front-center frame, or 2 s of history unavailable")
             self.t0_ns[int(t)] = int(fc[j])
         self.pool: dict = {}
-        self.render_ms: list = []  # 1 枚ごとの描き直しの時間(JPEG の読み込みから GPU の写し替え、CPU へ戻すまで)
+        self.render_ms: list = []  # re-rendering time per image (from JPEG loading through GPU remapping and copy back to CPU)
         t = time.perf_counter()
         for t0 in self.t0_ns.values():
             B.build_sample(self.log, t0, self.cfg, "x", device, render_fn=self._render)
@@ -51,7 +51,7 @@ class AV2StreamSource:
         self.n_frames = len(self.pool)
 
     def _key(self, spec, t_req):
-        """同じ絵になる要求は 1 回だけ描く: 鍵は (仕様, 元カメラごとに選ばれるコマの時刻)。"""
+        """Render identical requests only once: key is (spec, frame time selected per source camera)."""
         maps = B.maps_for(self.log, spec)
         stamps = tuple(self.log.frame_at_or_before(c, t_req) for c, _, _ in maps)
         return json.dumps(spec, sort_keys=True), stamps

@@ -6,26 +6,24 @@
 # This file contains code modified from NVlabs/alpamayo2-edge (https://github.com/NVlabs/alpamayo2-edge,
 # commit 02f55a7), licensed under the Apache License, Version 2.0 (see LICENSES/Apache-2.0.txt).
 # Modified in 2026: GpuPrep follows alpamayo2_edge/helper.py prepare_model_inputs and moves image resizing, patching and normalization to the GPU; install_processor_once reads the processor once per checkpoint.
-# このファイルは、NVlabs/alpamayo2-edge(コミット 02f55a7、Apache License 2.0)のコードを変更したものを含む。
-# 変更(2026 年): GpuPrep は alpamayo2_edge/helper.py の prepare_model_inputs の処理の順を写し、画像の縮小・パッチ化・正規化を GPU に移した。install_processor_once はプロセッサをチェックポイントごとに 1 回だけ読む。
 #
-# a2e_stagea.py — 加速の 4 つの手を、本家 alpamayo2-edge(02f55a7)のコードを書き換えずに
-# 外側から差し替える形で入れる。どれも 1 つのモデルのインスタンス/モジュール関数に対する差し替えで、
-# 元に戻せる(プロセスを作り直せば元どおり)。
+# a2e_stagea.py — applies the four acceleration optimizations from the outside, without rewriting
+# upstream alpamayo2-edge (02f55a7) code. Each one is a replacement on a single model instance / module function,
+# and is reversible (recreating the process restores the original).
 #
-#   #1 install_processor_once: 本家 PR #11(ea6c37c)と同じ変更。helper.get_processor が
-#      AutoProcessor.from_pretrained をチェックポイントごとに 1 回だけ呼び、呼ぶたびに浅いコピーを返す。
-#   #9 GpuPrep: prepare_model_inputs と同じ入力を作る。画像の縮小(bicubic、antialias)・パッチ化・正規化を
-#      GPU で行う。プロンプトの文字列とトークン列は本家と同じ関数(build_conversation、apply_chat_template、
-#      プロセッサのトークナイズ)で作る。
-#   #2 VitFeatureCache: get_image_features を包み、前の呼び出しで処理済みの画像(カメラ・撮影時刻・格子・
-#      画素の指紋が同じもの)の特徴を使い回す。新しい画像だけを ViT に通す。GpuPrep と組で使い、
-#      使い回す画像は縮小・転送もしない。
-#   #3 VisionAccel: ViT(SigLIP2 27 層)+ 後段 LayerNorm + プロジェクタを、同じ格子の画像をまとめた
-#      1 回の注意計算に直し、torch.compile + CUDA グラフにする(格子と枚数ごとに 1 つのグラフ)。
-#      本家 PR #2(32685e4)の accel/vision.py(Qwen3-VL 用、PR #8 で削除)と同じ考え方を Cosmos3-Edge に移した。
+#   #1 install_processor_once: the same change as upstream PR #11 (ea6c37c). helper.get_processor
+#      calls AutoProcessor.from_pretrained only once per checkpoint and returns a shallow copy on each call.
+#   #9 GpuPrep: builds the same inputs as prepare_model_inputs. Image resizing (bicubic, antialias), patchifying and normalization
+#      run on the GPU. The prompt string and token sequence are built with the same functions as upstream (build_conversation, apply_chat_template,
+#      processor tokenization).
+#   #2 VitFeatureCache: wraps get_image_features and reuses features of images already processed in a previous call (same camera, capture time, grid and
+#      pixel fingerprint). Only new images go through the ViT. Used together with GpuPrep;
+#      reused images are neither resized nor transferred.
+#   #3 VisionAccel: turns ViT (SigLIP2, 27 layers) + final LayerNorm + projector into a single attention computation over
+#      images of the same grid, and uses torch.compile + CUDA graphs (one graph per grid and image count).
+#      Ports the idea of accel/vision.py from upstream PR #2 (32685e4) (for Qwen3-VL, removed in PR #8) to Cosmos3-Edge.
 #
-# 差し替えの順番: VisionAccel → VitFeatureCache → (計時ラッパー)。GpuPrep は前処理の関数の差し替え。
+# Replacement order: VisionAccel → VitFeatureCache → (timing wrapper). GpuPrep replaces the preprocessing function.
 
 from __future__ import annotations
 
@@ -43,9 +41,9 @@ import torch
 import torch.nn.functional as F
 
 
-# ---------------------------------------------------------------- #1 プロセッサを 1 回だけ読む(PR #11)
+# ---------------------------------------------------------------- #1 load the processor once (PR #11)
 def install_processor_once() -> None:
-    """本家 PR #11 の helper.get_processor をそのまま差し替える(lru_cache + copy.copy)。"""
+    """Replace helper.get_processor exactly as in upstream PR #11 (lru_cache + copy.copy)."""
     from alpamayo2_edge import helper
     from alpamayo2_edge.config import resolve_checkpoint_name_or_path
 
@@ -69,11 +67,11 @@ def install_processor_once() -> None:
     helper.get_processor = get_processor
 
 
-# ---------------------------------------------------------------- #2 ViT の結果を画像ごとに使い回す
+# ---------------------------------------------------------------- #2 reuse ViT results per image
 def frame_fingerprint(frame: torch.Tensor) -> str:
-    """生フレーム(uint8 [.., 3, H, W])の間引き画素から作る 128 ビットの指紋(同じ ID の取り違え防止)。"""
+    """128-bit fingerprint from subsampled pixels of a raw frame (uint8 [.., 3, H, W]) (guards against mixing up identical IDs)."""
     sub = frame.reshape(-1, *frame.shape[-3:])[0, :, ::37, ::41].contiguous()
-    return hashlib.blake2b(sub.cpu().numpy().tobytes(), digest_size=16).hexdigest()  # GPU 上の絵も受ける
+    return hashlib.blake2b(sub.cpu().numpy().tobytes(), digest_size=16).hexdigest()  # also accepts images on the GPU
 
 
 @dataclass
@@ -85,11 +83,11 @@ class _Plan:
 
 
 class VitFeatureCache:
-    """``vlm.model.get_image_features`` を包み、処理済みの画像の特徴(プロジェクタ出力)を使い回す。
+    """Wrap ``vlm.model.get_image_features`` and reuse the features (projector output) of already processed images.
 
-    Cosmos3-Edge の ViT は画像ごとに独立している: 注意は cu_seqlens で画像ごとに区切られ
-    (modeling_cosmos3_edge.py:588-598)、パッチ埋め込み・位置埋め込み・LayerNorm・MLP・2x2 マージ・
-    プロジェクタはパッチ(トークン)ごとの計算。よって画像 1 枚の特徴は、同じ呼び出しのほかの画像に依存しない。
+    The Cosmos3-Edge ViT is independent per image: attention is split per image by cu_seqlens
+    (modeling_cosmos3_edge.py:588-598), and patch embedding, position embedding, LayerNorm, MLP, 2x2 merge and
+    projector are per-patch (per-token) computations. So the features of one image do not depend on the other images in the same call.
     """
 
     def __init__(self, vlm_model: torch.nn.Module, max_images: int = 256):
@@ -132,7 +130,7 @@ class VitFeatureCache:
             idx = torch.tensor(plan.misses, device=image_grid_thw.device)
             out = self.inner(pixel_values, image_grid_thw.index_select(0, idx), **kwargs)
             for j, i in enumerate(plan.misses):
-                feat = out.pooler_output[j].clone()  # グラフの静的出力を指すことがあるので複製して持つ
+                feat = out.pooler_output[j].clone()  # may point to a graph's static output, so keep a copy
                 fresh[i] = feat
                 self.store[plan.keys[i]] = feat
                 self.store.move_to_end(plan.keys[i])
@@ -144,13 +142,13 @@ class VitFeatureCache:
         return BaseModelOutputWithPooling(last_hidden_state=None, pooler_output=parts)
 
 
-# ---------------------------------------------------------------- #9 前処理の縮小を GPU で行う
+# ---------------------------------------------------------------- #9 resize images on the GPU
 class GpuPrep:
-    """``helper.prepare_model_inputs`` + ``to_device`` と同じ入力を作る(画像の処理だけ GPU)。
+    """Build the same inputs as ``helper.prepare_model_inputs`` + ``to_device`` (only image processing on the GPU).
 
-    本家との違いは画像の縮小を行う場所(CPU の uint8 専用経路 → GPU の float 経路)だけで、
-    縮小後の uint8 画素は最大 1 違うことがある。プロンプトの文字列、
-    トークン列、mm_token_type_ids、image_grid_thw は本家と一致することを確かめている。
+    The only difference from upstream is where images are resized (CPU uint8-only path → GPU float path);
+    resized uint8 pixels can differ by up to 1. The prompt string,
+    token sequence, mm_token_type_ids and image_grid_thw have been verified to match upstream.
     """
 
     def __init__(self, model, device="cuda", cache: VitFeatureCache | None = None, pin: bool = False):
@@ -171,14 +169,14 @@ class GpuPrep:
     def _canonical(self, data):
         from alpamayo2_edge.sample import canonical_frame_order, normalize_camera_pixel_bounds, CAMERA_PIXEL_BOUNDS, validate_sample
 
-        # helper._canonical_inputs と同じ確認(履歴トークン数、画像の配置)と validate_sample
+        # same checks as helper._canonical_inputs (history token count, image layout) and validate_sample
         cfg = self.cfg
         history_steps = getattr(cfg, "history_num_steps", 20)
         if cfg.tokens_per_history_traj != (history_steps - 1) * 3:
             raise ValueError("history token count mismatch")
         self.helper._check_image_layout(cfg)
         validate_sample(data, history_num_steps=history_steps)
-        # _sort_camera_inputs と同じ並べ替え。画像は複製せず参照の並びだけ作る(本家は 22 枚を CPU で複製する)
+        # same reordering as _sort_camera_inputs. Images are not copied; only a list of references is built (upstream copies 22 images on the CPU)
         order = canonical_frame_order(data["camera_indices"], data["absolute_timestamps"])
         result = dict(data)
         frames = data["image_frames"]
@@ -214,7 +212,7 @@ class GpuPrep:
                                 min_pixels=e["min_pixels"], max_pixels=e["max_pixels"])
             sizes.append((h, w))
             grids.append((1, h // ip.patch_size, w // ip.patch_size))
-        # どの画像を ViT に通すか
+        # which images go through the ViT
         todo = list(range(len(entries)))
         if self.cache is not None:
             cams = canonical["camera_indices"].tolist()
@@ -223,7 +221,7 @@ class GpuPrep:
             keys = [(sid, c, t, g, frame_fingerprint(e["image"]))
                     for c, t, g, e in zip(cams, ts, grids, entries)]
             todo = self.cache.lookup(keys)
-        # 画像: 転送 → 縮小 → パッチ化(本家の image_processor.patchify)→ 正規化(本家の _normalize_patches)
+        # images: transfer → resize → patchify (upstream image_processor.patchify) → normalize (upstream _normalize_patches)
         patches = []
         for i in todo:
             frame = entries[i]["image"].reshape(-1, *entries[i]["image"].shape[-3:])[0]
@@ -240,7 +238,7 @@ class GpuPrep:
             dim = 3 * ip.temporal_patch_size * ip.patch_size ** 2
             raw = torch.empty(0, dim, dtype=torch.uint8, device=self.device)
         pixel_values = self.helper._normalize_patches(raw, ip)
-        # 文字列: 画像ごとの <|image_pad|> の数を本家のプロセッサと同じ規則で展開してトークナイズ
+        # string: expand the number of <|image_pad|> per image with the same rule as the upstream processor, then tokenize
         merge = ip.merge_size ** 2
         repl = [proc.image_token * (t * h * w // merge) for t, h, w in grids]
         expanded, _ = proc.get_text_with_replacements([text], images_replacements=repl)
@@ -266,13 +264,13 @@ class GpuPrep:
         }
 
 
-# ---------------------------------------------------------------- #3 ViT を compile / CUDA グラフにする
+# ---------------------------------------------------------------- #3 compile the ViT / CUDA graphs
 class _Tower(torch.nn.Module):
-    """``Cosmos3EdgeVisionModel.forward`` + ``projector`` を、同じ格子の n 枚に対して行う。
+    """Run ``Cosmos3EdgeVisionModel.forward`` + ``projector`` on n images of the same grid.
 
-    本家の SDPA 経路は画像ごとに split して SDPA を 1 枚ずつ呼ぶ。同じ格子の画像は長さが同じなので、
-    [n, heads, L, head_dim] の 1 回の SDPA で同じ計算になる。各層のモジュール(LayerNorm、Linear、MLP)は
-    本家のものをそのまま呼ぶ。
+    The upstream SDPA path splits per image and calls SDPA one image at a time. Images of the same grid have the same length,
+    so one SDPA call on [n, heads, L, head_dim] gives the same computation. Each layer's modules (LayerNorm, Linear, MLP)
+    are the upstream ones, called as is.
     """
 
     def __init__(self, visual, projector, n: int, L: int):
@@ -302,7 +300,7 @@ class _Tower(torch.nn.Module):
 
 
 class VisionAccel:
-    """``vlm.model.get_image_features`` の差し替え。格子ごとに画像をまとめ、(格子, 枚数) ごとのグラフを再生する。"""
+    """Replacement for ``vlm.model.get_image_features``. Groups images by grid and replays the graph for each (grid, count)."""
 
     def __init__(self, vlm_model, *, compile: bool = True, cuda_graphs: bool = True,
                  mode: str = "default", warmup: int = 2):
@@ -375,4 +373,4 @@ class VisionAccel:
         return self.stats.as_dict()
 
 
-# (公開版では、別のデータセットのクリップを読む連続入力の部分を外した。AV2 の連続入力は av2_stream.py)
+# (In the public version, the continuous-input part that reads clips from another dataset was removed. AV2 continuous input is in av2_stream.py)

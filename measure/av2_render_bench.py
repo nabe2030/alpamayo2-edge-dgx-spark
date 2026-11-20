@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # av2_render_bench.py <log_dir> <out.json> [config]
-# 仮想カメラへの描き直し(推論の時間には入れない処理)を、単独で測る。
-#   1. 写し方の表(maps)を作る時間: キャリブレーションが変わらない限り 1 回だけ。スロット 6 種類ぶん
-#   2. 1 回分の入力(22 枚)を表引きなしで全部描く時間: t0 を 20 点、各 2 回(1 回目は捨てる)
-#      内訳: JPEG の読み込み(PIL、CPU)と、GPU での写し替え(転送・grid_sample・CPU へ戻すまで)
-#   3. 連続入力で、新しい t0 ごとに増える分だけ描く時間(前の t0 の絵は使い回す): 10Hz と 1Hz
-# どれも推論と同時には動かしていない(GPU を 1 つの処理が使っている状態)。
+# Measures, on its own, the re-rendering into virtual cameras (processing not included in the inference time).
+#   1. Time to build the remap tables (maps): only once as long as the calibration does not change. For the 6 slot types
+#   2. Time to render all of one input (22 images) without table lookup: 20 t0 points, 2 runs each (the 1st is discarded)
+#      Breakdown: JPEG loading (PIL, CPU) and the remap on the GPU (transfer, grid_sample, until copied back to the CPU)
+#   3. Time to render only the increment for each new t0 in continuous input (images from the previous t0 are reused): 10Hz and 1Hz
+# None of these run concurrently with inference (the GPU is used by one process only).
 import json
 import sys
 import time
@@ -34,7 +34,7 @@ def main():
     cfg = B.CONFIGS[sys.argv[3] if len(sys.argv) > 3 else "wide_ft"]
     res = {"log_id": log.log_id, "config": sys.argv[3] if len(sys.argv) > 3 else "wide_ft"}
     torch.zeros(1, device="cuda")
-    # 1. 表を作る
+    # 1. build the tables
     t = time.perf_counter()
     for cam in (0, 1, 2, 3, 5, 6):
         B.maps_for(log, cfg[cam])
@@ -42,7 +42,7 @@ def main():
     fc = log.cams["ring_front_center"]["ts"]
     lo = max(int(c["ts"][0]) for c in log.cams.values()) + 2_000_000_000
     t0s = [int(x) for x in fc[fc >= lo][::6][:20]]
-    # 2. 22 枚を全部描く(表引きなし)。JPEG の読み込みだけの時間も別に測る
+    # 2. render all 22 images (without table lookup). Also measure the time of JPEG loading alone separately
     full, jpeg = [], []
     for rep in range(2):
         for t0 in t0s:
@@ -62,8 +62,8 @@ def main():
                 jpeg.append(jms)
     res["full_22img_ms"] = {"median": round(float(np.median(full)), 1), "max": round(float(np.max(full)), 1), "n": len(full)}
     res["jpeg_decode_ms_in_full"] = {"median": round(float(np.median(jpeg)), 1), "files_per_t0": len(files)}
-    # 3. 連続入力: 前の t0 の絵を使い回し、増える分だけ描く
-    for name, step in (("stream10hz", 2), ("stream1hz", 20)):  # 前方中央のコマは 50 ms きざみ
+    # 3. continuous input: reuse the images of the previous t0 and render only the increment
+    for name, step in (("stream10hz", 2), ("stream1hz", 20)):  # front-center frames are at 50 ms intervals
         pool, per = {}, []
 
         def rnd(lg, spec, t_req, device):
@@ -77,7 +77,7 @@ def main():
         for i, t0 in enumerate(seq):
             n0 = len(pool)
             _, ms = sync_time(lambda: B.build_sample(log, t0, cfg, "x", render_fn=rnd))
-            if i >= 3:  # 始めは前の絵が無いので数えない
+            if i >= 3:  # not counted at the start, since there are no previous images yet
                 per.append((ms, len(pool) - n0))
         res[name] = {"per_t0_ms_median": round(float(np.median([p[0] for p in per])), 1),
                      "per_t0_ms_max": round(float(np.max([p[0] for p in per])), 1),
