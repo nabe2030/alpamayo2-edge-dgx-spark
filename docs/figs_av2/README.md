@@ -15,7 +15,7 @@
 $PY $A2E_REPO/measure/article_figs.py out    # out/fig06_left_turn.jpg, out/fig07_input_layouts.jpg, out/fig11_pedestrian_stop.jpg
 ```
 
-Redrawn from our records with this script, all three JPEG files match the ones here byte for byte. Fonts: Noto Sans CJK (`fonts-noto-cjk` on Ubuntu).
+Redrawn from our records with this script, all three JPEG files match the ones here byte for byte. (`demo_realtime.gif` is made by separate scripts that are not in this repository yet.) Fonts: Noto Sans CJK (`fonts-noto-cjk` on Ubuntu).
 
 ## Files
 
@@ -24,3 +24,4 @@ Redrawn from our records with this script, all three JPEG files match the ones h
 | `fig06_left_turn.jpg` | Article figure 6: left turn. Re-rendered input (front 120°) vs. AV2 cameras as is (front approx. 47°): trajectories of 5 seeds, top view, reasoning |
 | `fig07_input_layouts.jpg` | Article figure 7: one scene as input built in 3 layouts (front 3 slots), and the other 3 slots of the adopted layout |
 | `fig11_pedestrian_stop.jpg` | Article figure 11: pedestrian crossing. Trajectories and reasoning of 5 seeds with BF16, FP8 body only, and FP8 body + output layer |
+| `demo_realtime.gif` | Real-time comparison on log 9e9bcfb7 (4–15 s, 1x): official tuned vs. the four optimizations + FP8 body only. Each prediction appears when its inference finishes, moved to the current pose with the recorded ego motion. 960×540, 7 fps |

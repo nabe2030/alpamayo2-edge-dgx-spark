@@ -1,5 +1,9 @@
 # Running Alpamayo 2 Edge on Argoverse 2 at 1 Hz on a single DGX Spark (GB10)
 
+![Official (tuned) vs. the four optimizations + FP8 body only, real time on one DGX Spark](docs/figs_av2/demo_realtime.gif)
+
+*One Argoverse 2 drive (log 9e9bcfb7, 4–15 s) played in real time. Left: official tuned (about 1.9 s per inference). Right: the four optimizations + FP8 body only (about 0.7 s). Each prediction appears when its inference finishes; times and predictions were measured on this log. Images: Argoverse 2 (© 2021 Argo AI, LLC), CC BY-NC-SA 4.0.*
+
 **Article:** the write-up is [`docs/article_en.md`](docs/article_en.md). A Japanese version of the article is on [Qiita](https://qiita.com/nabe2030/items/f220eb860dda549e966d).
 
 We ran NVIDIA's driving VLA model [Alpamayo 2 Edge](https://huggingface.co/nvidia/Alpamayo2-Edge) on camera
