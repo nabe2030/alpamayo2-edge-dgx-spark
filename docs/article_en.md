@@ -134,7 +134,7 @@ In these measurements the reasoning text had a median of around 20 tokens and a 
 
 The official Alpamayo 2 Edge examples use NVIDIA's driving dataset "PhysicalAI-Autonomous-Vehicles". Section 3 of that dataset's license agreement includes benchmark results and performance data relating to the dataset in its confidential information and restricts their disclosure to third parties. ([NVIDIA Autonomous Vehicle Dataset License Agreement, Section 3](https://huggingface.co/datasets/nvidia/PhysicalAI-Autonomous-Vehicles))
 
-For the evaluation on real driving data reported in this article, I therefore chose the Argoverse 2 Sensor Dataset (AV2). AV2 camera images are recorded at 20 fps (every 0.05 s). Figures 6, 7 and 11, which are derived from the original images, carry the source, and the modifications and license are stated at the end of the article. ([AV2 sensor specification](https://argoverse.github.io/user-guide/datasets/sensor.html) / [AV2 terms of use](https://www.argoverse.org/about.html))
+For the evaluation on real driving data reported in this article, I therefore chose the Argoverse 2 Sensor Dataset (AV2). AV2 camera images are recorded at 20 fps (every 0.05 s). The demo animation at the top and Figures 6, 7 and 11, which are derived from the original images, carry the source, and the modifications and license are stated at the end of the article. ([AV2 sensor specification](https://argoverse.github.io/user-guide/datasets/sensor.html) / [AV2 terms of use](https://www.argoverse.org/about.html))
 
 The camera layout, however, differs from what the model expects.
 
@@ -316,7 +316,7 @@ The code is licensed under Apache-2.0. Parts of it are modified from NVlabs/alpa
 
 - The measurements in this article use the [Argoverse 2 Sensor Dataset](https://www.argoverse.org/av2.html).
   - Wilson et al., "Argoverse 2: Next Generation Datasets for Self-driving Perception and Forecasting", NeurIPS Datasets and Benchmarks 2021.
-- Figures 6, 7 and 11 are derived from images in the Argoverse 2 Sensor Dataset (© 2021 Argo AI, LLC): re-rendered into virtual cameras, resized, and overlaid with trajectories and text. These figures are provided under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). They may be reused for non-commercial purposes under the same license.
+- The demo animation at the top and Figures 6, 7 and 11 are derived from images in the Argoverse 2 Sensor Dataset (© 2021 Argo AI, LLC): re-rendered into virtual cameras, resized, and overlaid with trajectories and text. The animation and these figures are provided under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/). They may be reused for non-commercial purposes under the same license.
 - The faces of pedestrians in the figures were blurred by the dataset provider.
 - This article is published as a non-commercial research report.
 - The Alpamayo 2 Edge source code is released under Apache-2.0 and the model weights under OpenMDW-1.1. ([NVIDIA's official model card](https://huggingface.co/nvidia/Alpamayo2-Edge))
