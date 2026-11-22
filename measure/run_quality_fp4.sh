@@ -17,8 +17,9 @@
 set -u
 O=${A2E_ROOT:?set A2E_ROOT (location of models, venv and builds)}
 N=${A2E_WORK:?set A2E_WORK (location of data and records)}
-source "${A2E_ENV:-$(dirname "$0")/../env.sh}"
+# location of this script, taken before env.sh changes the directory to $A2E_WORK
 HERE=$(cd "$(dirname "$0")" && pwd)
+source "${A2E_ENV:-$HERE/../env.sh}"
 VM=$HERE/../accel/a2e_fp4q.py
 F=$N/raw/fp4; mkdir -p $F
 export A2E_CALIB_IN=${A2E_CALIB_IN:-$N/raw/calib/H_calib48.pt}

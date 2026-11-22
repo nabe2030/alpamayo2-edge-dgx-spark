@@ -12,8 +12,9 @@
 #   Input: the reference written by trt_ref_dump.py ($A2E_TRT/ref_9e9bcfb7, see README.md). GPU-only stage times come from
 #   an nsys capture split with nsys_stage_split.py. Records: $A2E_TRT/raw/speed_<label>.jsonl (+ .env: temperature, other GPU processes).
 set -u
-: "${A2E_TRT:?source env.sh first}"
 HERE=$(cd "$(dirname "$0")" && pwd)
+: "${A2E_ROOT:?set A2E_ROOT}" "${A2E_WORK:?set A2E_WORK}"
+source "${A2E_ENV:-$HERE/../env.sh}"   # sets PY, A2E_MODEL, A2E_TRT, A2E_EDGELLM_VENV, A2E_QUANT_VENV
 E=$1; L=$2; R=${3:-20}; M=${4:-$A2E_TRT/models/a2e-reasoner}
 source $A2E_EDGELLM_VENV/bin/activate
 mkdir -p $A2E_TRT/raw

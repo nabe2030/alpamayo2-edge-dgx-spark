@@ -10,7 +10,9 @@
 #                 applied to tensorrt_edgellm (see README.md in this folder; NVIDIA/TensorRT#4949).
 #   The visual engine is FP16 in all three. Each build takes 10-40 s on GB10.
 set -u
-: "${A2E_TRT:?source env.sh first}"
+HERE=$(cd "$(dirname "$0")" && pwd)
+: "${A2E_ROOT:?set A2E_ROOT}" "${A2E_WORK:?set A2E_WORK}"
+source "${A2E_ENV:-$HERE/../env.sh}"   # sets PY, A2E_MODEL, A2E_TRT, A2E_EDGELLM_VENV, A2E_QUANT_VENV
 source $A2E_EDGELLM_VENV/bin/activate
 cd $A2E_TRT
 C="--max-input-len 4096 --max-kv-cache-capacity 4096 --max-batch-size 1 --max-image-tokens 4096 --max-image-tokens-per-image 1024"

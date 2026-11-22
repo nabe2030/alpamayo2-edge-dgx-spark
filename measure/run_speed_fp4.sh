@@ -16,19 +16,21 @@ set -u
 METHOD=${1:-gptq:0.1}
 O=${A2E_ROOT:?set A2E_ROOT (location of models, venv and builds)}
 N=${A2E_WORK:?set A2E_WORK (location of data and records)}
-source "${A2E_ENV:-$(dirname "$0")/../env.sh}"
+# location of this script, taken before env.sh changes the directory to $A2E_WORK
+HERE=$(cd "$(dirname "$0")" && pwd)
+source "${A2E_ENV:-$HERE/../env.sh}"
 OUT=$N/raw/speed_fp4; mkdir -p $OUT
 IN=$N/data/av2_inputs/single_9e9bcfb7_8.5.pt
 V=$N/data/av2/val
 export A2E_FP4_METHOD=$METHOD
-B="$PY $(dirname "$0")/a2e_bench2.py --model $A2E_MODEL"
+B="$PY $HERE/a2e_bench2.py --model $A2E_MODEL"
 log(){ echo "$(TZ=Asia/Tokyo date '+%H:%M:%S') $*" | tee -a $OUT/matrix.log; }
 cool(){ for i in $(seq 1 30); do t=$(nvidia-smi --query-gpu=temperature.gpu --format=csv,noheader,nounits); [ "$t" -le 60 ] && break; sleep 10; done; log "temp ${t}C"; }
 envrec(){ log "env $1: $(nvidia-smi --query-gpu=temperature.gpu,clocks.sm --format=csv,noheader) / GPU procs: $(nvidia-smi --query-compute-apps=pid,name --format=csv,noheader | tr '\n' ' ') / mem: $(free -g | awk '/Mem/{print $3"G used "$7"G avail"}')"; }
 run(){ local L=$1; shift; [ -f $OUT/$L.jsonl ] && grep -q '"kind": "summary"' $OUT/$L.jsonl && { log "skip $L"; return; }
   rm -f $OUT/$L.jsonl; cool; envrec $L; log "start $L (method=$METHOD): $*"
   $B --label $L --out $OUT/$L.jsonl "$@" > $OUT/$L.stdout 2>&1; log "end $L rc=$?"; }
-[ -f $IN ] || { mkdir -p $(dirname $IN); $PY $(dirname "$0")/../av2_input/av2_make_input.py $V/9e9bcfb7-601d-3d80-bc12-ef7025174beb 8.5 $IN wide_ft gt | tee -a $OUT/matrix.log; }
+[ -f $IN ] || { mkdir -p $(dirname $IN); $PY $HERE/../av2_input/av2_make_input.py $V/9e9bcfb7-601d-3d80-bc12-ef7025174beb 8.5 $IN wide_ft gt | tee -a $OUT/matrix.log; }
 SINGLE="--mode single --input pt:$IN --runs 20 --accel tuned --feat p,g,c,v"
 for s in 43 45; do
   run C_bf16_s$s $SINGLE --seed $s

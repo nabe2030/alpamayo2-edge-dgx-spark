@@ -15,15 +15,16 @@
 set -u
 O=${A2E_ROOT:?set A2E_ROOT (location of models, venv and builds)}
 N=${A2E_WORK:?set A2E_WORK (location of data and records)}
-source "${A2E_ENV:-$(dirname "$0")/../env.sh}"
+# location of this script, taken before env.sh changes the directory to $A2E_WORK
 HERE=$(cd "$(dirname "$0")" && pwd)
+source "${A2E_ENV:-$HERE/../env.sh}"
 TAG=${TAG:-calib48}
 C=$N/raw/calib; mkdir -p $C $N/data/av2_calib
 if [ -n "${CALIB_LIST:-}" ]; then cp "$CALIB_LIST" $C/$TAG.csv
 elif [ ! -f $C/$TAG.csv ]; then
   $PY $HERE/select_calib_scenes.py --scan $N/raw/scan_train.csv --eval-scenes $N/raw/wide/scenes_t0.csv --n 48 --seed 7 --out $C/$TAG.csv
 fi
-$PY $(dirname "$0")/../av2_input/av2_fetch_frames.py $C/$TAG.csv $N/data/av2_calib $N/data/av2_calib/full $C/${TAG}_t0.csv 1
+$PY $HERE/../av2_input/av2_fetch_frames.py $C/$TAG.csv $N/data/av2_calib $N/data/av2_calib/full $C/${TAG}_t0.csv 1
 # scene list in the wide_eval format (scene_id first)
 $PY - $C/${TAG}_t0.csv $C/${TAG}_scenes.csv <<'PYEOF'
 import sys, pandas as pd
@@ -33,6 +34,6 @@ d[["scene_id", "split", "log_id", "t0_rel_s", "kind", "v_mean", "dyaw_deg", "cit
 PYEOF
 echo "$(TZ=Asia/Tokyo date '+%F %T') start H collection; GPU processes: $(nvidia-smi --query-compute-apps=pid --format=csv,noheader | wc -l)"
 A2E_CALIB_OUT=$C/H_$TAG.pt $PY $HERE/wide_eval.py --model $A2E_MODEL --scenes $C/${TAG}_scenes.csv \
-  --variant-module $(dirname "$0")/../accel/a2e_fp4q.py --variants base,calib --tf-variants calib --seeds 43,44,45,46,47 \
+  --variant-module $HERE/../accel/a2e_fp4q.py --variants base,calib --tf-variants calib --seeds 43,44,45,46,47 \
   --straight-seeds "" --av2-config wide_ft --out $C/${TAG}_run.jsonl
 echo "$(TZ=Asia/Tokyo date '+%F %T') end rc=$? -> $C/H_$TAG.pt"

@@ -13,8 +13,9 @@
 #   Venvs: the upstream Alpamayo venv ($PY) for 1 and the calibration batches; $A2E_QUANT_VENV (torch + nvidia-modelopt +
 #   tensorrt-edgellm[quantize]) for the quantization. Needs $A2E_WORK/raw/calib/calib48_scenes.csv from measure/run_calib_fp4.sh.
 set -eu
-: "${A2E_TRT:?source env.sh first}"
 HERE=$(cd "$(dirname "$0")" && pwd)
+: "${A2E_ROOT:?set A2E_ROOT}" "${A2E_WORK:?set A2E_WORK}"
+source "${A2E_ENV:-$HERE/../env.sh}"   # sets PY, A2E_MODEL, A2E_TRT, A2E_EDGELLM_VENV, A2E_QUANT_VENV
 M=$A2E_TRT/models; mkdir -p $M
 [ -d $M/a2e-reasoner ] || $PY $HERE/make_cosmos3_reasoner_ckpt.py --src $A2E_MODEL --dst $M/a2e-reasoner
 [ -d $M/a2e-vlm-hf ] || $PY $HERE/make_cosmos3_reasoner_ckpt.py --src $A2E_MODEL --dst $M/a2e-vlm-hf --hf
