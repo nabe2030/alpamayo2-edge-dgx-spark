@@ -9,6 +9,14 @@ export A2E_ROOT=${A2E_ROOT:-/path/to/root}
 export A2E_WORK=${A2E_WORK:-/path/to/work}
 export A2E_MODEL=${A2E_MODEL:-$A2E_ROOT/models/Alpamayo2-Edge}
 export A2E_FP8_SO=${A2E_FP8_SO:-$A2E_ROOT/build/fp8_gemv/v1/fp8_gemv.so}
+# FP4 kernel (kernels/fp4_gemv/build.sh), cache of quantized FP4 bodies, and the GPTQ calibration statistics (measure/run_calib_fp4.sh)
+export A2E_FP4_SO=${A2E_FP4_SO:-$A2E_ROOT/build/fp4_gemv/v1/fp4_gemv.so}
+export A2E_FP4_CACHE=${A2E_FP4_CACHE:-$A2E_WORK/cache/fp4w}
+export A2E_CALIB_IN=${A2E_CALIB_IN:-$A2E_WORK/raw/calib/H_calib48.pt}
+# TensorRT Edge-LLM (tensorrt/): venv with tensorrt-edgellm, venv used for NVFP4 quantization, and the work folder
+export A2E_EDGELLM_VENV=${A2E_EDGELLM_VENV:-$A2E_ROOT/venv-edgellm}
+export A2E_QUANT_VENV=${A2E_QUANT_VENV:-$A2E_ROOT/venv-quant}
+export A2E_TRT=${A2E_TRT:-$A2E_WORK/trt}
 # location of this repository (where env.sh is placed)
 export A2E_REPO=${A2E_REPO:-$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)}
 O=$A2E_ROOT

@@ -14,6 +14,8 @@
 #     $PY demo_realtime.py --model $A2E_MODEL --mode realtime --av2-log $A2E_WORK/data/av2/val/9e9bcfb7-601d-3d80-bc12-ef7025174beb \
 #         --t0-start 2100000 --t0-stop 15000000 --accel tuned --feat "" --q none --passes 2 --label RT_tuned --out RT_tuned.jsonl
 #     $PY demo_realtime.py ... --accel tuned --feat p,g,c,v --q body --passes 2 --label RT_body --out RT_body.jsonl
+#   FP4 version (docs/figs_av2/demo_realtime_fp4.gif; four optimizations + FP4 body with GPTQ, BF16 output layer):
+#     A2E_FP4_METHOD=gptq:0.1 $PY demo_realtime.py ... --accel tuned --feat p,g,c,v --q fp4 --passes 2 --label RT_fp4 --out RT_fp4.jsonl
 # The rest of this header is the description of a2e_bench2.py:
 # a2e_bench2.py — measurement. With the same stage boundaries and the same clock as a2e_bench.py,
 # stacks up the four optimizations (a2e_stagea.py) with --feat and measures them.
@@ -74,8 +76,10 @@ def main():
     ap.add_argument("--vit-mode", default="default", help="inductor mode for #3")
     ap.add_argument("--pin", type=int, default=0, help="#9: copy into pinned memory before the transfer")
     ap.add_argument("--torch-profile", default="")
-    ap.add_argument("--q", choices=["none", "body", "head", "all", "fp4h8"], default="none",
-                    help="which CoT-decode weights are read in FP8 (body 28 layers / output layer / both)")
+    ap.add_argument("--q", choices=["none", "body", "head", "all", "fp4h8", "fp4", "fp4_h8", "fp4_h4"], default="none",
+                    help="which CoT-decode weights are quantized: FP8 body 28 layers / output layer / both; "
+                         "fp4 = FP4 body (a2e_fp4q, method from A2E_FP4_METHOD, e.g. gptq:0.1) with the output layer in "
+                         "BF16 (fp4), FP8 (fp4_h8) or FP4 (fp4_h4); fp4h8 = FP4 body with plain rounding (a2e_fp4) + FP8 output layer")
     ap.add_argument("--q-rows", default="", help="e.g. qkv=1,head=1 (overrides a2e_fp8.DEFAULT_ROWS)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--label", default="")
@@ -156,7 +160,13 @@ def main():
         if accel is None:
             raise SystemExit("--q is used on top of the official acceleration (--accel compile/tuned)")
         rows = {k: int(v) for k, v in (kv.split("=") for kv in args.q_rows.split(",") if kv)}
-        if args.q == "fp4h8":  # body 28 layers in FP4 (a2e_fp4), output layer in FP8
+        if args.q in ("fp4", "fp4_h8", "fp4_h4"):  # body FP4 (a2e_fp4q), output layer BF16 / FP8 / FP4
+            import os
+            import a2e_fp4q as Q4Q
+
+            qinfo = {"q": args.q, **Q4Q.install(accel, method=os.environ.get("A2E_FP4_METHOD", "rtn"),
+                                                head={"fp4": "bf16", "fp4_h8": "fp8", "fp4_h4": "fp4"}[args.q])}
+        elif args.q == "fp4h8":  # body 28 layers in FP4 (a2e_fp4), output layer in FP8
             import a2e_fp4 as Q4
 
             dec = Q.decode_accelerator(accel)
@@ -170,7 +180,7 @@ def main():
         else:
             qstep = Q.install(accel, body=args.q in ("body", "all"), head=args.q in ("head", "all"), rows=rows)
             qinfo = {"q": args.q, **Q.decode_accelerator(accel)._a2e_fp8, **qstep.weight_bytes()}
-        log(f"FP8 decode: {qinfo}")
+        log(f"quantized decode: {qinfo}")
     vlm = model.vlm
     vacc = S.VisionAccel(vlm.model, mode=args.vit_mode) if "v" in feat else None
     cache = S.VitFeatureCache(vlm.model) if "c" in feat else None

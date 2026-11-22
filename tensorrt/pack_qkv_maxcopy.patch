@@ -1,0 +1,19 @@
+--- a/tensorrt_edgellm/builder/ops/transformer.py
++++ b/tensorrt_edgellm/builder/ops/transformer.py
+@@ -45,9 +45,13 @@
+              (value_projection.ctx.options.int4_gemm_plugin_version == 2
+               and quant_type in _INT4_PLUGIN_TYPES)))
+     if needs_kv_boundary:
+-        # A direct three-way concat can let the optimizer reuse transient value
+-        # storage before AttentionPlugin consumes every prefill row.
+-        return F.concatenate((query, F.concatenate((key, value), 1)), 1)
++        # Workaround for NVIDIA/TensorRT#4949 (NVIDIA/TensorRT-Edge-LLM#288):
++        # TensorRT can assign the outputs of the projection plugins directly
++        # into the concat buffer without a copy; the plugins write densely, so
++        # rows are scrambled when M > 1 (prefill). max(x, x) is an exact FP16
++        # copy that the compiler keeps, so each plugin writes its own buffer.
++        query, key, value = (t.maximum(t) for t in (query, key, value))
++        return F.concatenate((query, key, value), 1)
+     return F.concatenate((query, key, value), 1)
+ 
+ 

@@ -1,5 +1,20 @@
 # Running Alpamayo 2 Edge on Argoverse 2 at 1 Hz on a single DGX Spark (GB10)
 
+> **New (2026-11-22): FP4 decode kernel and TensorRT Edge-LLM.** With a custom FP4 decode kernel (4-bit body calibrated
+> with GPTQ on 48 AV2 logs, output layer in BF16), one inference takes **0.64 s instead of 1.9 s** with the official
+> acceleration (tuned), **3.0× faster** (the FP8 body below: 2.8×). TensorRT Edge-LLM also runs on the Spark: faster for
+> the ViT and prefill, slower than the FP4 kernel for decoding; its NVFP4 W4A16 mode needs a one-line workaround for a
+> TensorRT bug (NVIDIA/TensorRT#4949).
+> **Article:** [`docs/article_fp4_en.md`](docs/article_fp4_en.md) (Japanese version on [Qiita](https://qiita.com/nabe2030/items/6b71bfbfd04b06599240)).
+> Code and how to run: [FP4 decode kernel](#fp4-decode-kernel-second-article) and [TensorRT Edge-LLM](#tensorrt-edge-llm-second-article) below.
+
+![Official (tuned) vs. the four optimizations + FP4 body, real time on one DGX Spark](docs/figs_av2/demo_realtime_fp4.gif)
+
+*The same drive and interval as the animation below, played in real time. Left: official tuned (1,858 ms per inference, median). Right: the four optimizations + FP4 body with GPTQ, BF16 output layer (612 ms). In these 11 s, 7 inferences finished on the left and 23 on the right. Times and predictions were measured on this log. Images: Argoverse 2 (© 2021 Argo AI, LLC), CC BY-NC-SA 4.0.*
+
+The rest of this README up to "FP4 decode kernel" describes the first article (four optimizations and the FP8 body).
+
+
 ![Official (tuned) vs. the four optimizations + FP8 body only, real time on one DGX Spark](docs/figs_av2/demo_realtime.gif)
 
 *One Argoverse 2 drive (log 9e9bcfb7, 4–15 s) played in real time. Left: official tuned (about 1.9 s per inference). Right: the four optimizations + FP8 body only (about 0.7 s). Each prediction appears when its inference finishes; times and predictions were measured on this log. Images: Argoverse 2 (© 2021 Argo AI, LLC), CC BY-NC-SA 4.0.*
@@ -18,12 +33,17 @@ It does not contain the model weights, the upstream code or any AV2 data. Get ea
 | Folder | Contents |
 |---|---|
 | `kernels/fp8_gemv/` | CUDA kernel for FP8 (E4M3) weight × BF16 vector products (`fp8_gemv.cu`), build script (`build.sh`), and a standalone benchmark on synthetic data that needs neither a dataset nor the model (`bench_fp8_gemv.py`) |
+| `kernels/fp4_gemv/` | CUDA kernel for FP4 (E2M1, NVFP4-like scales) weight × BF16 vector products (`fp4_gemv.cu`), build script for sm_121a (`build.sh`), and a standalone benchmark on synthetic data (`bench_fp4_gemv.py`) |
 | `accel/` | The four optimizations (`a2e_stagea.py`) and the FP8 weights for CoT decoding (`a2e_fp8.py`). Both patch the loaded model from outside; the upstream code is not edited |
+| `accel/` (FP4) | FP4 weights for CoT decoding: plain rounding and loading the FP4 kernel (`a2e_fp4.py`); GPTQ and other rounding methods, calibration statistics and installation into the official acceleration (`a2e_fp4q.py`) |
 | `av2_input/` | Scripts that build Alpamayo 2 Edge inputs (the same dict as the official loader) from AV2 logs: download, scene selection, re-rendering to virtual cameras, navigation text |
 | `measure/` | Speed measurements (single input / continuous 10 Hz and 1 Hz / including re-rendering), BF16 vs FP8 output comparisons, the stopped-scene study, the input-layout comparison (`av2_eval.py`), summaries and plots |
 | `results/` | Result tables and plots on AV2 (no AV2 images) |
 | `results_av2_images/` | Figures that contain AV2 images (with attribution; CC BY-NC-SA 4.0; see `results_av2_images/LIST.md`) |
+| `results/fp4/` | Result tables of the FP4 / TensorRT Edge-LLM article (no AV2 images; see `results/fp4/README.md`) |
+| `tensorrt/` | Running the VLM part on TensorRT Edge-LLM: checkpoint conversion, AV2 calibration for NVFP4, engine builds, comparison with PyTorch, timing, and the `pack_qkv` workaround for W4A16 (`pack_qkv_maxcopy.patch`). `tensorrt/w4a16_bug/` holds the TensorRT-only reproducer of NVIDIA/TensorRT#4949. See `tensorrt/README.md` |
 | `docs/` | The English article (`article_en.md`) and its figures. `docs/figs_av2/` holds article figures 6, 7 and 11 and the real-time demo animation shown above (they contain AV2 images; CC BY-NC-SA 4.0; source, modifications and license in `docs/figs_av2/README.md`). They are drawn by `measure/article_figs.py` |
+| `docs/` (FP4) | The English version of the second article (`article_fp4_en.md`), its figures 1–9 (`figs_fp4_en/`, drawn by `figs_fp4_en/make_figs_fp4_en.py`, no AV2 images) and the FP4 demo animation (`figs_av2/demo_realtime_fp4.gif`, contains AV2 images; CC BY-NC-SA 4.0) |
 | `LICENSES/` | Apache-2.0 (this code and the upstream code) and CC BY-NC-SA 4.0 (AV2) |
 
 ## The four optimizations and FP8
@@ -123,6 +143,8 @@ On this scene (seed 43, 18 reasoning tokens) we measured 1927 ms for official tu
 | alpamayo2-edge | `02f55a7` (same as main on 2026-11-20) |
 | Model | nvidia/Alpamayo2-Edge revision `f8951d095de3589b3face1dec3f4394c8ecedb38` (downloaded 2026-11-18; same weights and configs as main `b92b6aa` on 2026-11-20) |
 | FP8 kernel | `kernels/fp8_gemv/fp8_gemv.cu`, nvcc 12.9, `-O3 --use_fast_math`, sm_120/sm_121 |
+| FP4 kernel (second article) | `kernels/fp4_gemv/fp4_gemv.cu`, nvcc 12.9, `-O3 --use_fast_math`, sm_121a |
+| TensorRT side (second article) | TensorRT Edge-LLM 0.12.0, TensorRT 10.16.1.11 (pip `tensorrt-cu13`), ModelOpt 0.45.0 (with torch 2.14.0+cu130 in a separate venv) |
 | Sampling | Same as the official `inference`: temperature 0.6, top_p 0.98, 10 diffusion steps, 1 sample |
 
 ## AV2 access and license
@@ -138,11 +160,13 @@ On this scene (seed 43, 18 reasoning tokens) we measured 1927 ms for official tu
 
 - **Code: Apache License 2.0** (`LICENSES/Apache-2.0.txt`). Copyright (c) 2026 [nabe2030](https://github.com/nabe2030).
 - Our own code files (`.py`, `.sh`, `.cu`) start with `SPDX-FileCopyrightText: Copyright (c) 2026 nabe2030` and `SPDX-License-Identifier: Apache-2.0`.
-- Two files contain modified upstream code (each starts with the original copyright notice, nabe2030's copyright notice for the modifications, and a statement of the changes):
+- Three files contain modified upstream code (each starts with the original copyright notice, nabe2030's copyright notice for the modifications, and a statement of the changes):
   - `accel/a2e_fp8.py`, `DecodeStepQ.forward`: follows the CoT decode step in upstream `alpamayo2_edge/accel/decode.py`; its linear layers call the FP8 kernel.
   - `accel/a2e_stagea.py`, `GpuPrep`: follows upstream `alpamayo2_edge/helper.py` `prepare_model_inputs` and moves image processing to the GPU.
+  - `accel/a2e_fp4q.py`, `CalibStep.forward`: follows the CoT decode step in upstream `alpamayo2_edge/accel/decode.py` (BF16) and records the input statistics of every projection for GPTQ.
   - Upstream: NVlabs/alpamayo2-edge, Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES, Apache-2.0.
-- Figures in `results_av2_images/` and `docs/figs_av2/`, including the demo animation `docs/figs_av2/demo_realtime.gif`: CC BY-NC-SA 4.0 (above).
+- Figures in `results_av2_images/` and `docs/figs_av2/`, including the demo animations `docs/figs_av2/demo_realtime.gif` and `docs/figs_av2/demo_realtime_fp4.gif`: CC BY-NC-SA 4.0 (above). The figures of the second article (`docs/figs_fp4_en/`) contain no AV2 images (like `docs/figs_en/`).
+- `tensorrt/pack_qkv_maxcopy.patch` is a patch for NVIDIA TensorRT-Edge-LLM 0.12.0 (Apache-2.0); its context lines are from `tensorrt_edgellm/builder/ops/transformer.py` of that project (Copyright (c) 2026 NVIDIA CORPORATION & AFFILIATES, Apache-2.0). TensorRT Edge-LLM itself is not included.
 - Upstream files, model weights (NVIDIA's license) and AV2 data are not included.
 
 ## Results (AV2, one NVIDIA GB10)
@@ -182,3 +206,85 @@ Tables are in `results/summary_*.md/json` and `results/compare_3configs.md`; plo
 - The share of trajectories that start moving (≥ 2 m in 3 s) does not change between BF16 and FP8 (−0.1 pt, 95% CI [−0.5, +0.4]).
 - With the output layer in FP8, the probability that the first reasoning token is a "proceed"-type token rises (+1.45 pt over 22 scenes, same direction in all 22). FP8 on the output layer alone gives the same direction, so the output layer is the main source.
 - With FP8 body only it is +0.37 pt (−0.05 pt over the 117 scenes).
+
+## FP4 decode kernel (second article)
+
+The second article ([`docs/article_fp4_en.md`](docs/article_fp4_en.md)) replaces the FP8 body with an FP4 body during CoT decoding.
+
+- **Format** (close to NVIDIA's NVFP4): E2M1 weights, two per byte; one E4M3 scale per 16 elements; one FP32 scale per row
+  (4.5 bits per element; the 28 body layers shrink from about 2.8 GB in BF16 to 795 MB). qkv, o, fc1 (+relu²) and fc2 of the
+  28 body layers; the output layer stays BF16; prefill stays BF16.
+- **Kernel** (`kernels/fp4_gemv/fp4_gemv.cu`): one warp per row, FP4 → FP16 with `__nv_cvt_fp4x2_to_halfraw2`, FP32 accumulation,
+  no host synchronization, so it runs inside the CUDA graph of the official acceleration (op `torch.ops.a2e4.fp4_gemv`).
+  **Build for `sm_121a`**: only the architecture-specific target turns the conversion into the hardware instruction; with plain
+  `sm_121` the same code compiles to a software conversion and is not faster.
+- **Rounding**: plain round-to-nearest is not enough for 4 bits (reasoning identical to BF16 in 67% of 40 scenes × 3 seeds,
+  start of the reasoning shifted toward "stop"). The recommended configuration is **GPTQ with damping 0.1**
+  (`A2E_FP4_METHOD=gptq:0.1`), calibrated on 48 AV2 train logs that are not in the 400 evaluation scenes
+  (`results/fp4/calib_logs_48.csv`). The calibrated weights are for decoding only; do not use them for prefill.
+
+### How to run
+
+Requirements are those of the first article (section "How to run" above). The FP4 kernel needs an nvcc that supports
+`sm_121a` (CUDA 12.9 or later; we used 12.9). `env.example.sh` has the new variables `A2E_FP4_SO`, `A2E_FP4_CACHE` and `A2E_CALIB_IN`.
+
+```bash
+source env.sh
+# 1. Kernel (no data, no model): build and a standalone benchmark against the FP8 kernel and BF16 F.linear
+PY=$PY $A2E_REPO/kernels/fp4_gemv/build.sh $(dirname $A2E_FP4_SO)        # ARCH=121a by default
+$PY $A2E_REPO/kernels/fp4_gemv/bench_fp4_gemv.py --out $A2E_WORK/fp4_gemv_bench.json
+# 2. Calibration statistics for GPTQ (48 train logs; downloads about 0.6 GB of frames, then BF16 decoding on them)
+CALIB_LIST=$A2E_REPO/results/fp4/calib_logs_48.csv bash $A2E_REPO/measure/run_calib_fp4.sh
+# 3. Single-input timing with the FP4 body (the first run quantizes the body with GPTQ, about 65 s, and caches it in $A2E_FP4_CACHE)
+A2E_FP4_METHOD=gptq:0.1 $PY $A2E_REPO/measure/a2e_bench2.py --model $A2E_MODEL --mode single \
+    --input pt:$A2E_WORK/inputs/9e9bcfb7_8.5.pt --accel tuned --feat p,g,c,v --q fp4 --runs 5 --label C_fp4 \
+    --out $A2E_WORK/raw/speed/C_fp4.jsonl
+```
+
+- `--q fp4` = FP4 body with the output layer in BF16 (recommended); `fp4_h8` / `fp4_h4` = output layer in FP8 / FP4 (reference).
+- In your own code: `import a2e_fp4q; a2e_fp4q.install(handle, method="gptq:0.1", head="bf16")` on the handle returned by the
+  official `enable_acceleration`, before the first decode call.
+- Full measurements of the article: `measure/run_speed_fp4.sh` (single input and continuous, with same-day BF16 and FP8 references)
+  and `measure/run_quality_fp4.sh` (rounding error, 40 and 400 scenes, output layer variants, first token on stop/go scenes,
+  greedy comparison). The FP4 demo animation: `measure/demo_realtime.py --q fp4` and `measure/demo_frames_fp4.py`
+  (see `docs/figs_av2/README.md`).
+
+### Results (one GB10; tables in `results/fp4/`)
+
+| Setup (log 9e9bcfb7, t0 = 8.5 s, seed 43, 18 tokens, median of 20 runs) | One inference | Reasoning, per token | Continuous 10 Hz median / max | Continuous 1 Hz median / max |
+|---|---|---|---|---|
+| Official tuned (first article) | 1,927 ms | — | — | — |
+| Four optimizations (BF16) | 788 ms | 16.6 ms | 643 / 870 ms | 758 / 973 ms |
+| + FP8 body | 688 ms | 11.0 ms | 536 / 692 ms | 636 / 782 ms |
+| **+ FP4 body (GPTQ)** | **641 ms** | **8.47 ms** | **475 / 609 ms** | **581 / 693 ms** |
+
+| Output vs. BF16, 400 scenes × 5 seeds | Trajectory difference (% of the seed-to-seed spread) | Change in error vs. the recorded drive | Reasoning identical to BF16 |
+|---|---|---|---|
+| FP8 body | 1.7% | −0.005 m | 91.2% |
+| **FP4 body (GPTQ)** | **3.1%** | **−0.010 m** | **89.2%** |
+
+- The four optimizations, FP8 and FP4 rows were measured on the same day (2026-11-21); the first article had 790 ms and 695 ms.
+- First reasoning token on 139 stop/go scenes: the FP4 body (GPTQ) moves the probability of a "go"-type start by −0.47 points
+  (toward "stop"); plain rounding by −2.14 points; FP8 body by +0.04 points.
+
+## TensorRT Edge-LLM (second article)
+
+`tensorrt/` runs the VLM part (ViT, prefill, reasoning decode) of Alpamayo 2 Edge on TensorRT Edge-LLM 0.12.0 with TensorRT
+10.16.1.11 on the Spark, by renaming the weights to the Cosmos3-Edge format, and quantizes it to NVFP4 with ModelOpt using AV2
+calibration prompts. The expert is not included (Edge-LLM has no implementation for it), so there is no trajectory and no
+whole-inference time. Setup, steps and the W4A16 workaround: [`tensorrt/README.md`](tensorrt/README.md).
+
+| Setup (same input, 18 tokens, GPU time) | ViT | Prefill | Reasoning, per token | Greedy reasoning identical to PyTorch BF16 (20 scenes) |
+|---|---|---|---|---|
+| PyTorch BF16 (four optimizations) | 241 ms | 176 ms | 16.6 ms | (reference) |
+| PyTorch FP4 body (custom kernel) | 241 ms | 175 ms | **8.47 ms** | 18 / 20 (quantized weights in BF16 matmuls, decode only) |
+| TensorRT FP16 | 187 ms | 161 ms | 17.3 ms | 18 / 20 |
+| TensorRT NVFP4 W4A4 | 188 ms | **104 ms** | 9.98 ms | 10 / 20 |
+| TensorRT NVFP4 W4A16 + workaround | 210 ms | 184 ms | 9.83 ms | 13 / 20 |
+
+- The TensorRT runtime adds about 110 ms of CPU work per request; see `results/fp4/README.md` for how each side was timed.
+- **NVFP4 W4A16 gives meaningless output as shipped**: TensorRT assigns the q/k/v projection plugin outputs directly into the
+  concat buffer, which scrambles rows in prefill. `tensorrt/pack_qkv_maxcopy.patch` (for Edge-LLM 0.12.0) inserts `max(x, x)`
+  before the concat. Reported as [NVIDIA/TensorRT#4949](https://github.com/NVIDIA/TensorRT/issues/4949) (TensorRT-only
+  reproducer: `tensorrt/w4a16_bug/issue_4949_repro.py`; fails on 10.15.1.29, 10.16.1.11 and 11.5.0.63) and
+  [NVIDIA/TensorRT-Edge-LLM#288](https://github.com/NVIDIA/TensorRT-Edge-LLM/issues/288). Checked on DGX Spark only.

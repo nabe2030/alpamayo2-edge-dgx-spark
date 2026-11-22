@@ -1,0 +1,167 @@
+{
+ "single": {
+  "C_bf16_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 788.2313775480725,
+   "q25": 786.951252957806,
+   "q75": 789.4580202701036,
+   "min": 784.946377039887,
+   "max": 792.9997420869768,
+   "first": 11767.34501007013,
+   "stages": {
+    "preprocess": 17.675647735595703,
+    "vision": 240.57225799560547,
+    "prefill_llm": 176.35891723632812,
+    "decode": 298.4280242919922,
+    "expert": 51.25163269042969,
+    "traj": 1.27292799949646
+   },
+   "ms_per_token": 16.579334682888454,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "C_bf16_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 802.6266929809935,
+   "q25": 801.175042259274,
+   "q75": 805.390906665707,
+   "min": 796.05620901566,
+   "max": 816.4669119287282,
+   "first": 12197.758419904858,
+   "stages": {
+    "preprocess": 17.583855628967285,
+    "vision": 240.5761260986328,
+    "prefill_llm": 174.66319274902344,
+    "decode": 314.1767120361328,
+    "expert": 51.46560096740723,
+    "traj": 1.2864960432052612
+   },
+   "ms_per_token": 16.53561642295436,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "C_fp4_gptq:0.1_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 641.3841475150548,
+   "q25": 639.1495322459377,
+   "q75": 643.3896970120259,
+   "min": 634.7372389864177,
+   "max": 653.4609729424119,
+   "first": 14664.266014005989,
+   "stages": {
+    "preprocess": 17.599072456359863,
+    "vision": 241.27025604248047,
+    "prefill_llm": 174.50121307373047,
+    "decode": 152.46763610839844,
+    "expert": 51.05404853820801,
+    "traj": 1.2641599774360657
+   },
+   "ms_per_token": 8.470424228244358,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "C_fp4_gptq:0.1_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 663.7168044690043,
+   "q25": 648.4878587943967,
+   "q75": 668.3283895254135,
+   "min": 644.9946180218831,
+   "max": 691.0976050421596,
+   "first": 12475.732871098444,
+   "stages": {
+    "preprocess": 17.937392234802246,
+    "vision": 242.28591918945312,
+    "prefill_llm": 175.5823516845703,
+    "decode": 160.89551544189453,
+    "expert": 51.061519622802734,
+    "traj": 1.3388000130653381
+   },
+   "ms_per_token": 8.468185023257607,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "C_fp4h8_gptq:0.1_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 624.4568669353612,
+   "q25": 623.056555778021,
+   "q75": 627.1192809799686,
+   "min": 621.9069840153679,
+   "max": 634.0281380107626,
+   "first": 18839.29359598551,
+   "stages": {
+    "preprocess": 17.428671836853027,
+    "vision": 240.41280364990234,
+    "prefill_llm": 174.70612335205078,
+    "decode": 134.9803237915039,
+    "expert": 52.643728256225586,
+    "traj": 1.2435359954833984
+   },
+   "ms_per_token": 7.498906877305773,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "C_fp4h8_gptq:0.1_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 631.6627615015022,
+   "q25": 630.9753390378319,
+   "q75": 632.400048780255,
+   "min": 622.2052100347355,
+   "max": 641.1706740036607,
+   "first": 13522.331316024065,
+   "stages": {
+    "preprocess": 17.13263988494873,
+    "vision": 241.75640106201172,
+    "prefill_llm": 175.01487731933594,
+    "decode": 141.55689239501953,
+    "expert": 52.63228797912598,
+    "traj": 1.263535976409912
+   },
+   "ms_per_token": 7.450362757632607,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  },
+  "C_fp8body_s43": {
+   "n": 20,
+   "tokens": 18.0,
+   "e2e_median": 687.9065575194545,
+   "q25": 686.126759974286,
+   "q75": 690.1148492179345,
+   "min": 684.0729850810021,
+   "max": 699.6297449804842,
+   "first": 12236.327789025381,
+   "stages": {
+    "preprocess": 17.338799476623535,
+    "vision": 241.44084930419922,
+    "prefill_llm": 174.4819793701172,
+    "decode": 197.98332977294922,
+    "expert": 52.37881660461426,
+    "traj": 1.2586079835891724
+   },
+   "ms_per_token": 10.999073876274956,
+   "cot": "Turn left at the intersection to follow our route, as the traffic light is green."
+  },
+  "C_fp8body_s45": {
+   "n": 20,
+   "tokens": 19.0,
+   "e2e_median": 699.2629565065727,
+   "q25": 697.4749132059515,
+   "q75": 701.080411527073,
+   "min": 695.1752189779654,
+   "max": 704.3542480096221,
+   "first": 11042.114065028727,
+   "stages": {
+    "preprocess": 17.751503944396973,
+    "vision": 240.93447875976562,
+    "prefill_llm": 175.17571258544922,
+    "decode": 209.1098861694336,
+    "expert": 52.34619331359863,
+    "traj": 1.2604640126228333
+   },
+   "ms_per_token": 11.005783482601768,
+   "cot": "Turn left at the intersection to follow our route, as permitted by the green traffic light."
+  }
+ },
+ "stream": {},
+ "fit": {},
+ "agree": {}
+}

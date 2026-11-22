@@ -1,0 +1,7 @@
+{"label": "none", "scenes": 20, "identical": 20, "top1_step0_same": 20, "kl_median": 0.0, "kl_mean": 0.0, "kl_steps": 388}
+{"label": "fp8", "scenes": 20, "identical": 17, "top1_step0_same": 19, "kl_median": 9.72624523124316e-05, "kl_mean": 0.0005452843967651224, "kl_steps": 361}
+{"label": "fp4:gptq:0.1", "scenes": 20, "identical": 8, "top1_step0_same": 18, "kl_median": 0.004320536555700426, "kl_mean": 0.03561811512650041, "kl_steps": 279}
+{"label": "fp4:rtn", "scenes": 20, "identical": 14, "top1_step0_same": 18, "kl_median": 0.0010620839806825828, "kl_mean": 0.0038822037816843022, "kl_steps": 325}
+{"label": "decode-only fp8", "scenes": 20, "identical": 18, "top1_step0_same": 20, "kl_median": 3.4464577176914885e-05, "kl_mean": 0.0003133251046031849, "kl_steps": 372}
+{"label": "decode-only fp4:gptq:0.1", "scenes": 20, "identical": 18, "top1_step0_same": 20, "kl_median": 8.294768838243357e-05, "kl_mean": 0.0006139787709021512, "kl_steps": 380}
+{"label": "decode-only fp4:rtn", "scenes": 20, "identical": 16, "top1_step0_same": 20, "kl_median": 0.0005568342709755205, "kl_mean": 0.0024255052663103177, "kl_steps": 351}
