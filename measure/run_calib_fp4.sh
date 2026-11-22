@@ -4,7 +4,8 @@
 #
 # run_calib_fp4.sh — calibration statistics for the FP4 body (GPTQ), run on the GPU machine.
 #   1. Pick 48 AV2 train logs that are not used by the 400 evaluation scenes (select_calib_scenes.py, seed 7).
-#      The list we used is results/fp4/calib_logs_48.csv (set CALIB_LIST to use it instead of picking again).
+#      The list we used is results/fp4/calib_logs_48.csv (log_id, t0_rel_s, kind; set CALIB_LIST to use it instead of
+#      picking again).
 #      Picking needs a pose scan of the train logs (av2_input/av2_scan_poses.py -> $A2E_WORK/raw/scan_train.csv).
 #   2. Download only the frames needed for each scene (av2_fetch_frames.py; about 0.6 GB for 48 logs).
 #   3. Run BF16 CoT decoding on them (wide_eval.py, variant "calib" of a2e_fp4q.py: 5 seeds + teacher forcing) and
@@ -24,13 +25,25 @@ if [ -n "${CALIB_LIST:-}" ]; then cp "$CALIB_LIST" $C/$TAG.csv
 elif [ ! -f $C/$TAG.csv ]; then
   $PY $HERE/select_calib_scenes.py --scan $N/raw/scan_train.csv --eval-scenes $N/raw/wide/scenes_t0.csv --n 48 --seed 7 --out $C/$TAG.csv
 fi
+# The published lists have only log_id, t0_rel_s and kind. Add the columns the fetch and wide_eval.py read:
+# split (all calibration logs are train logs) and city (only copied into the records; does not change H).
+$PY - $C/$TAG.csv <<'PYEOF'
+import sys, pandas as pd
+d = pd.read_csv(sys.argv[1])
+if "split" not in d:
+    d["split"] = "train"
+if "city" not in d:
+    d["city"] = "unknown"
+d.to_csv(sys.argv[1], index=False)
+PYEOF
 $PY $HERE/../av2_input/av2_fetch_frames.py $C/$TAG.csv $N/data/av2_calib $N/data/av2_calib/full $C/${TAG}_t0.csv 1
 # scene list in the wide_eval format (scene_id first)
 $PY - $C/${TAG}_t0.csv $C/${TAG}_scenes.csv <<'PYEOF'
 import sys, pandas as pd
 d = pd.read_csv(sys.argv[1])
 d.insert(0, "scene_id", ["c_%s_%.1f" % (l[:8], t) for l, t in zip(d.log_id, d.t0_rel_s)])
-d[["scene_id", "split", "log_id", "t0_rel_s", "kind", "v_mean", "dyaw_deg", "city", "t0_ns", "data_dir"]].to_csv(sys.argv[2], index=False)
+cols = ["scene_id", "split", "log_id", "t0_rel_s", "kind", "v_mean", "dyaw_deg", "city", "t0_ns", "data_dir"]
+d[[c for c in cols if c in d]].to_csv(sys.argv[2], index=False)
 PYEOF
 echo "$(TZ=Asia/Tokyo date '+%F %T') start H collection; GPU processes: $(nvidia-smi --query-compute-apps=pid --format=csv,noheader | wc -l)"
 A2E_CALIB_OUT=$C/H_$TAG.pt $PY $HERE/wide_eval.py --model $A2E_MODEL --scenes $C/${TAG}_scenes.csv \

@@ -15,8 +15,8 @@ All numbers were measured on one DGX Spark (GB10) on 2026-11-21 and 2026-11-22, 
 | `summary_firsttoken_fp4.md` | First reasoning token in the 139 stop/go scenes (article 4.3, figure 6) | `measure/av2_firsttoken.py`, `measure/summarize_firsttoken.py` |
 | `greedy20_summary.jsonl` | Greedy reasoning on 20 scenes, PyTorch with quantized weights (fake quantization) vs. PyTorch BF16 | `measure/greedy_fakeq.py`, `measure/cmp_greedy.py` |
 | `fp4_gemv_bench.json` | FP4 / FP8 / BF16 decode GEMVs on their own (synthetic weights of the real shapes) | `kernels/fp4_gemv/bench_fp4_gemv.py` |
-| `calib_logs_48.csv` | The 48 AV2 train logs used for the GPTQ calibration (none of them is in the 400 evaluation scenes) | `measure/select_calib_scenes.py` |
-| `calib_logs_48_heldout.csv` | 48 other train logs, used only to check the calibration (held out) | same, excluding the logs above |
+| `calib_logs_48.csv` | The 48 AV2 train logs used for the GPTQ calibration (none of them is in the 400 evaluation scenes): log ID, t0 (s from the start of the log) and motion kind | `measure/select_calib_scenes.py` |
+| `calib_logs_48_heldout.csv` | 48 other train logs, used only to check the calibration (held out); same columns | same, excluding the logs above |
 
 In the tables, `fp4gptq_d10` is the FP4 body with GPTQ (damping 0.1), the recommended configuration; `fp4rtn` is plain
 rounding, `fp4mse` the block-scale search, `fp4gptqm_d10` GPTQ + scale search, `_h8` / `_h4` the output layer in FP8 / FP4.
